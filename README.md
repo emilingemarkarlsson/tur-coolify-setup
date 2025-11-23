@@ -1,4 +1,4 @@
-# THA Coolify Setup
+# The Unnamed Roads - Coolify Infrastructure
 
 <div align="center">
 
@@ -8,12 +8,12 @@
 ![Hetzner](https://img.shields.io/badge/hetzner-D50C2D?style=for-the-badge&logo=hetzner&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
-![License](https://img.shields.io/github/license/emilkarlsson/tur-coolify-setup?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/emilkarlsson/tur-coolify-setup?style=for-the-badge)
+![License](https://img.shields.io/github/license/hsq-emilkarlsson/tur-coolify-setup?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/hsq-emilkarlsson/tur-coolify-setup?style=for-the-badge)
 
 </div>
 
-Docker Compose configurations for The Hockey Analytics infrastructure deployed on Coolify.
+Docker Compose configurations for The Unnamed Roads multi-project infrastructure deployed on Coolify. Hosts services for various projects including data pipelines, automation workflows, and analytics dashboards.
 
 ## Why This Project (Recruiter Focus)
 
