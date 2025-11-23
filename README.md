@@ -13,7 +13,16 @@
 
 </div>
 
-Docker Compose configurations for The Unnamed Roads multi-project infrastructure deployed on Coolify. Hosts services for various projects including data pipelines, automation workflows, and analytics dashboards.
+Production-ready multi-service infrastructure showcasing DevOps best practices. Self-hosted on Hetzner Cloud with automated SSL, monitoring, and comprehensive operational tooling.
+
+**Key Technical Highlights:**
+
+- 🚀 Zero-downtime deployments via Coolify
+- 🔒 Security-first: externalized secrets, automated SSL/TLS
+- 📊 Full observability: Grafana dashboards + UptimeRobot monitoring
+- 🛠️ Production hardening: log rotation, resource limits, swap management
+- 📝 Infrastructure as Code: reproducible via Docker Compose
+- 🔄 Automated operations: health checks, cleanup, recovery scripts
 
 ## Project Structure
 
@@ -44,14 +53,37 @@ Docker Compose configurations for The Unnamed Roads multi-project infrastructure
 
 ## Why This Project (Recruiter Focus)
 
-This repository demonstrates hands-on DevOps/Infrastructure capability:
+This repository demonstrates **production-grade DevOps engineering** and infrastructure management:
 
-- Multi-service container orchestration with Docker Compose & Traefik reverse proxy
-- Production hardening (log rotation, swap management, resource limits, decommission decisions)
-- Security & compliance: secrets externalized via `.env`, no hardcoded credentials
-- Operational automation: health diagnostics (`scripts/quick-ssh.sh`), endpoint verification (`scripts/diagnose.sh`), cleanup routines
-- Monitoring & alerting integration (UptimeRobot + Grafana stack)
-- Documentation discipline: recovery, monitoring, disk upgrade, onboarding guides
+### Technical Capabilities Demonstrated
+
+**Container Orchestration & Networking**
+
+- Multi-service Docker Compose architecture with 6+ production services
+- Traefik reverse proxy with automatic SSL/TLS via Let's Encrypt
+- Internal Docker networking with external routing via domain-based rules
+- Zero-downtime deployments through Coolify orchestration
+
+**Security & Best Practices**
+
+- Secrets management: zero hardcoded credentials, environment-based configuration
+- Automated validation scripts prevent accidental secret exposure
+- SSL/TLS automation with auto-renewal
+- Production security hardening applied throughout
+
+**Operational Excellence**
+
+- Custom diagnostic tooling: health checks, endpoint verification, cleanup automation
+- Monitoring & alerting: UptimeRobot + Grafana observability stack
+- Disaster recovery: documented procedures with automated recovery scripts
+- Proactive maintenance: log rotation (10MB×3), swap management (4GB), resource limits
+
+**Infrastructure as Code & Documentation**
+
+- Fully reproducible infrastructure via Docker Compose
+- Comprehensive documentation: architecture diagrams, runbooks, troubleshooting guides
+- Real-world problem-solving: decommissioned ClickHouse after 57GB disk space crisis
+- Contributing guidelines and validation tooling for team collaboration
 
 ## Setup & Secrets
 
@@ -75,11 +107,49 @@ Run the helper script to ensure no `CHANGEME` placeholders remain:
 ./scripts/validate-env.sh
 ```
 
+## Technologies & Skills
+
+**Infrastructure & Platform**
+
+- Docker & Docker Compose (multi-service orchestration)
+- Coolify (self-hosted PaaS)
+- Hetzner Cloud (Ubuntu 22.04 VPS)
+- Traefik (reverse proxy & load balancer)
+- Let's Encrypt (SSL/TLS automation)
+
+**Networking & DNS**
+
+- Cloudflare DNS management
+- HTTPS/SSL certificate automation
+- Domain-based routing and traffic management
+
+**Monitoring & Observability**
+
+- Grafana (metrics & visualization)
+- UptimeRobot (external monitoring & alerting)
+- Custom health check automation
+
+**Development Tools**
+
+- VS Code Remote Development
+- Git version control
+- Bash scripting for automation
+
+**Data & Automation**
+
+- MinIO (S3-compatible object storage)
+- PostgreSQL databases
+- N8N (workflow automation)
+- Mage AI (data pipelines)
+- Crawlab (web scraping)
+
 ## Server Details
 
-- **Platform**: Coolify on Hetzner Cloud (Ubuntu 22.04, 4GB RAM)
+- **Platform**: Coolify on Hetzner Cloud (Ubuntu 22.04, 4GB RAM, 75GB disk)
 - **IP**: 46.62.206.47
 - **DNS Provider**: Cloudflare
+- **Deployment**: Infrastructure as Code via Docker Compose
+- **Uptime**: Monitored 24/7 with automated alerting
 
 ## Active Services
 
