@@ -1,0 +1,27 @@
+services:
+  appsmith:
+    image: 'index.docker.io/appsmith/appsmith-ce:latest'
+    container_name: tha_appsmith
+    environment:
+      - APPSMITH_ENCRYPTION_PASSWORD=${APPSMITH_ENCRYPTION_PASSWORD}
+      - APPSMITH_ENCRYPTION_SALT=${APPSMITH_ENCRYPTION_SALT}
+    volumes:
+      - 'appsmith_stack:/appsmith-stacks'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.appsmith.rule=Host(`portal.thehockeyanalytics.com`)"
+      - "traefik.http.routers.appsmith.entrypoints=https"
+      - "traefik.http.routers.appsmith.tls=true"
+      - "traefik.http.routers.appsmith.tls.certresolver=letsencrypt"
+      - "traefik.http.services.appsmith.loadbalancer.server.port=80"
+    restart: unless-stopped
+    networks:
+      - coolify
+
+volumes:
+  appsmith_stack:
+    driver: local
+
+networks:
+  coolify:
+    external: true

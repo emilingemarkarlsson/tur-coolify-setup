@@ -1,0 +1,42 @@
+services:
+  clickhouse:
+    image: 'clickhouse/clickhouse-server:latest'
+    container_name: tha_clickhouse_compose
+    environment:
+      CLICKHOUSE_DB: hockey_analytics
+      CLICKHOUSE_USER: dw_user
+      CLICKHOUSE_PASSWORD: secure_clickhouse_hockey_2025_dw
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
+      # KRITISKA tillägg för att förhindra disk space problem:
+      CLICKHOUSE_CONFIG_query_profiler_real_time_period_ns: '0'
+      CLICKHOUSE_CONFIG_query_profiler_cpu_time_period_ns: '0'
+      CLICKHOUSE_CONFIG_opentelemetry_span_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_query_thread_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_query_views_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_part_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_trace_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_crash_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_text_log_enabled: 'false'
+      CLICKHOUSE_CONFIG_metric_log_enabled: 'false'
+    # Ta bort port mapping - Traefik sköter routing
+    # ports:
+    #   - '8123:8123'
+    volumes:
+      - 'clickhouse_data:/var/lib/clickhouse'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.clickhouse.rule=Host(`dw.thehockeyanalytics.com`)
+      - traefik.http.routers.clickhouse.entrypoints=https
+      - traefik.http.routers.clickhouse.tls=true
+      - traefik.http.routers.clickhouse.tls.certresolver=letsencrypt
+      - traefik.http.services.clickhouse.loadbalancer.server.port=8123
+      - traefik.http.routers.clickhouse.service=clickhouse
+    restart: unless-stopped
+    networks:
+      - coolify
+volumes:
+  clickhouse_data:
+    driver: local
+networks:
+  coolify:
+    external: true

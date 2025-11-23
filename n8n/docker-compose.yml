@@ -1,0 +1,33 @@
+services:
+  n8n:
+    image: 'n8nio/n8n:latest'
+    container_name: tha_n8n
+    environment:
+      - N8N_HOST=automation.thehockeyanalytics.com
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://automation.thehockeyanalytics.com/
+      - GENERIC_TIMEZONE=Europe/Stockholm
+      - N8N_SECURE_COOKIE=false
+      - N8N_METRICS=true
+    volumes:
+      - 'n8n_data:/home/node/.n8n'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`automation.thehockeyanalytics.com`)"
+      - "traefik.http.routers.n8n.entrypoints=https"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+      - "traefik.http.routers.n8n.service=n8n"
+    restart: unless-stopped
+    networks:
+      - coolify
+
+volumes:
+  n8n_data:
+    driver: local
+
+networks:
+  coolify:
+    external: true

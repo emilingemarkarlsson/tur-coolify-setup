@@ -1,0 +1,14 @@
+# Environment
+.env
+
+# macOS
+.DS_Store
+
+# Backups
+backups/
+*.tgz
+*.tar.gz
+
+# Editor
+.vscode/
+.idea/

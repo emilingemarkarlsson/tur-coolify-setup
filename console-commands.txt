@@ -1,0 +1,42 @@
+# Commands to run in Hetzner Console
+
+# === STEP 1: Check server resources ===
+echo "=== Checking disk space ==="
+df -h
+
+echo "=== Checking memory ==="
+free -h
+
+echo "=== Checking running processes ==="
+top -bn1 | head -20
+
+# === STEP 2: Check Docker ===
+echo "=== Checking Docker status ==="
+systemctl status docker
+
+echo "=== Checking Docker containers ==="
+docker ps -a
+
+# === STEP 3: Check Coolify specifically ===
+echo "=== Looking for Coolify containers ==="
+docker ps -a | grep coolify
+
+echo "=== Checking Coolify directories ==="
+ls -la /data/coolify/ 2>/dev/null || echo "No /data/coolify found"
+ls -la /opt/coolify/ 2>/dev/null || echo "No /opt/coolify found"
+
+# === STEP 4: Try to restart Coolify ===
+echo "=== Attempting to restart Coolify ==="
+cd /data/coolify/source && docker-compose up -d 2>/dev/null || echo "Failed to start from /data/coolify"
+
+# === STEP 5: Check if it's working ===
+echo "=== Checking if Coolify is now running ==="
+docker ps | grep coolify
+netstat -tlnp | grep ':8000\|:80\|:443'
+
+# === STEP 6: Emergency cleanup if needed ===
+echo "=== If disk is full, run this: ==="
+echo "docker system prune -a --volumes -f"
+
+echo "=== If memory is low, run this: ==="
+echo "reboot"

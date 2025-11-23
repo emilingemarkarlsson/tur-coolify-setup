@@ -1,0 +1,28 @@
+services:
+  mage:
+    image: 'mageai/mageai:latest'
+    container_name: tha_mage
+    command: '/app/run_app.sh mage start tha_project'
+    environment:
+      - USER_CODE_PATH=/home/src/tha_project
+      - MAGE_DATABASE_CONNECTION_URL=sqlite:///home/src/mage.db
+    volumes:
+      - 'mage_data:/home/src'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mage.rule=Host(`etl.thehockeyanalytics.com`)"
+      - "traefik.http.routers.mage.entrypoints=https"
+      - "traefik.http.routers.mage.tls=true"
+      - "traefik.http.routers.mage.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mage.loadbalancer.server.port=6789"
+    restart: unless-stopped
+    networks:
+      - coolify
+
+volumes:
+  mage_data:
+    driver: local
+
+networks:
+  coolify:
+    external: true

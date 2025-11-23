@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<clickhouse>
+    <!-- Avaktivera profiling för att förhindra disk space problem -->
+    <profiles>
+        <default>
+            <!-- Avaktivera query profiler -->
+            <query_profiler_real_time_period_ns>0</query_profiler_real_time_period_ns>
+            <query_profiler_cpu_time_period_ns>0</query_profiler_cpu_time_period_ns>
+        </default>
+    </profiles>
+    
+    <!-- Minimal logging för att spara disk space -->
+    <logger>
+        <level>warning</level>
+        <size>100M</size>
+        <count>3</count>
+    </logger>
+    
+    <!-- Avaktivera systemloggar som kan fylla disken -->
+    <query_log remove="remove"/>
+    <query_thread_log remove="remove"/>
+    <part_log remove="remove"/>
+    <trace_log remove="remove"/>
+    <crash_log remove="remove"/>
+    <text_log remove="remove"/>
+    <metric_log remove="remove"/>
+    
+    <!-- Om du vill ha minimal logging istället för att avaktivera helt -->
+    <!--
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <ttl>date + INTERVAL 7 DAY</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+    -->
+</clickhouse>
