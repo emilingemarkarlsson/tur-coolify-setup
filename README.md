@@ -8,12 +8,39 @@
 ![Hetzner](https://img.shields.io/badge/hetzner-D50C2D?style=for-the-badge&logo=hetzner&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
-![License](https://img.shields.io/github/license/hsq-emilkarlsson/tur-coolify-setup?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/hsq-emilkarlsson/tur-coolify-setup?style=for-the-badge)
+![License](https://img.shields.io/github/license/emilingemarkarlsson/tur-coolify-setup?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/emilingemarkarlsson/tur-coolify-setup?style=for-the-badge)
 
 </div>
 
 Docker Compose configurations for The Unnamed Roads multi-project infrastructure deployed on Coolify. Hosts services for various projects including data pipelines, automation workflows, and analytics dashboards.
+
+## Project Structure
+
+```text
+├── scripts/              # Operational automation scripts
+│   ├── diagnose.sh      # External endpoint verification
+│   ├── docker-cleanup.sh # Docker resource cleanup
+│   ├── post-reboot-recover.sh # Recovery after server reboot
+│   ├── quick-ssh.sh     # Quick health check
+│   ├── quick-test.sh    # Service endpoint testing
+│   └── validate-env.sh  # Environment validation
+├── docs/
+│   ├── guides/          # Operational documentation
+│   │   ├── DISK-UPGRADE-GUIDE.md
+│   │   ├── EMERGENCY-RECOVERY.md
+│   │   ├── MONITORING.md
+│   │   └── VSCODE-CONNECTION.md
+│   ├── deprecated/      # Archived configurations
+│   └── architecture-diagram.svg
+├── [service]/           # Service directories (grafana, n8n, minio, etc.)
+│   ├── docker-compose.yml
+│   └── README.md
+├── .env.example         # Environment template (copy to .env)
+├── CONTRIBUTING.md
+├── LICENSE
+└── README.md
+```
 
 ## Why This Project (Recruiter Focus)
 
@@ -22,7 +49,7 @@ This repository demonstrates hands-on DevOps/Infrastructure capability:
 - Multi-service container orchestration with Docker Compose & Traefik reverse proxy
 - Production hardening (log rotation, swap management, resource limits, decommission decisions)
 - Security & compliance: secrets externalized via `.env`, no hardcoded credentials
-- Operational automation: health diagnostics (`quick-ssh.sh`), endpoint verification (`diagnose.sh`), cleanup routines
+- Operational automation: health diagnostics (`scripts/quick-ssh.sh`), endpoint verification (`scripts/diagnose.sh`), cleanup routines
 - Monitoring & alerting integration (UptimeRobot + Grafana stack)
 - Documentation discipline: recovery, monitoring, disk upgrade, onboarding guides
 
@@ -45,7 +72,7 @@ Environment variables used for sensitive config are referenced in compose files 
 Run the helper script to ensure no `CHANGEME` placeholders remain:
 
 ```bash
-./validate-env.sh
+./scripts/validate-env.sh
 ```
 
 ## Server Details
@@ -161,20 +188,22 @@ Log rotation configured in `/etc/docker/daemon.json`:
 ## Documentation Index
 
 - **[README.md](README.md)** (this file) - Main overview and architecture
-- **[VSCODE-CONNECTION.md](VSCODE-CONNECTION.md)** - Detailed VS Code Remote-SSH setup
-- **[MONITORING.md](MONITORING.md)** - Health monitoring, alerts, and automated checks
-- **[EMERGENCY-RECOVERY.md](EMERGENCY-RECOVERY.md)** - Crisis procedures when server is down
-- **[DISK-UPGRADE-GUIDE.md](DISK-UPGRADE-GUIDE.md)** - Disk space management procedures
+- **[VSCODE-CONNECTION.md](docs/guides/VSCODE-CONNECTION.md)** - Detailed VS Code Remote-SSH setup
+- **[MONITORING.md](docs/guides/MONITORING.md)** - Health monitoring, alerts, and automated checks
+- **[EMERGENCY-RECOVERY.md](docs/guides/EMERGENCY-RECOVERY.md)** - Crisis procedures when server is down
+- **[DISK-UPGRADE-GUIDE.md](docs/guides/DISK-UPGRADE-GUIDE.md)** - Disk space management procedures
 
 ## Quick Access
 
 ### SSH Connection
 
 Two convenient aliases configured in `~/.ssh/config`:
+
 ```bash
 ssh tha              # Quick access
 ssh coolify-tha      # Full name
 ```
+
 
 ### VS Code Remote Development
 
@@ -187,7 +216,7 @@ Alternatively, click the green Remote icon (bottom-left) → `Connect to Host...
 
 ### Quick Diagnostics Script
 
-Run `./quick-ssh.sh` for instant health check:
+Run `./scripts/quick-ssh.sh` for instant health check:
 
 - Server connectivity
 - Disk, memory, swap status
@@ -195,7 +224,7 @@ Run `./quick-ssh.sh` for instant health check:
 - Container count
 
 ```bash
-./quick-ssh.sh
+./scripts/quick-ssh.sh
 ```
 
 ### Docker Management via GitHub Copilot
@@ -211,7 +240,7 @@ Ask Copilot: "Show me running containers" or "Restart coolify container"
 
 ## Diagnostics
 
-Run `./diagnose.sh` to verify:
+Run `./scripts/diagnose.sh` to verify:
 
 - DNS resolution for all domains
 - HTTPS connectivity
@@ -236,7 +265,7 @@ For internal-only services, prefer local health checks or Coolify service status
 
 ## Emergency Recovery
 
-See `EMERGENCY-RECOVERY.md` for detailed recovery procedures if server becomes unresponsive.
+See `docs/guides/EMERGENCY-RECOVERY.md` for detailed recovery procedures if server becomes unresponsive.
 
 ## Deployment
 
@@ -309,7 +338,7 @@ Each service directory contains:
 - [ ] Add DNS record in Cloudflare (if applicable)
 - [ ] Test deployment in Coolify
 - [ ] Add service to main README
-- [ ] Update `diagnose.sh` if service has external endpoint
+- [ ] Update `scripts/diagnose.sh` if service has external endpoint
 
 ## Troubleshooting
 
@@ -321,7 +350,7 @@ Each service directory contains:
 
 ```bash
 ping 46.62.206.47        # Network reachable?
-./quick-ssh.sh           # Automated diagnostics
+./scripts/quick-ssh.sh   # Automated diagnostics
 ssh -vvv tha             # Verbose SSH debug
 ```
 
@@ -331,7 +360,7 @@ ssh -vvv tha             # Verbose SSH debug
 2. Access Hetzner Cloud Console
 3. Use VNC/KVM console for direct access
 4. Check: `df -h`, `free -m`, `dmesg | tail`
-5. See `EMERGENCY-RECOVERY.md` for detailed recovery
+5. See `docs/guides/EMERGENCY-RECOVERY.md` for detailed recovery
 
 ### Service Down
 
@@ -366,7 +395,7 @@ ssh tha 'docker system df -v'
 **Clean up Docker**:
 
 ```bash
-./docker-cleanup.sh                       # From local machine
+./scripts/docker-cleanup.sh               # From local machine
 # Or manually:
 ssh tha 'docker system prune -af --volumes'  # ⚠️ Removes unused volumes
 ```
@@ -424,8 +453,8 @@ ssh tha 'journalctl -u docker --no-pager | tail -100'
 ### Daily Checks
 
 ```bash
-./quick-ssh.sh           # Quick health snapshot
-./diagnose.sh            # External endpoint verification
+./scripts/quick-ssh.sh   # Quick health snapshot
+./scripts/diagnose.sh    # External endpoint verification
 ```
 
 ### Weekly Maintenance
@@ -445,7 +474,7 @@ ssh tha 'docker ps --format "table {{.Names}}\t{{.Status}}"'
 
 ```bash
 # Clean unused Docker resources
-./docker-cleanup.sh
+./scripts/docker-cleanup.sh
 
 # Update system packages
 ssh tha 'apt update && apt upgrade -y'
