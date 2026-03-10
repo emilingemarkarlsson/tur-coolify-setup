@@ -1,0 +1,27 @@
+services:
+  open-webui:
+    image: 'ghcr.io/open-webui/open-webui:main'
+    volumes:
+      - 'open-webui:/app/backend/data'
+    environment:
+      - SERVICE_URL_OPENWEBUI_8080
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1:8080'
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.openwebui.rule=Host(`webui.theunnamedroads.com`)
+      - traefik.http.routers.openwebui.entrypoints=http
+      - traefik.http.routers.openwebui.middlewares=redirect-to-https
+      - traefik.http.routers.openwebui.service=openwebui
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.services.openwebui.loadbalancer.server.port=8080
+
+volumes:
+  open-webui: null

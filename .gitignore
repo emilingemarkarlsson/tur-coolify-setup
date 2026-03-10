@@ -1,14 +1,33 @@
-# Environment
+# Environment files
 .env
+.env.local
+.env.*.local
 
-# macOS
+# Local credentials (never commit)
+umami-credentials.json
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# OS files
 .DS_Store
+Thumbs.db
 
-# Backups
-backups/
-*.tgz
-*.tar.gz
-
-# Editor
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Archive (keep structure but ignore if large)
+# archive/

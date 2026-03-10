@@ -1,0 +1,187 @@
+{
+  "name": "Daglig Umami – OpenClaw sammanfattning",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Varje dag 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://umami.theunnamedroads.com/api/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"username\": \"{{ $env.UMAMI_USERNAME }}\",\n  \"password\": \"{{ $env.UMAMI_PASSWORD }}\"\n}",
+        "options": {}
+      },
+      "id": "umami-login",
+      "name": "Umami Login",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "notesInFlow": true,
+      "notes": "Kräver UMAMI_USERNAME och UMAMI_PASSWORD i n8n."
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);\nconst endAt = todayStart.getTime();\nconst startAt = endAt - 24 * 60 * 60 * 1000;\nconst token = $input.first().json.token;\nif (!token) throw new Error('Ingen token från Umami Login');\nreturn [{ json: { token, startAt, endAt } }];"
+      },
+      "id": "compute-dates",
+      "name": "Datum för gårdagen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://umami.theunnamedroads.com/api/websites",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-websites",
+      "name": "Hämta webbplatser",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const loginData = $node['Datum för gårdagen'].json;\nconst websitesRes = $input.first().json;\nconst websites = websitesRes.data || [];\nif (websites.length === 0) return [{ json: { message: 'Inga webbplatser i Umami.', token: loginData.token, startAt: loginData.startAt, endAt: loginData.endAt } }];\nreturn websites.map(w => ({ json: { websiteId: w.id, websiteName: w.name || w.domain, domain: w.domain, token: loginData.token, startAt: loginData.startAt, endAt: loginData.endAt } }));"
+      },
+      "id": "prepare-list",
+      "name": "En rad per webbplats",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "id": "has-website-id", "leftValue": "={{ $json.websiteId }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-websites",
+      "name": "Har webbplatser?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://umami.theunnamedroads.com/api/websites/{{ $json.websiteId }}/stats?startAt={{ $json.startAt }}&endAt={{ $json.endAt }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-stats",
+      "name": "Hämta stats per webbplats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "combineByPosition",
+        "options": {}
+      },
+      "id": "merge-stats",
+      "name": "Koppla namn och stats",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst first = items[0]?.json;\nif (first && first.message && first.pageviews === undefined) return [{ json: { text: first.message } }];\nconst yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);\nconst dateStr = yesterday.toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\nlet lines = [`📊 Trafik – ${dateStr}\\n`];\nfor (let i = 0; i < items.length; i++) {\n  const j = items[i].json;\n  const name = j.websiteName || j.domain || `Webbplats ${i + 1}`;\n  lines.push(`${name}: ${j.pageviews ?? 0} sidvisningar, ${j.visitors ?? 0} besökare, ${j.visits ?? 0} besök, ${j.bounces ?? 0} bounces, ${Math.round(j.totaltime ?? 0)}s total tid.\\n`);\n}\nreturn [{ json: { text: lines.join('') } }];"
+      },
+      "id": "format-summary",
+      "name": "Formatera sammanfattning",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.OPENCLAW_HOOKS_URL || 'https://openclaw.theunnamedroads.com' }}/hooks/agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENCLAW_HOOKS_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: 'Här är gårdagens webbtrafik från Umami.\\n\\n' + $json.text + '\\n\\nSkriv en kort, vänlig sammanfattning på svenska (2–4 meningar) och posta till angiven kanal. Fokusera på trender och vad som sticker ut.', name: 'Umami daglig', wakeMode: 'now', deliver: true, channel: 'slack', to: 'channel:' + ($env.OPENCLAW_SLACK_CHANNEL_ID || 'C01234ABCD') }) }}",
+        "options": {}
+      },
+      "id": "openclaw-post",
+      "name": "OpenClaw – sammanfatta och posta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 300],
+      "notesInFlow": true,
+      "notes": "Sätt OPENCLAW_HOOKS_URL, OPENCLAW_HOOKS_TOKEN och OPENCLAW_SLACK_CHANNEL_ID (kanal-ID utan 'channel:' prefix) i n8n."
+    }
+  ],
+  "connections": {
+    "Varje dag 08:00": { "main": [[{ "node": "Umami Login", "type": "main", "index": 0 }]] },
+    "Umami Login": { "main": [[{ "node": "Datum för gårdagen", "type": "main", "index": 0 }]] },
+    "Datum för gårdagen": { "main": [[{ "node": "Hämta webbplatser", "type": "main", "index": 0 }]] },
+    "Hämta webbplatser": { "main": [[{ "node": "En rad per webbplats", "type": "main", "index": 0 }]] },
+    "En rad per webbplats": { "main": [[{ "node": "Har webbplatser?", "type": "main", "index": 0 }]] },
+    "Har webbplatser?": {
+      "main": [
+        [
+          { "node": "Hämta stats per webbplats", "type": "main", "index": 0 },
+          { "node": "Koppla namn och stats", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Formatera sammanfattning", "type": "main", "index": 0 }]
+      ]
+    },
+    "Hämta stats per webbplats": { "main": [[{ "node": "Koppla namn och stats", "type": "main", "index": 1 }]] },
+    "Koppla namn och stats": { "main": [[{ "node": "Formatera sammanfattning", "type": "main", "index": 0 }]] },
+    "Formatera sammanfattning": { "main": [[{ "node": "OpenClaw – sammanfatta och posta", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Stockholm"
+  },
+  "staticData": null,
+  "meta": { "templateCredsSetupCompleted": false },
+  "pinData": {},
+  "versionId": "1"
+}

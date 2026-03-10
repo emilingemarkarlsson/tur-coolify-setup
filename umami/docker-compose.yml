@@ -1,0 +1,121 @@
+services:
+  umami:
+    image: 'ghcr.io/umami-software/umami:postgresql-latest'
+    environment:
+      SERVICE_URL_UMAMI_3000: 'http://umami-xogcsw40c0gg0o0s40oco08o.46.62.206.47.sslip.io:3000'
+      DATABASE_URL: 'postgres://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postgresql:5432/$POSTGRES_DB'
+      DATABASE_TYPE: postgres
+      APP_SECRET: $SERVICE_PASSWORD_64_UMAMI
+      COOLIFY_RESOURCE_UUID: xogcsw40c0gg0o0s40oco08o
+      COOLIFY_CONTAINER_NAME: umami-xogcsw40c0gg0o0s40oco08o
+      COOLIFY_FQDN: 'umami-xogcsw40c0gg0o0s40oco08o.46.62.206.47.sslip.io,umami.theunnamedroads.com'
+      COOLIFY_URL: 'http://umami-xogcsw40c0gg0o0s40oco08o.46.62.206.47.sslip.io,https://umami.theunnamedroads.com'
+      SERVICE_NAME_UMAMI: umami
+      SERVICE_NAME_POSTGRESQL: postgresql
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1:3000/api/heartbeat'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: umami-xogcsw40c0gg0o0s40oco08o
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.459
+      - coolify.serviceId=9
+      - coolify.type=service
+      - coolify.name=umami-xogcsw40c0gg0o0s40oco08o
+      - coolify.resourceName=umami-tur
+      - coolify.projectName=theunnamedroads-platform
+      - coolify.serviceName=umami
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=10
+      - coolify.service.subType=application
+      - coolify.service.subName=umami
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-xogcsw40c0gg0o0s40oco08o-umami.entryPoints=http
+      - traefik.http.routers.http-0-xogcsw40c0gg0o0s40oco08o-umami.middlewares=gzip
+      - 'traefik.http.routers.http-0-xogcsw40c0gg0o0s40oco08o-umami.rule=Host(`umami-xogcsw40c0gg0o0s40oco08o.46.62.206.47.sslip.io`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-xogcsw40c0gg0o0s40oco08o-umami.service=http-0-xogcsw40c0gg0o0s40oco08o-umami
+      - traefik.http.routers.http-1-xogcsw40c0gg0o0s40oco08o-umami.entryPoints=http
+      - traefik.http.routers.http-1-xogcsw40c0gg0o0s40oco08o-umami.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-1-xogcsw40c0gg0o0s40oco08o-umami.rule=Host(`umami.theunnamedroads.com`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-1-xogcsw40c0gg0o0s40oco08o-umami.entryPoints=https
+      - traefik.http.routers.https-1-xogcsw40c0gg0o0s40oco08o-umami.middlewares=gzip
+      - 'traefik.http.routers.https-1-xogcsw40c0gg0o0s40oco08o-umami.rule=Host(`umami.theunnamedroads.com`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-1-xogcsw40c0gg0o0s40oco08o-umami.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-1-xogcsw40c0gg0o0s40oco08o-umami.tls=true
+      - traefik.http.services.http-0-xogcsw40c0gg0o0s40oco08o-umami.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=http://umami-xogcsw40c0gg0o0s40oco08o.46.62.206.47.sslip.io'
+      - 'caddy_1.encode=zstd gzip'
+      - 'caddy_1.handle_path.1_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_1.handle_path=/*'
+      - caddy_1.header=-Server
+      - 'caddy_1.try_files={path} /index.html /index.php'
+      - 'caddy_1=https://umami.theunnamedroads.com'
+      - caddy_ingress_network=xogcsw40c0gg0o0s40oco08o
+    networks:
+      xogcsw40c0gg0o0s40oco08o: null
+    env_file:
+      - .env
+  postgresql:
+    image: 'postgres:16-alpine'
+    volumes:
+      - 'xogcsw40c0gg0o0s40oco08o_postgresql-data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_USER: $SERVICE_USER_POSTGRES
+      POSTGRES_PASSWORD: $SERVICE_PASSWORD_POSTGRES
+      POSTGRES_DB: '${POSTGRES_DB:-umami}'
+      COOLIFY_RESOURCE_UUID: xogcsw40c0gg0o0s40oco08o
+      COOLIFY_CONTAINER_NAME: postgresql-xogcsw40c0gg0o0s40oco08o
+      SERVICE_NAME_UMAMI: umami
+      SERVICE_NAME_POSTGRESQL: postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: postgresql-xogcsw40c0gg0o0s40oco08o
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.459
+      - coolify.serviceId=9
+      - coolify.type=service
+      - coolify.name=postgresql-xogcsw40c0gg0o0s40oco08o
+      - coolify.resourceName=umami-tur
+      - coolify.projectName=theunnamedroads-platform
+      - coolify.serviceName=postgresql
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=6
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+    networks:
+      xogcsw40c0gg0o0s40oco08o: null
+    env_file:
+      - .env
+volumes:
+  xogcsw40c0gg0o0s40oco08o_postgresql-data:
+    name: xogcsw40c0gg0o0s40oco08o_postgresql-data
+networks:
+  xogcsw40c0gg0o0s40oco08o:
+    name: xogcsw40c0gg0o0s40oco08o
+    external: true

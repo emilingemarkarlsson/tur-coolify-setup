@@ -1,0 +1,42 @@
+# Klistra in denna fil direkt i Coolify Dashboard
+# Gå till: Langflow service → Edit Compose → Klistra in → Deploy
+
+services:
+  langflow:
+    image: 'langflowai/langflow:latest'
+    environment:
+      - SERVICE_URL_LANGFLOW_7860
+      - LANGFLOW_HOST=0.0.0.0
+      - LANGFLOW_PORT=7860
+      - LANGFLOW_LOG_LEVEL=INFO
+    volumes:
+      - 'langflow_data:/app/data'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.langflow.rule=Host(`langflow-rog04sw8kcc0g848cs4cocso.46.62.206.47.sslip.io`)"
+      - "traefik.http.routers.langflow.entrypoints=https"
+      - "traefik.http.routers.langflow.tls=true"
+      - "traefik.http.routers.langflow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.langflow.loadbalancer.server.port=7860"
+      - "traefik.http.routers.langflow.service=langflow"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1:7860'
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    networks:
+      - coolify
+    restart: unless-stopped
+
+volumes:
+  langflow_data: null
+
+networks:
+  coolify:
+    external: true
+
+

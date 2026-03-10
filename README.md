@@ -3,7 +3,6 @@
 <div align="center">
 
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Hetzner](https://img.shields.io/badge/hetzner-D50C2D?style=for-the-badge&logo=hetzner&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
@@ -14,6 +13,11 @@
 </div>
 
 Production-ready multi-service infrastructure showcasing DevOps best practices. Self-hosted on Hetzner Cloud with automated SSL, monitoring, and comprehensive operational tooling.
+
+> **🔄 Uppdatera servern?** 
+> - **Automatiserad:** [AUTO-UPGRADE.md](AUTO-UPGRADE.md) - Komplett automatiserad process (rekommenderat)
+> - **Snabbguide:** [UPDATE.md](UPDATE.md) - 2 kommandon
+> - **Komplett process:** [UPGRADE.md](UPGRADE.md) - Systematisk med versionkontroll
 
 **Key Technical Highlights:**
 
@@ -28,24 +32,64 @@ Production-ready multi-service infrastructure showcasing DevOps best practices. 
 
 ```text
 ├── scripts/              # Operational automation scripts
-│   ├── diagnose.sh      # External endpoint verification
+│   ├── auto-upgrade-all.sh # Complete automated upgrade process
+│   ├── sync-coolify-resources.sh # Sync Coolify resources & generate docs (filesystem)
+│   ├── sync-coolify-api.sh # Sync Coolify resources via API
+│   ├── list-coolify-project.sh # List all resources in a Coolify project
+│   ├── generate-service-docs.sh # Generate UPGRADE.md for services
+│   ├── generate-service-readme.sh # Generate README.md for services
+│   ├── update-services-doc.sh # Update SERVICES.md with active services
+│   ├── upgrade-check.sh # Check what needs updating per official docs
 │   ├── docker-cleanup.sh # Docker resource cleanup
-│   ├── post-reboot-recover.sh # Recovery after server reboot
+│   ├── server-health.sh # Omfattande serverhälsokontroll (disk, minne, CPU, Docker, containers)
 │   ├── quick-ssh.sh     # Quick health check
 │   ├── quick-test.sh    # Service endpoint testing
+│   ├── setup-ssh.sh     # SSH connection setup wizard
+│   ├── update-server.sh # Automated server updates
+│   ├── verify-all.sh    # Complete verification (server, Coolify, endpoints)
+│   ├── list-coolify-resources.sh # List all Coolify services and check updates
+│   ├── restart-coolify.sh # Restart Coolify and all services
+│   ├── fix-coolify-platform.sh # Complete fix of Coolify platform after Ubuntu update
+│   ├── configure-coolify-domain.sh # Instructions to configure Coolify domain in dashboard
+│   ├── fix-coolify-dashboard.sh # Fix Coolify dashboard routing (when services work but dashboard doesn't)
+│   ├── fix-all-routing.sh # Complete fix of all routing problems (network, labels, API)
+│   ├── fix-routing.sh    # Fix routing problems (404, not available) - IP, DNS, Traefik
+│   ├── verify-and-fix-versions.sh # Verify and fix versions per Coolify official docs
+│   ├── upgrade-traefik.sh # Upgrade Traefik to v3.6.1 (Coolify's recommendation)
+│   ├── fix-traefik-downgrade.sh # Restore Traefik to working version after failed update
+│   ├── diagnose-404.sh    # Systematic diagnosis of 404 errors
+│   ├── fix-services.sh  # Fix services not available after server update
+│   ├── fix-404.sh       # Fix 404 errors when services run but not accessible
 │   └── validate-env.sh  # Environment validation
+├── archive/             # Inaktiva services och resurser
+│   ├── services/       # Inaktiva services (grafana, mage-ai, crawlab, appsmith, clickhouse)
+│   ├── scripts/        # Inaktiva scripts
+│   ├── docs/           # Deprecated dokumentation
+│   ├── README.md       # Arkiv-dokumentation
+│   └── CHANGELOG.md    # Ändringslogg
 ├── docs/
 │   ├── guides/          # Operational documentation
 │   │   ├── DISK-UPGRADE-GUIDE.md
 │   │   ├── EMERGENCY-RECOVERY.md
 │   │   ├── MONITORING.md
+│   │   ├── SERVER-UPDATE-GUIDE.md
 │   │   └── VSCODE-CONNECTION.md
-│   ├── deprecated/      # Archived configurations
 │   └── architecture-diagram.svg
-├── [service]/           # Service directories (grafana, n8n, minio, etc.)
+├── n8n/                 # N8N workflow automation
 │   ├── docker-compose.yml
+│   ├── UPGRADE.md      # Uppdateringsguide
+│   └── README.md
+├── minio/               # MinIO S3-compatible storage
+│   ├── docker-compose.yml
+│   ├── UPGRADE.md      # Uppdateringsguide
 │   └── README.md
 ├── .env.example         # Environment template (copy to .env)
+├── AUTO-UPGRADE.md      # Automatiserad uppgraderingsprocess
+├── UPDATE.md            # Snabbguide för serveruppdatering
+├── UPGRADE.md           # Komplett uppgraderingsprocess
+├── VERIFY.md            # Verifieringsguide
+├── SERVICES.md          # Service-översikt (auto-genererad)
+├── TROUBLESHOOTING.md   # Felsökningsguide
 ├── CONTRIBUTING.md
 ├── LICENSE
 └── README.md
@@ -125,7 +169,6 @@ Run the helper script to ensure no `CHANGEME` placeholders remain:
 
 **Monitoring & Observability**
 
-- Grafana (metrics & visualization)
 - UptimeRobot (external monitoring & alerting)
 - Custom health check automation
 
@@ -140,8 +183,6 @@ Run the helper script to ensure no `CHANGEME` placeholders remain:
 - MinIO (S3-compatible object storage)
 - PostgreSQL databases
 - N8N (workflow automation)
-- Mage AI (data pipelines)
-- Crawlab (web scraping)
 
 ## Server Details
 
@@ -153,48 +194,33 @@ Run the helper script to ensure no `CHANGEME` placeholders remain:
 
 ## Active Services
 
-### Grafana (`analytics.thehockeyanalytics.com`)
-
-Visualization and analytics dashboard
-
-- Directory: `grafana/`
-
-### N8N
+### N8N (`automation.thehockeyanalytics.com`)
 
 Workflow automation platform
 
-- Directory: `n8n/`
+- **Directory:** `n8n/`
+- **Uppdateringsguide:** [n8n/UPGRADE.md](n8n/UPGRADE.md)
+- **Docker Hub:** https://hub.docker.com/r/n8nio/n8n/tags
 
-### MinIO
+### MinIO (`data.thehockeyanalytics.com`)
 
 S3-compatible object storage
 
-- Directory: `minio/`
-
-### Mage AI
-
-Data pipeline orchestration
-
-- Directory: `mage-ai/`
-
-### Crawlab
-
-Web scraping framework
-
-- Directory: `crawlab/`
-
-### Appsmith
-
-Low-code application platform
-
-- Directory: `appsmith/`
+- **Directory:** `minio/`
+- **Uppdateringsguide:** [minio/UPGRADE.md](minio/UPGRADE.md)
+- **Quay.io:** https://quay.io/repository/minio/minio?tab=tags
 
 ## Decommissioned Services
 
-### ClickHouse ❌
+Följande services är inaktiva och arkiverade i `archive/services/`:
 
-Removed due to disk space issues (profiling data filled 57GB). If data warehouse needed in future, consider:
+- **Grafana** - Visualization and analytics dashboard (arkiverad)
+- **Mage AI** - Data pipeline orchestration (arkiverad)
+- **Crawlab** - Web scraping framework (arkiverad)
+- **Appsmith** - Low-code application platform (arkiverad)
+- **ClickHouse** ❌ - Removed due to disk space issues (profiling data filled 57GB)
 
+**Alternativ för data warehouse:**
 - PostgreSQL with TimescaleDB extension
 - DuckDB/MotherDuck
 - Managed cloud service
@@ -257,17 +283,40 @@ Log rotation configured in `/etc/docker/daemon.json`:
 
 ## Documentation Index
 
+### Quick References
+- **[UPDATE.md](UPDATE.md)** ⭐ - **Serveruppdatering (2 kommandon!)**
+- **[VERIFY.md](VERIFY.md)** ⭐ - **Verifiera allt (1 kommando!)**
+- **[SERVICES.md](SERVICES.md)** ⭐ - **Lista & uppdatera services (1 kommando!)**
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** ⭐ - **Fix services som inte fungerar (1 kommando!)**
+
+### Detailed Guides
 - **[README.md](README.md)** (this file) - Main overview and architecture
 - **[VSCODE-CONNECTION.md](docs/guides/VSCODE-CONNECTION.md)** - Detailed VS Code Remote-SSH setup
+- **[SERVER-UPDATE-GUIDE.md](docs/guides/SERVER-UPDATE-GUIDE.md)** - Detailed server update and SSH setup guide
 - **[MONITORING.md](docs/guides/MONITORING.md)** - Health monitoring, alerts, and automated checks
 - **[EMERGENCY-RECOVERY.md](docs/guides/EMERGENCY-RECOVERY.md)** - Crisis procedures when server is down
 - **[DISK-UPGRADE-GUIDE.md](docs/guides/DISK-UPGRADE-GUIDE.md)** - Disk space management procedures
 
 ## Quick Access
 
+### 🔄 Serveruppdatering
+
+**Snabbaste sättet:**
+```bash
+cd ~/Documents/dev/tur-coolify-setup
+./scripts/update-server.sh
+```
+
+Se [UPDATE.md](UPDATE.md) för detaljer.
+
 ### SSH Connection
 
-Two convenient aliases configured in `~/.ssh/config`:
+**First time setup:**
+```bash
+./scripts/setup-ssh.sh  # Interactive SSH setup wizard
+```
+
+**After setup, two convenient aliases available:**
 
 ```bash
 ssh tha              # Quick access
@@ -284,17 +333,26 @@ ssh coolify-tha      # Full name
 
 Alternatively, click the green Remote icon (bottom-left) → `Connect to Host...` → `tha`
 
-### Quick Diagnostics Script
+### Quick Diagnostics Scripts
 
-Run `./scripts/quick-ssh.sh` for instant health check:
-
-- Server connectivity
-- Disk, memory, swap status
-- Docker status
-- Container count
-
+**Serverhälsa (rekommenderat):**
 ```bash
-./scripts/quick-ssh.sh
+./scripts/server-health.sh    # Omfattande serverstatus: disk, minne, CPU, Docker, containers
+```
+
+**Snabb status:**
+```bash
+./scripts/quick-ssh.sh    # Snabb serverstatus
+```
+
+**Komplett verifiering:**
+```bash
+./scripts/verify-all.sh   # Verifierar allt: server, Coolify, endpoints, systemhälsa
+```
+
+**Externa endpoints:**
+```bash
+./scripts/diagnose.sh     # DNS och HTTPS-tester
 ```
 
 ### Docker Management via GitHub Copilot
@@ -543,6 +601,10 @@ ssh tha 'docker ps --format "table {{.Names}}\t{{.Status}}"'
 ### Monthly Maintenance
 
 ```bash
+# Update server (see UPDATE.md for quick guide)
+./scripts/update-server.sh
+
+# Or manually:
 # Clean unused Docker resources
 ./scripts/docker-cleanup.sh
 

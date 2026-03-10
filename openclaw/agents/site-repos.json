@@ -1,0 +1,70 @@
+{
+  "slackChannel": "#all-tur-ab",
+  "umamiBaseUrl": "https://umami.theunnamedroads.com",
+  "sites": [
+    {
+      "umamiName": "finnbodahamnplan",
+      "umamiWebsiteId": "472ea0eb-c7de-4176-85fe-96fc218c9bea",
+      "domain": "finnbodahamnplan.se",
+      "githubRepo": "https://github.com/emilingemarkarlsson/brf-finnboda-hamnplan.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "theprintroute",
+      "umamiWebsiteId": "4b9cfa68-52aa-417a-906b-a87b041486ba",
+      "domain": "tur-theprintroute.vercel.app",
+      "githubRepo": "https://github.com/emilingemarkarlsson/tur-theprintroute.git",
+      "contentPath": "frontend/src",
+      "stack": "react"
+    },
+    {
+      "umamiName": "theatomicnetwork",
+      "umamiWebsiteId": "61956d72-33b2-4663-849c-5874b312984d",
+      "domain": "tan-website.netlify.app",
+      "githubRepo": "https://github.com/emilingemarkarlsson/tan-site.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "theagentfabric",
+      "umamiWebsiteId": "9438eb5d-4409-47fd-893f-105c80e1dd5e",
+      "domain": "tur-theagentfabric.vercel.app",
+      "githubRepo": "https://github.com/emilingemarkarlsson/tur-theagentfabric.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "emilingemarkarlsson",
+      "umamiWebsiteId": "b860bcc1-2a7a-4436-97f3-a2cb41b273c6",
+      "domain": "emilingemarkarlsson.com",
+      "githubRepo": "https://github.com/emilingemarkarlsson/emilingemarkarlsson-astro-theme.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "thehockeybrain",
+      "umamiWebsiteId": "cda4abee-7b6b-490e-bc60-a42307d764cb",
+      "domain": "thehockeybrain.com",
+      "githubRepo": "https://github.com/emilingemarkarlsson/thb-site.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "thehockeyanalytics",
+      "umamiWebsiteId": "dc9840ac-15ff-4c35-b210-7ab9c46a6867",
+      "domain": "thehockeyanalytics.com",
+      "githubRepo": "https://github.com/emilingemarkarlsson/tha-website.git",
+      "contentPath": "src/content/blog",
+      "stack": "astro"
+    },
+    {
+      "umamiName": "theunnamedroads",
+      "umamiWebsiteId": "fc8f279b-0da8-4013-b8df-be07dc12a8f1",
+      "domain": "theunnamedroads.com",
+      "githubRepo": "https://github.com/emilingemarkarlsson/theunnamedroads.git",
+      "contentPath": "src/content/posts",
+      "stack": "astro"
+    }
+  ]
+}

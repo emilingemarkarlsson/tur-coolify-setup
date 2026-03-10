@@ -1,0 +1,45 @@
+services:
+  langflow:
+    image: 'langflowai/langflow:latest'
+    environment:
+      - SERVICE_URL_LANGFLOW_7860
+      - LANGFLOW_HOST=0.0.0.0
+      - LANGFLOW_PORT=7860
+      - LANGFLOW_LOG_LEVEL=INFO
+    volumes:
+      - 'langflow_data:/app/data'
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      # HTTP entrypoint (för sslip.io - INGEN redirect till HTTPS)
+      - traefik.http.routers.langflow-http.entrypoints=http
+      - traefik.http.routers.langflow-http.rule=Host(`langflow-rog04sw8kcc0g848cs4cocso.46.62.206.47.sslip.io`)
+      - traefik.http.routers.langflow-http.service=langflow-svc
+      # HTTPS entrypoint (för egen domän med SSL)
+      - traefik.http.routers.langflow-https.entrypoints=https
+      - traefik.http.routers.langflow-https.rule=Host(`langflow-rog04sw8kcc0g848cs4cocso.46.62.206.47.sslip.io`)
+      - traefik.http.routers.langflow-https.tls=true
+      - traefik.http.routers.langflow-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.langflow-https.service=langflow-svc
+      # Service definition
+      - traefik.http.services.langflow-svc.loadbalancer.server.port=7860
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1:7860/'
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    networks:
+      - coolify
+    restart: unless-stopped
+
+volumes:
+  langflow_data: null
+
+networks:
+  coolify:
+    external: true
+
