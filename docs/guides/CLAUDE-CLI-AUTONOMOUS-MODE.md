@@ -21,6 +21,8 @@ Riktlinjer för vad Claude får göra självständigt i detta projekt kontra nä
 | Söka webben | `WebSearch`, `WebFetch` |
 | Spara till minne | `/memory/` i projektet |
 | SEO-arbete t.o.m. draft | Planering, keyword, brief, skriva artikel, spara draft |
+| AEO artikel-refresh | `clone-site.sh` → `list-articles.sh` → `stage-refresh.sh` → edit → `publish-draft.sh` → auto-push till sajt-repo |
+| Push till sajt-repos | `publish-draft.sh` pushar direkt till site-repon (theunnamedroads, emilingemarkarlsson, m.fl.) – ingen fråga |
 
 ---
 
@@ -28,9 +30,9 @@ Riktlinjer för vad Claude får göra självständigt i detta projekt kontra nä
 
 | Åtgärd | Anledning |
 |--------|-----------|
-| `git push` till `main` | Publiceras publikt – fråga alltid |
+| `git push` till `main` på **tur-coolify-setup** | Publiceras publikt – fråga alltid |
 | `git push --force` | Destruktiv historieskrivning |
-| Publicera artikel (`publicera <slug>`) | Går live på sajten |
+| Publicera **ny** artikel (`publicera <slug>`) | Ny artikel går live – kräver godkännande |
 | Radera filer/mappar permanent | Svårt att återställa |
 | `docker rm`, `docker volume rm` | Destruktiv |
 | Ändra/skapa secrets eller API-nycklar | Säkerhetsrisk |
@@ -61,7 +63,8 @@ Bätcha godkännanden: "Jag har gjort X, Y, Z. Behöver pusha – godkänn?" hel
 - **OpenClaw container:** `openclaw-w44cc84w8kog4og400008csg`
 - **Synka till container:** `./scripts/openclaw-install-seo-agent.sh`
 - **Commit-stil:** `feat:` / `fix:` / `docs:` + `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
-- **Publish-flöde:** draft → Slack → `publicera <slug>` → push GitHub → Netlify bygger
+- **Publish-flöde (ny artikel):** draft → Slack → `publicera <slug>` (kräver godkännande) → push site-repo → Netlify bygger
+- **AEO refresh-flöde:** `clone-site.sh` → `list-articles.sh` → `stage-refresh.sh` → edit → `publish-draft.sh` → auto-push → Netlify bygger (inget godkännande)
 - **Secrets:** Aldrig i commitade filer – Coolify env eller serverfiler
 
 ---

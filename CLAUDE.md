@@ -4,9 +4,9 @@ This project uses autonomous mode. Read and follow `docs/guides/CLAUDE-CLI-AUTON
 
 ## Quick summary
 
-**Act freely** (no approval needed): read/edit files, run scripts, SSH to `tha`, apt upgrade, deploy/restart containers via Coolify API, git add/commit, SEO work up to draft.
+**Act freely** (no approval needed): read/edit files, run scripts, SSH to `tha`, apt upgrade, deploy/restart containers via Coolify API, git add/commit, SEO work up to draft, AEO article refreshes (stage-refresh.sh + publish-draft.sh → auto-push to site repos).
 
-**Wait for approval** (`⏸️ GODKÄNN`): git push to remote, publish article (`publicera <slug>`), delete data, change secrets, change Coolify env vars, new paid services.
+**Wait for approval** (`⏸️ GODKÄNN`): git push to **this repo** (tur-coolify-setup), publish *new* article (`publicera <slug>`), delete data, change secrets, change Coolify env vars, new paid services.
 
 ## Key facts
 

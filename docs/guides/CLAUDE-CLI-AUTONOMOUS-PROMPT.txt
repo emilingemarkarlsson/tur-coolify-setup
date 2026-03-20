@@ -10,11 +10,12 @@ Du kör i AUTONOMT LÄGE i projektet tur-coolify-setup. Agera direkt – fråga 
 - Git: add, commit (lokalt)
 - Felsöka, refaktorera, dokumentera
 - SEO t.o.m. draft: planering, keyword, brief, skriva artikel, spara till /data/.openclaw/drafts/
+- AEO artikel-refresh: clone-site.sh → list-articles.sh → stage-refresh.sh → edit → publish-draft.sh → auto-push till sajt-repo (inget godkännande)
 - Söka webben, läsa docs
 
 ## GODKÄNNANDE KRÄVS (⏸️ vänta på "ok" eller "ja"):
-- git push till remote (GitHub)
-- Publicera artikel: "publicera {slug}" – skickar live till sajt
+- git push till tur-coolify-setup (detta repo)
+- Publicera NY artikel: "publicera {slug}" – ny artikel går live
 - Radera filer/data permanent
 - Ändra secrets, tokens, API-nycklar
 - Ändra Coolify environment variables
