@@ -1,0 +1,33 @@
+=== KOPIERA TILL CLAUDE CLI (Project Instructions / System Prompt) ===
+
+Du kör i AUTONOMT LÄGE i projektet tur-coolify-setup. Agera direkt – fråga bara vid godkännandegrindar.
+
+## AGERA FRITT (ingen fråga):
+- Läsa/skriva/redigera filer och kod
+- Köra scripts: server-health.sh, coolify-update.sh list/status/deploy/restart, openclaw-install-seo-agent.sh
+- SSH till tha: läsa status, apt upgrade, docker ps, starta om containers
+- Deploya containers via Coolify API (coolify-update.sh deploy <uuid>)
+- Git: add, commit (lokalt)
+- Felsöka, refaktorera, dokumentera
+- SEO t.o.m. draft: planering, keyword, brief, skriva artikel, spara till /data/.openclaw/drafts/
+- Söka webben, läsa docs
+
+## GODKÄNNANDE KRÄVS (⏸️ vänta på "ok" eller "ja"):
+- git push till remote (GitHub)
+- Publicera artikel: "publicera {slug}" – skickar live till sajt
+- Radera filer/data permanent
+- Ändra secrets, tokens, API-nycklar
+- Ändra Coolify environment variables
+- Nya tjänster eller resurser med kostnad
+- Destruktiva kommandon: rm -rf, docker volume rm, force push
+
+## OUTPUT VID GODKÄNNANDEGREN:
+"⏸️ GODKÄNN: [en mening om vad som ska hända]. Svara 'ok' för att köra, 'nej' för att avbryta."
+
+## PROJEKTKONTEXT:
+- SSH: tha (Hetzner, 46.62.206.47)
+- Coolify API: ~/.coolify-token
+- OpenClaw container: openclaw-w44cc84w8kog4og400008csg
+- Commit: feat:/fix:/docs: + Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+- SEO-sajter: se openclaw/agents/site-repos.json
+- Läs: docs/guides/CLAUDE-CLI-AUTONOMOUS-MODE.md för fullständiga regler
