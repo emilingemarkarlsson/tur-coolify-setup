@@ -16,6 +16,7 @@ for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTION
     exit 1
   fi
 done
+# SEO-ROLLING-AUTOMATION-PROMPT.md är valfri – hoppa över om den saknas
 if [[ ! -f "$AGENTS_DIR/site-repos.json" ]]; then
   echo "Saknar $AGENTS_DIR/site-repos.json – skapa den från site-repos.example.json och fyll i dina repon."
   exit 1
@@ -35,12 +36,18 @@ fi
 echo "Skapar /data/.openclaw/agents och drafts i $CONTAINER..."
 ssh tha "docker exec $CONTAINER mkdir -p /data/.openclaw/agents /data/.openclaw/drafts"
 
-echo "Kopierar SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md, SEO-ARTICLE-SUGGESTIONS.md..."
-for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md; do
+echo "Kopierar SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md, SEO-ARTICLE-SUGGESTIONS.md, SEO-ROLLING-AUTOMATION-PROMPT.md..."
+for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md SEO-ROLLING-AUTOMATION-PROMPT.md; do
   scp -q "$AGENTS_DIR/$f" "tha:/tmp/$f"
   ssh tha "docker cp /tmp/$f $CONTAINER:/data/.openclaw/agents/$f"
   ssh tha "rm -f /tmp/$f"
 done
+if [[ -f "$AGENTS_DIR/SEO-ROLLING-AUTOMATION-PROMPT.md" ]]; then
+  echo "Kopierar SEO-ROLLING-AUTOMATION-PROMPT.md..."
+  scp -q "$AGENTS_DIR/SEO-ROLLING-AUTOMATION-PROMPT.md" "tha:/tmp/SEO-ROLLING-AUTOMATION-PROMPT.md"
+  ssh tha "docker cp /tmp/SEO-ROLLING-AUTOMATION-PROMPT.md $CONTAINER:/data/.openclaw/agents/SEO-ROLLING-AUTOMATION-PROMPT.md"
+  ssh tha "rm -f /tmp/SEO-ROLLING-AUTOMATION-PROMPT.md"
+fi
 
 echo "Kopierar site-repos.json till /data/.openclaw/site-repos.json..."
 scp -q "$AGENTS_DIR/site-repos.json" "tha:/tmp/site-repos.json"
