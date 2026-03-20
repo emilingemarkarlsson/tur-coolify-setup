@@ -33,12 +33,12 @@ fi
 
 CONTENT=$(cat "$DRAFT_FILE")
 
-# Build JSON body safely (jq required for content with quotes/newlines)
-if ! command -v jq &>/dev/null; then
-  echo "jq is required to escape draft content. Install jq in the container or use N8N webhook from outside." >&2
-  exit 1
-fi
-BODY=$(jq -n --arg slug "$SLUG" --arg keyword "$KEYWORD" --arg content "$CONTENT" '{ slug: $slug, keyword: $keyword, content: $content }')
+# Build JSON body safely using python3 (no jq required)
+BODY=$(python3 -c "
+import json, sys
+slug, keyword, content = sys.argv[1], sys.argv[2], sys.argv[3]
+print(json.dumps({'slug': slug, 'keyword': keyword, 'content': content}))
+" "$SLUG" "$KEYWORD" "$CONTENT")
 
 HTTP_CODE=$(curl -s -o /tmp/store-draft-response.txt -w "%{http_code}" -X POST "$URL" \
   -H "Content-Type: application/json" \

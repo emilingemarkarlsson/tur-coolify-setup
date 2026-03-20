@@ -37,6 +37,7 @@ fi
 # accidentally saved into the markdown file. Everything from the helper line and down
 # is removed; the article content above is kept as-is. Matches Swedish and English.
 CLEAN_DRAFT_FILE="${DRAFT_FILE}.clean"
+trap 'rm -f "$CLEAN_DRAFT_FILE"' EXIT
 awk '/^(Nästa steg|Next steps):.*(publicera|publish)/{exit} {print}' "$DRAFT_FILE" > "$CLEAN_DRAFT_FILE"
 
 # umamiName from .meta (format: umamiName=emilingemarkarlsson)
@@ -61,7 +62,7 @@ if [[ -z "$TOKEN" ]]; then
   exit 1
 fi
 
-# Repo, contentPath and domain from site-repos.json (python3 only – no jq required)
+# Repo, contentPath, domain and urlSegment from site-repos.json (python3 only – no jq required)
 READOUT=$(python3 -c "
 import json, sys
 with open(sys.argv[2]) as f:
@@ -71,11 +72,13 @@ for s in data['sites']:
         print(s.get('githubRepo', ''))
         print(s.get('contentPath', ''))
         print(s.get('domain', ''))
+        print(s.get('urlSegment', ''))
         break
 " "$UMAMI_NAME" "$SITE_REPOS")
 GITHUB_REPO=$(echo "$READOUT" | sed -n '1p')
 CONTENT_PATH=$(echo "$READOUT" | sed -n '2p')
 DOMAIN=$(echo "$READOUT" | sed -n '3p')
+URL_SEGMENT_FROM_JSON=$(echo "$READOUT" | sed -n '4p')
 
 if [[ -z "$GITHUB_REPO" || "$GITHUB_REPO" == "null" ]]; then
   echo "No repo found for umamiName=$UMAMI_NAME in site-repos.json" >&2
@@ -106,8 +109,14 @@ git -C "$REPO_DIR" push origin HEAD
 # Clean up draft files
 rm -f "$DRAFT_FILE" "$META_FILE" "$CLEAN_DRAFT_FILE"
 
-# Output for Slack (agent can read this). theunnamedroads uses /posts/, others use /blog/
-URL_SEGMENT="blog"
-[[ "$CONTENT_PATH" == *"posts"* ]] && URL_SEGMENT="posts"
+# Output for Slack (agent can read this). Use urlSegment from site-repos.json if set,
+# otherwise fall back to inferring from contentPath.
+if [[ -n "$URL_SEGMENT_FROM_JSON" ]]; then
+  URL_SEGMENT="$URL_SEGMENT_FROM_JSON"
+elif [[ "$CONTENT_PATH" == *"posts"* ]]; then
+  URL_SEGMENT="posts"
+else
+  URL_SEGMENT="blog"
+fi
 echo "Published: https://${DOMAIN}/${URL_SEGMENT}/${SLUG}"
 echo "Repo: $GITHUB_REPO"
