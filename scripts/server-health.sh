@@ -200,8 +200,8 @@ echo "📋 Containers"
 echo "─────────────"
 
 RUNNING=$(docker ps --format '{{.Names}}' 2>/dev/null | wc -l)
-STOPPED=$(docker ps -a --format '{{.Names}}' 2>/dev/null | wc -l)
-TOTAL=$((RUNNING + STOPPED))
+TOTAL=$(docker ps -a --format '{{.Names}}' 2>/dev/null | wc -l)
+STOPPED=$((TOTAL - RUNNING))
 
 if [ "$RUNNING" -eq 0 ]; then
     status_error "Inga containers körs!"
