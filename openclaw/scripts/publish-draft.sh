@@ -99,16 +99,17 @@ else
 fi
 
 mkdir -p "$(dirname "$TARGET_FILE")"
-cp "$CLEAN_DRAFT_FILE" "$TARGET_FILE"
 
+# Detect refresh vs new article BEFORE copying (while original state is still known)
 git -C "$REPO_DIR" remote set-url origin "$AUTH_REPO_URL"
-git -C "$REPO_DIR" add "$TARGET_FILE"
-# Detect if this is a refresh (file already existed in repo) or a new article
-if git -C "$REPO_DIR" log --oneline -- "$TARGET_FILE" | grep -q .; then
+if git -C "$REPO_DIR" ls-files --error-unmatch "$TARGET_FILE" &>/dev/null; then
   COMMIT_MSG="fix: AEO refresh – add FAQ block and update dateModified – ${SLUG}"
 else
   COMMIT_MSG="feat: add SEO article – ${SLUG}"
 fi
+
+cp "$CLEAN_DRAFT_FILE" "$TARGET_FILE"
+git -C "$REPO_DIR" add "$TARGET_FILE"
 git -C "$REPO_DIR" -c user.name="OpenClaw SEO" -c user.email="seo@openclaw" commit -m "$COMMIT_MSG"
 git -C "$REPO_DIR" push origin HEAD
 
