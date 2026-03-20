@@ -61,8 +61,8 @@
       "umamiWebsiteId": "dc9840ac-15ff-4c35-b210-7ab9c46a6867",
       "domain": "thehockeyanalytics.com",
       "githubRepo": "https://github.com/emilingemarkarlsson/tha-website.git",
-      "contentPath": "src/content/blog",
-      "urlSegment": "blog",
+      "contentPath": "src/pages/posts",
+      "urlSegment": "posts",
       "stack": "astro"
     },
     {

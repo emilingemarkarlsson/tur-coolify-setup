@@ -100,7 +100,7 @@ fi
 # Scripts i containern
 OPENCLAW_SCRIPTS="$REPO_ROOT/openclaw/scripts"
 ssh tha "docker exec $CONTAINER mkdir -p /data/.openclaw/scripts"
-for script in store-seo-draft.sh publish-draft.sh umami-daily-stats.sh; do
+for script in store-seo-draft.sh publish-draft.sh umami-daily-stats.sh clone-site.sh list-articles.sh stage-refresh.sh; do
   if [[ -f "$OPENCLAW_SCRIPTS/$script" ]]; then
     echo "Kopierar $script..."
     scp -q "$OPENCLAW_SCRIPTS/$script" "tha:/tmp/$script"
