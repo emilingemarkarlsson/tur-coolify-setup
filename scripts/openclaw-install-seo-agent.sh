@@ -10,7 +10,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AGENTS_DIR="$REPO_ROOT/openclaw/agents"
 WORKSPACE_DIR="$REPO_ROOT/openclaw/workspace"
 
-for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md; do
+for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md AEO-PLAYBOOK.md; do
   if [[ ! -f "$AGENTS_DIR/$f" ]]; then
     echo "Saknar $AGENTS_DIR/$f"
     exit 1
@@ -36,8 +36,8 @@ fi
 echo "Skapar /data/.openclaw/agents och drafts i $CONTAINER..."
 ssh tha "docker exec $CONTAINER mkdir -p /data/.openclaw/agents /data/.openclaw/drafts"
 
-echo "Kopierar SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md, SEO-ARTICLE-SUGGESTIONS.md, SEO-ROLLING-AUTOMATION-PROMPT.md..."
-for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md SEO-ROLLING-AUTOMATION-PROMPT.md; do
+echo "Kopierar SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md, SEO-ARTICLE-SUGGESTIONS.md, SEO-ROLLING-AUTOMATION-PROMPT.md, AEO-PLAYBOOK.md..."
+for f in SEO-SITE-AGENT.md SEO-PROCESS.md SEO-PLAYBOOK.md SEO-ARTICLE-SUGGESTIONS.md SEO-ROLLING-AUTOMATION-PROMPT.md AEO-PLAYBOOK.md; do
   scp -q "$AGENTS_DIR/$f" "tha:/tmp/$f"
   ssh tha "docker cp /tmp/$f $CONTAINER:/data/.openclaw/agents/$f"
   ssh tha "rm -f /tmp/$f"
@@ -111,7 +111,7 @@ done
 
 echo ""
 echo "Klar. Filer i containern:"
-echo "  /data/.openclaw/agents/SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md"
+echo "  /data/.openclaw/agents/SEO-SITE-AGENT.md, SEO-PROCESS.md, SEO-PLAYBOOK.md, AEO-PLAYBOOK.md"
 echo "  /data/.openclaw/site-repos.json"
 [[ -d "$AGENTS_DIR/plans" ]] && echo "  /data/.openclaw/agents/plans/*.md (en fil per sajt)"
 [[ -f "$AGENTS_DIR/seo-plan-override.md" ]] && echo "  /data/.openclaw/agents/seo-plan-override.md (användarjusterad plan, en fil)"
