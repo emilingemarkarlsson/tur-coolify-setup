@@ -85,7 +85,7 @@ echo "  • Starta om Coolify och alla services"
 echo "  • Verifiera att allt fungerar efter uppdatering"
 echo ""
 
-read -p "Vill du fortsätta? (ja/nej): " -r
+read -p "Vill du fortsätta? (ja/nej): " -r < /dev/tty
 if [[ ! $REPLY =~ ^[Jj]a$ ]]; then
     info "Uppdatering avbruten av användaren"
     exit 0
