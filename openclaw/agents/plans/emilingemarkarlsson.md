@@ -8,25 +8,71 @@
 
 **Visuals:** Include simple flowcharts, process diagrams, or architecture sketches where they clarify the content – e.g. Mermaid diagrams (if the site supports them), ASCII diagrams, or a clear “Image suggestion: [description]” so a graphic can be added later. One or two per article is enough; they help the post stand out and improve time-on-page (good for SEO).
 
-## Pillars (3–5 topic areas)
-1. **Data Engineering & Modern Tech Solutions** – Articles, projects, and resources on modern data stack, automation, pipeline architecture, BI/analytics, AI integration (e.g. Building a Full Modern Data Stack).
-2. **Workflow Automation & Digital Productivity** – Process automation, workflow orchestration tools, productivity, and technical workflows (n8n, API automation, etc.).
-3. **AI-Driven Development & Tools** – AI applications in development, agent-based solutions, AI as CTO support, advanced integration patterns.
-4. **Tutorials & How-to Guides** – Practical guides and step-by-step content on automation, data projects, and technical implementations.
-5. **Case Studies & Portfolio Projects** (optional) – In-depth case studies from the portfolio showing real outcomes and technical design.
+## Toolstack (Emil’s actual stack – reference in articles)
+- **Databricks** (primary platform): Unity Catalog, Delta Lake, Databricks Workflows, MLflow, Notebooks
+- **OpenClaw**: self-hosted AI agent platform (Claude-powered), autonomous SEO/content agents
+- **LiteLLM**: open-source LLM proxy for routing/cost control across providers
+- **Coolify**: self-hosted PaaS for container deployments on Hetzner
+- **n8n**: workflow automation / API orchestration
+- **Astro**: static site framework
+- **Hetzner VPS**: infrastructure
+
+## Pillars (topic areas – prioritised)
+
+1. **Chat with Data & Proactive Data Agents** ← HIGH PRIORITY
+   - AI agents that query, monitor, and proactively report on data (Databricks-first)
+   - Chat interfaces on top of Delta Lake / Unity Catalog
+   - LLM-driven anomaly detection, auto-reports, triggered insights
+   - Keywords: “chat with data Databricks”, “proactive data agent”, “LLM data pipeline”, “AI data monitoring”, “natural language queries Delta Lake”
+
+2. **OpenClaw & Self-Hosted AI Agents** ← HIGH PRIORITY
+   - Building and running autonomous AI agents with OpenClaw
+   - How the SEO/content automation stack works end-to-end
+   - Self-hosted AI vs cloud AI tradeoffs
+   - Keywords: “OpenClaw AI agent”, “self-hosted AI agent platform”, “autonomous SEO agent”, “Claude agent self-hosted”, “AI content automation”
+
+3. **Databricks Engineering** ← HIGH PRIORITY
+   - Modern data stack patterns with Databricks as the backbone
+   - Delta Lake, Unity Catalog, Workflows, MLflow in practice
+   - Lakehouse architecture, medallion layers, real-world pitfalls
+   - Keywords: “Databricks Unity Catalog tutorial”, “Delta Lake pipeline”, “Databricks MLflow workflow”, “lakehouse architecture guide”, “Databricks data engineering 2025”
+
+4. **Workflow Automation & Orchestration**
+   - n8n pipelines, API automation, event-driven workflows
+   - Connecting LLMs to data pipelines (LiteLLM + Databricks patterns)
+   - Keywords: “n8n Databricks integration”, “LLM workflow orchestration”, “LiteLLM proxy setup”, “API automation tutorial”
+
+5. **Self-Hosting & Infrastructure**
+   - Coolify, Hetzner, Docker – running production AI/data workloads cheaply
+   - Self-hosted LLM stack (LiteLLM, Ollama, OpenClaw on VPS)
+   - Keywords: “self-hosted LLM stack”, “Coolify deployment guide”, “Hetzner VPS AI workloads”, “self-hosted Coolify tutorial”
 
 ## Gaps (content to add)
-- **High:** SEO-optimised pillar content for search intent – the site lacks longer, keyword-focused landing pages for key areas (e.g. Data Engineering Consulting, Automation Workflows for Business). Clear audience pages – it’s unclear who the site is for (businesses, partners, tech teams); homepage and projects are technical but lack business-oriented CTAs.
-- **Medium:** SEO metadata and structure (title tags, meta descriptions, H1/H2) need reviewing on every page. Content for long-tail keywords (e.g. “how to automate data workflows with n8n?”, “data engineering pipeline tutorials 2026”).
-- **Low:** Local SEO/contact optimisation if consulting is offered. Blog category SEO – tags and category structure for better internal linking.
+- **High:** Zero articles specifically about OpenClaw, chat-with-data patterns, or proactive data agents – these are unique angles Emil can own.
+- **High:** No Databricks-specific tutorials despite it being the primary stack – large search volume, low competition for niche long-tails.
+- **Medium:** No articles connecting LiteLLM / OpenClaw to Databricks – this cross-tool content is a differentiation opportunity.
+- **Low:** Internal linking between toolstack articles is missing.
 
-## Focus this week
-- **Create/optimise pillar pages** – One page per main theme (e.g. “Data Engineering Services”, “Workflow Automation Solutions”) with clear title, meta description, internal links to blog/projects, CTA for contact/consulting.
-- **Keyword research** – Identify 10–20 focus keywords per pillar (e.g. Google Search Console/SEMrush/Ahrefs) for search volume and aligned intent.
-- **Technical SEO check** – Load time, mobile responsiveness, sitemap.xml, robots.txt, schema markup; alt text on images, logical URL structure.
-- **Blog editorial plan** – 2–3 new SEO-optimised blog posts supporting pillar pages and long-tail queries (automation, setups, comparisons).
+## First articles to create (priority order)
+1. “How I Built a Proactive Data Agent on Databricks That Slacks Me Anomalies Before I Notice Them”
+2. “Chat With Your Delta Lake: Building a Natural Language Query Layer on Databricks”
+3. “OpenClaw: How I Run Autonomous AI Agents on My Own Server for Almost Nothing”
+4. “Databricks Unity Catalog in Practice: What the Docs Don’t Tell You”
+5. “LiteLLM as an LLM Router: Why Every Team Running Multiple Models Needs This”
+6. “From Zero to Self-Hosted AI Stack: Coolify + LiteLLM + OpenClaw on Hetzner”
+7. “Proactive vs Reactive Data: The Mindset Shift That Changes How You Build Pipelines”
+
+## Keyword clusters
+| Cluster | Keywords |
+|---------|----------|
+| Chat with data | chat with data Databricks, natural language SQL Databricks, LLM data query, ask your data AI |
+| Proactive agents | proactive data agent, AI anomaly detection pipeline, LLM monitoring Databricks, data agent Slack alert |
+| OpenClaw | OpenClaw agent, self-hosted Claude agent, autonomous AI content agent, OpenClaw tutorial |
+| Databricks | Databricks Unity Catalog guide, Delta Lake tutorial 2025, Databricks MLflow, Databricks workflow automation |
+| LiteLLM | LiteLLM proxy setup, LiteLLM multiple providers, open source LLM router |
+| Self-hosting | self-hosted AI stack, Coolify self-host, Hetzner AI deployment, self-hosted LLM 2025 |
 
 ## Notes
-- **Site profile:** Portfolio & technical blog focused on automation, data engineering, and AI integration – audience: developers and tech decision-makers. SEO strategy should cover both technical keywords and business-driven searches.
-- **Potential:** Strong potential to rank for technical queries in data engineering and automation (tutorials, project walkthroughs) with structure, keyword-optimised content, and pillar strategy.
-- Next step: concrete keyword list and prioritisation of 10 blog posts with search volume + competition.
+- Emil’s unique angle is the **full stack**: Databricks (enterprise data) + OpenClaw/LiteLLM (self-hosted AI) + Coolify (infra). Very few people write from this exact vantage point – lean into it.
+- Articles should reference real experiences and concrete numbers (costs, latency, model comparisons) – not generic overviews.
+- Tone: senior data/AI engineer explaining to peers. First-person, opinionated, concrete.
