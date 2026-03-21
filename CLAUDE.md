@@ -6,7 +6,9 @@ This project uses autonomous mode. Read and follow `docs/guides/CLAUDE-CLI-AUTON
 
 **Act freely** (no approval needed): read/edit files, run scripts, SSH to `tha`, apt upgrade, deploy/restart containers via Coolify API, git add/commit, SEO work up to draft, AEO article refreshes (stage-refresh.sh + publish-draft.sh → auto-push to site repos).
 
-**Wait for approval** (`⏸️ GODKÄNN`): git push to **this repo** (tur-coolify-setup), publish *new* article (`publicera <slug>`), delete data, change secrets, change Coolify env vars, new paid services.
+**Wait for approval** (`⏸️ GODKÄNN`): git push to **this repo** (tur-coolify-setup), delete data, change secrets, change Coolify env vars, new paid services.
+
+**Auto-publish allowed**: OpenClaw cron-triggered article generation (TREND-AUTO crons) may run publish-draft.sh and push to site repos without approval. Manual `publicera <slug>` from Slack also runs without approval.
 
 ## Key facts
 

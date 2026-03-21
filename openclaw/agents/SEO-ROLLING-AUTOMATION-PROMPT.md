@@ -297,10 +297,94 @@ Bekräfta: "✅ Publicerat: https://{domain}/{urlSegment}/{slug}"
 
 ---
 
+## 9. TREND-AUTO – Fullt autonom trendstyrd artikelgenerering
+
+Triggas av cron-meddelanden som börjar med **"TREND-AUTO:"**. Kör hela kedjan utan godkännande.
+
+### Steg 1 – Scanna trender för sajten
+
+Använd `web_search` med dessa sökningar (byt ut `{niche}` mot sajtens tema):
+
+```
+"{niche} trending today 2025"
+"{niche} news this week"
+"reddit r/{subreddit} hot topics"
+"hacker news {niche} today"
+```
+
+Hämta även HN via: `https://hn.algolia.com/api/v1/search_by_date?tags=story&query={niche}&numericFilters=created_at_i>86400`
+
+Identifiera **3 kandidat-topics** som är trending just nu.
+
+### Steg 2 – Matcha mot SEO-plan
+
+Läs planfilen för sajten (`/data/.openclaw/agents/plans/{umamiName}.md`).
+Välj det kanditat-topic som bäst matchar:
+1. En content gap (prioritera "Hog"-gaps)
+2. En befintlig keyword-kluster i planen
+3. Stigande trend (ej fallande)
+
+Om inget trend-topic matchar planen: välj ett topic från planens "First articles to create"-lista.
+
+### Steg 3 – Skriv artikel (human-voice regler)
+
+Skriv artikeln med dessa obligatoriska anti-AI-signal regler:
+
+**Struktur:**
+- Öppna med ett konkret datapunkt, statistik ELLER specifikt scenario — ALDRIG med "In today's world" eller "In recent years"
+- Minst ett stycke med förstahandsperspektiv ("I've seen", "When we deployed", "The pattern I keep noticing")
+- Inkludera minst en **kontroversiell/opinionerad mening** ("X is overrated", "The real bottleneck isn't Y, it's Z")
+- En sektion med "Common mistake" eller "What most guides get wrong"
+- Avsluta med ett konkret next-step (inte en generisk sammanfattning)
+
+**Ton per sajt:**
+- `thehockeybrain`: analytisk, datanörd, respekterar traditionell hockey men utmanar den
+- `theagentfabric`: praktisk ingenjör, production-first, skeptisk mot hype
+- `theatomicnetwork`: teknisk Web3-builder, förstår kryptografi och protokoll
+- `thehockeyanalytics`: mer tillgänglig än thehockeybrain, riktar sig till coacher/scouts
+- `theunnamedroads`: svenska, personlig röst, "Emil"-perspektiv, tech meets life
+- `emilingemarkarlsson`: personlig blogg-ton, reflekterande, egna erfarenheter
+- `theprintroute`: maker/hobbyist-ton, hands-on, konkreta exempel
+
+**Format:**
+- Varierad meningslängd (blanda 1-ords/1-mening-stycken med längre stycken)
+- Konkreta siffror och verktygsnamn (inga vaga generaliseringar)
+- FAQ-block med 3–5 frågor (PAA via web_search)
+- Frontmatter med author, pubDate, tags, description
+- 1000–1800 ord
+
+### Steg 4 – Auto-publicera
+
+```
+1. Kör AEO-checklist (avsnitt 7)
+2. Spara: /data/.openclaw/drafts/{slug}.md + {slug}.meta
+3. Kör direkt: /data/.openclaw/scripts/publish-draft.sh {slug}
+4. VÄNTA INTE på godkännande – publicera direkt
+5. Rapportera till Slack (#all-tur-ab):
+   "✅ Auto-publicerat: [Titel]\n📍 Sajt: {domain}\n🔗 {url}\n📈 Trend-trigger: {topic}\n🔑 Target keyword: {keyword}"
+```
+
+Om publish-draft.sh misslyckas: spara draften, rapportera felet till Slack med felmeddelandet.
+
+### Trend-scouting per sajt (subreddits + nisch)
+
+| umamiName | Subreddits | HN-sökning |
+|-----------|-----------|------------|
+| thehockeybrain | hockey, hockeyanalytics | hockey analytics |
+| theagentfabric | MachineLearning, LocalLLaMA, ClaudeAI | AI agents LLM |
+| theatomicnetwork | ethereum, defi, web3 | blockchain crypto |
+| thehockeyanalytics | hockey, hockeyplayers | hockey statistics |
+| theunnamedroads | AIassistants, SelfHosted | self-hosted AI |
+| emilingemarkarlsson | programming, MachineLearning | indie developer |
+| theprintroute | 3Dprinting, functionalprint | 3D printing maker |
+
+---
+
 ## Regler
 
 - Max 1 artikel per körning.
-- Alltid brief → godkännande → skrivning → godkännande → publicering.
+- **TREND-AUTO-crons:** kör hela kedjan utan godkännande (scout → brief → skriv → publicera).
+- **Slack-trigga (`producera artikel`, `publicera`):** kör utan godkännande.
 - Rapport-only sajter ingår inte i auto-flödet.
 - Varje Slack-meddelande avslutas med **"Nästa steg:"** och exakt vad användaren ska skriva.
 - Rapportera alla fel tydligt i Slack (Umami-fel, Git-fel, modelfel).
