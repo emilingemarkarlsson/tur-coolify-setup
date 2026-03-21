@@ -63,6 +63,24 @@ AI agent infrastructure platform and knowledge hub. Focus: building, deploying, 
 
 Bootstrap: skapa artikel 1-3 ovan. MCP-explainer som pillar (trendande, site-relevant). Framework-jamforelse som tva (hog search intent). AgentOps som tredje (underservat, hog konvertering). Alla med FAQ-block och Article + FAQPage schema.
 
+## Affiliate programs (include relevant links in articles)
+
+Include affiliate links **only when the tool is genuinely discussed** – never forced. Technical readers are skeptical; only link tools that are actually recommended.
+
+| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
+|---------|------------------------------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR credit per signup | Self-hosting agent infra, VPS, GPU nodes articles |
+| **Helicone** | `https://helicone.ai/?ref=REFERRAL_CODE` | Recurring % | Observability, AgentOps, LLM monitoring articles |
+| **LangSmith** | `https://smith.langchain.com` (referral via LangChain) | Referral | Agent observability, tracing, LangGraph articles |
+| **n8n Cloud** | `https://n8n.partnerlinks.io/REFERRAL_CODE` | Recurring % | Agent workflow orchestration, automation articles |
+| **Coolify Cloud** | `https://coolify.io/?via=REFERRAL_CODE` | Recurring % | Agent deployment, self-hosted infra articles |
+
+**Newsletter CTA** – include at the end of every article:
+```
+---
+*Building AI agents in production? I cover real architectures, mistakes, and wins in the newsletter — [subscribe here](https://theagentfabric.com/newsletter).*
+```
+
 ## Anteckningar
 
 - Site is in English – all articles must be English.

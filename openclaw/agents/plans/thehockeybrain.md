@@ -64,6 +64,29 @@ Hockey analytics consulting and intelligence platform. Target audience: coaches,
 
 Bootstrap: skapa artikel 1-3 ovan. Prioritera corsi-explainer och xG-explainer som pillar pages. AI-scouting som tredje artikel (trendande nyckelord). Alla artiklar ska ha FAQ-block och JSON-LD Article + FAQPage schema.
 
+## Affiliate programs (include relevant links in articles)
+
+Include affiliate links **only when genuinely relevant**. Hockey analytics audience is professional and skeptical – only link tools that are actually useful to coaches and analysts.
+
+| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
+|---------|------------------------------|-----------|-----------------|
+| **Amazon** (hockey books, gear) | `https://www.amazon.com/?tag=REFERRAL_CODE` | 3–10% | Articles recommending books, analytics resources, coaching tools |
+| **Stathletes / CoachLogic** | Direct link (check for affiliate programs) | – | Articles about analytics software, video tagging tools |
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR/signup | Articles about building your own hockey analytics setup, data pipelines |
+| **DataCamp / Coursera** | Check affiliate programs | Varies | Articles about learning hockey analytics, Python for sports data |
+
+**Consulting CTA** – include at the end of every article:
+```
+---
+*Want to bring advanced analytics to your club? [Get in touch](https://thehockeybrain.com/contact).*
+```
+
+**Newsletter CTA** – add for articles targeting coaches/GMs:
+```
+---
+*I publish weekly breakdowns of hockey analytics trends and tools. [Subscribe here](https://thehockeybrain.com/newsletter).*
+```
+
 ## Anteckningar
 
 - Site is in English – all articles must be English.

@@ -147,6 +147,24 @@ Keywords ska användas naturligt i titlar, descriptions, H1, och brödtext – m
 (Prioritera denna sajt: Ja/Nej eller t.ex. "Prioritet 2".  
 Exempel: “Prioritet 1 – skriv cornerstone-artikeln + en taktisk workflow-artikel som länkar till den.”)
 
+## Affiliate programs (include relevant links in articles)
+
+Include affiliate links **only when the tool is genuinely mentioned** – never forced. Add a "Tools in this stack" or "Resources" section at the end of relevant articles.
+
+| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
+|---------|------------------------------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR credit per signup | Self-hosting, VPS, infrastructure, Coolify setup articles |
+| **n8n Cloud** | `https://n8n.partnerlinks.io/REFERRAL_CODE` | Recurring % | Workflow automation, orchestration, n8n tutorial articles |
+| **Coolify Cloud** | `https://coolify.io/?via=REFERRAL_CODE` | Recurring % | Self-hosting, deployment guides, infra articles |
+| **ConvertKit (Kit)** | `https://partners.convertkit.com/REFERRAL_CODE` | 30% recurring | Newsletter building, audience-building, solo founder content |
+| **LiteLLM** | No affiliate yet – link to GitHub/docs | Authority | AI agent, LLM routing, multi-provider articles |
+
+**Newsletter CTA** – include at the end of every article:
+```
+---
+*Building an AI-native company as a solo founder. I share what works (and what doesn't) in the newsletter — [join here](https://theunnamedroads.com/newsletter).*
+```
+
 ## Anteckningar
 
 (Running notes: vilka serier är på gång, vilka experiment körs nu, vilka keywords som börjar ranka, vad som behöver uppdateras eller fördjupas.)
