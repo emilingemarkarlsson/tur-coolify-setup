@@ -35,11 +35,9 @@ Accessible hockey analytics for coaches, scouts, and players. More approachable 
 
 ## Affiliate programs (include relevant links in articles)
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Amazon** (hockey books, coaching resources) | `https://www.amazon.com/?tag=REFERRAL_CODE` | 3–8% | Recommended reading, coaching books |
-| **CoachLogic / InStat** | Direct link (check affiliate) | – | Software comparison, tools recommendation articles |
-| **DataCamp / Coursera** | Check affiliate programs | Varies | Articles about learning analytics, Python for coaches |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Articles about building self-hosted analytics infrastructure for clubs |
 
 **Newsletter CTA** – include at the end of every article:
 ```

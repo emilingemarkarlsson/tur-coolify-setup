@@ -67,12 +67,9 @@ Bootstrap: skapa artikel 1-3 ovan. Atomic swaps som pillar (matchar site-namn). 
 
 Include affiliate links **only when the tool is genuinely recommended**. Crypto audience is highly skeptical – only include hardware wallets and tools actually worth using. Never shill protocols or tokens.
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Ledger** (hardware wallet) | `https://shop.ledger.com/?referral=REFERRAL_CODE` | 10% per sale | Security, self-custody, DeFi onboarding articles |
-| **Trezor** (hardware wallet) | `https://affil.trezor.io/REFERRAL_CODE` | 12–15% per sale | Security, self-custody articles |
-| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR credit/signup | Running your own node, validator setup, dev infrastructure articles |
-| **Alchemy / QuickNode** | Check affiliate programs | Varies | Developer tooling, RPC provider, dApp building articles |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Running your own node, validator setup, dev infrastructure articles |
 
 **Newsletter CTA** – include at the end of every article:
 ```

@@ -68,12 +68,9 @@ Bootstrap: skapa artikel 1-3 ovan. Prioritera corsi-explainer och xG-explainer s
 
 Include affiliate links **only when genuinely relevant**. Hockey analytics audience is professional and skeptical – only link tools that are actually useful to coaches and analysts.
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Amazon** (hockey books, gear) | `https://www.amazon.com/?tag=REFERRAL_CODE` | 3–10% | Articles recommending books, analytics resources, coaching tools |
-| **Stathletes / CoachLogic** | Direct link (check for affiliate programs) | – | Articles about analytics software, video tagging tools |
-| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR/signup | Articles about building your own hockey analytics setup, data pipelines |
-| **DataCamp / Coursera** | Check affiliate programs | Varies | Articles about learning hockey analytics, Python for sports data |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Articles about building hockey analytics infrastructure, self-hosted data pipelines |
 
 **Consulting CTA** – include at the end of every article:
 ```

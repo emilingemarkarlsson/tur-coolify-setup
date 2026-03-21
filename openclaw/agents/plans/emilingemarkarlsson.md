@@ -76,13 +76,9 @@
 
 Include affiliate links **only when the tool is genuinely mentioned in context** – never force it. Add a short "Tools used" or "Resources" section at the end of articles where natural.
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR credit per signup | Any article about self-hosting, VPS, Coolify, infrastructure |
-| **n8n Cloud** | `https://n8n.partnerlinks.io/REFERRAL_CODE` | Recurring % | Articles about workflow automation, n8n tutorials |
-| **Coolify Cloud** | `https://coolify.io/?via=REFERRAL_CODE` | Recurring % | Self-hosting, deployment, Coolify setup articles |
-| **ConvertKit (Kit)** | `https://partners.convertkit.com/REFERRAL_CODE` | 30% recurring | Articles about email marketing, newsletter building |
-| **Databricks** | Partner program – contact Databricks | Deal-based | Enterprise data stack articles (link to partner page, not affiliate) |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Any article about self-hosting, VPS, Coolify, infrastructure |
 
 **Newsletter CTA** – include at the end of every article:
 ```

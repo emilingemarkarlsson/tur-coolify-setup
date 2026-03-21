@@ -151,13 +151,9 @@ Exempel: “Prioritet 1 – skriv cornerstone-artikeln + en taktisk workflow-art
 
 Include affiliate links **only when the tool is genuinely mentioned** – never forced. Add a "Tools in this stack" or "Resources" section at the end of relevant articles.
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR credit per signup | Self-hosting, VPS, infrastructure, Coolify setup articles |
-| **n8n Cloud** | `https://n8n.partnerlinks.io/REFERRAL_CODE` | Recurring % | Workflow automation, orchestration, n8n tutorial articles |
-| **Coolify Cloud** | `https://coolify.io/?via=REFERRAL_CODE` | Recurring % | Self-hosting, deployment guides, infra articles |
-| **ConvertKit (Kit)** | `https://partners.convertkit.com/REFERRAL_CODE` | 30% recurring | Newsletter building, audience-building, solo founder content |
-| **LiteLLM** | No affiliate yet – link to GitHub/docs | Authority | AI agent, LLM routing, multi-provider articles |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Self-hosting, VPS, infrastructure, Coolify setup articles |
 
 **Newsletter CTA** – include at the end of every article:
 ```

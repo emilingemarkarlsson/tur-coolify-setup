@@ -37,12 +37,9 @@ status: Empty – bootstrap articles needed
 
 Include affiliate links **naturally in context** – "I use this filament for X" then link. Never just list products without context.
 
-| Program | Link (replace REFERRAL_CODE) | Commission | When to include |
-|---------|------------------------------|-----------|-----------------|
-| **Amazon Associates** | `https://www.amazon.com/?tag=REFERRAL_CODE` | 3–8% | Filament, tools, printers, accessories – every gear recommendation |
-| **Prusa Research** | `https://www.prusa3d.com/?ref=REFERRAL_CODE` | 5% per sale | Printer reviews, Prusa-specific guides, filament |
-| **Matterhackers** | Check affiliate program | Varies | Filament, tools, resin articles |
-| **Hetzner Cloud** | `https://hetzner.cloud/?ref=REFERRAL_CODE` | 20 EUR/signup | Articles about OctoPrint, Klipper, self-hosted printer management |
+| Program | Link | Commission | When to include |
+|---------|------|-----------|-----------------|
+| **Hetzner Cloud** | `https://hetzner.cloud/?ref=ECLED3WXrvIQ` | 20 EUR credit per signup | Articles about OctoPrint, Klipper, self-hosted printer management |
 
 **Newsletter CTA** – include at the end of every article:
 ```
