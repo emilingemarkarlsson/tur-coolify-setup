@@ -18,7 +18,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/tur-theprintroute.git",
       "contentPath": "frontend/src",
       "urlSegment": "blog",
-      "stack": "react"
+      "stack": "react",
+      "projectName": "The Print Route",
+      "listUuid": "9725bc88-729a-4344-99d2-5866a2d7b26b"
     },
     {
       "umamiName": "theatomicnetwork",
@@ -27,7 +29,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/tan-site.git",
       "contentPath": "src/content/blog",
       "urlSegment": "blog",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "The Atomic Network",
+      "listUuid": "dc3c277d-d37a-4753-8b4c-27e7b1755af8"
     },
     {
       "umamiName": "theagentfabric",
@@ -36,7 +40,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/tur-theagentfabric.git",
       "contentPath": "src/content/blog",
       "urlSegment": "blog",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "The Agent Fabric",
+      "listUuid": "8a52a36a-abc5-4e76-84d4-96c5f3000826"
     },
     {
       "umamiName": "emilingemarkarlsson",
@@ -45,7 +51,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/emilingemarkarlsson-astro-theme.git",
       "contentPath": "src/content/blog",
       "urlSegment": "blog",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "Emil Ingemark Karlsson",
+      "listUuid": "55248e17-408c-4ede-ac40-189daabbcb0f"
     },
     {
       "umamiName": "thehockeybrain",
@@ -54,7 +62,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/thb-site.git",
       "contentPath": "src/content/blog",
       "urlSegment": "blog",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "The Hockey Brain",
+      "listUuid": "149f7d0c-5959-409f-9043-d26cf920df84"
     },
     {
       "umamiName": "thehockeyanalytics",
@@ -63,7 +73,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/tha-website.git",
       "contentPath": "src/pages/posts",
       "urlSegment": "posts",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "The Hockey Analytics",
+      "listUuid": "700d8f08-5cb4-4d23-a165-466a101b1fbf"
     },
     {
       "umamiName": "theunnamedroads",
@@ -72,7 +84,9 @@
       "githubRepo": "https://github.com/emilingemarkarlsson/theunnamedroads.git",
       "contentPath": "src/content/posts",
       "urlSegment": "posts",
-      "stack": "astro"
+      "stack": "astro",
+      "projectName": "The Unnamed Roads",
+      "listUuid": "e7f38861-4bc4-448d-85ae-376e7f7c2fb0"
     }
   ]
 }

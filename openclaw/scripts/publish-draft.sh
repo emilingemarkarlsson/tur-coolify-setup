@@ -62,7 +62,7 @@ if [[ -z "$TOKEN" ]]; then
   exit 1
 fi
 
-# Repo, contentPath, domain and urlSegment from site-repos.json (python3 only – no jq required)
+# Repo, contentPath, domain, urlSegment, projectName and listUuid from site-repos.json (python3 only – no jq required)
 READOUT=$(python3 -c "
 import json, sys
 with open(sys.argv[2]) as f:
@@ -73,12 +73,16 @@ for s in data['sites']:
         print(s.get('contentPath', ''))
         print(s.get('domain', ''))
         print(s.get('urlSegment', ''))
+        print(s.get('projectName', ''))
+        print(s.get('listUuid', ''))
         break
 " "$UMAMI_NAME" "$SITE_REPOS")
 GITHUB_REPO=$(echo "$READOUT" | sed -n '1p')
 CONTENT_PATH=$(echo "$READOUT" | sed -n '2p')
 DOMAIN=$(echo "$READOUT" | sed -n '3p')
 URL_SEGMENT_FROM_JSON=$(echo "$READOUT" | sed -n '4p')
+PROJECT_NAME=$(echo "$READOUT" | sed -n '5p')
+LIST_UUID=$(echo "$READOUT" | sed -n '6p')
 
 if [[ -z "$GITHUB_REPO" || "$GITHUB_REPO" == "null" ]]; then
   echo "No repo found for umamiName=$UMAMI_NAME in site-repos.json" >&2
@@ -125,5 +129,26 @@ elif [[ "$CONTENT_PATH" == *"posts"* ]]; then
 else
   URL_SEGMENT="blog"
 fi
-echo "Published: https://${DOMAIN}/${URL_SEGMENT}/${SLUG}"
+ARTICLE_URL="https://${DOMAIN}/${URL_SEGMENT}/${SLUG}"
+echo "Published: ${ARTICLE_URL}"
 echo "Repo: $GITHUB_REPO"
+
+# Extract title and description from frontmatter of the clean draft (before deletion)
+# Meta file is already cleaned up; read from the target file in the repo
+ARTICLE_TITLE=$(grep -m1 '^title:' "$TARGET_FILE" 2>/dev/null | sed 's/^title:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "$SLUG")
+ARTICLE_DESC=$(grep -m1 '^description:' "$TARGET_FILE" 2>/dev/null | sed 's/^description:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
+
+# Notify n8n article-published webhook if list UUID is configured
+if [[ -n "$LIST_UUID" ]]; then
+  curl -s -o /dev/null -X POST "https://n8n.theunnamedroads.com/webhook/article-published" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"slug\": \"${SLUG}\",
+      \"url\": \"${ARTICLE_URL}\",
+      \"title\": $(python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "${ARTICLE_TITLE}"),
+      \"description\": $(python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "${ARTICLE_DESC}"),
+      \"umamiName\": \"${UMAMI_NAME}\",
+      \"projectName\": $(python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "${PROJECT_NAME}"),
+      \"listUuid\": \"${LIST_UUID}\"
+    }" || true
+fi
