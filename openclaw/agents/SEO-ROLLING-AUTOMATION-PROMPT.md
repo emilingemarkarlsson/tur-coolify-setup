@@ -380,14 +380,58 @@ Om publish-draft.sh misslyckas: spara draften, rapportera felet till Slack med f
 
 ---
 
+## 10. NHL-DATA-AUTO – Datadrivna hockey-artiklar från NHL API
+
+Triggas av cron-meddelanden som börjar med **"NHL-DATA-AUTO:"**.
+
+Fullständiga instruktioner finns i **NHL-DATA-AUTO-PROMPT.md** (läs den filen).
+
+### Snabböversikt
+
+```
+NHL-DATA-AUTO: {umamiName}
+```
+
+Giltiga sajter: `thehockeybrain` (analytiskt djup) eller `thehockeyanalytics` (coachfokus).
+
+### Vad som händer
+
+1. Kör `/data/.openclaw/scripts/nhl-data-fetch.sh` → sparar `/data/.openclaw/nhl-data/latest.json`
+2. Läser `findings[]` i JSON – väljer finding av annan type än senast publicerade
+3. Skriver datadrivet artikel baserat på finding och sajt-ton (se NHL-DATA-AUTO-PROMPT.md)
+4. Kör AEO-checklist (avsnitt 7 ovan)
+5. Publicerar direkt via publish-draft.sh – **ingen godkännande behövs**
+6. Sparar finding-type till `/data/.openclaw/nhl-data/last-finding.txt`
+7. Rapporterar till Slack: titel, URL, finding-headline, nyckeltal
+
+### Findings som scriptet beräknar
+
+| Finding-type | Vad det är |
+|---|---|
+| `regression_candidate_up` | Lag med bra GF% men låg pts% – underdog på väg upp |
+| `regression_candidate_down` | Lag med dålig GF% men hög pts% – bubbelkandidaten |
+| `best_underlying` | Laget med ligans bästa goal share – den verkliga contendren |
+| `ot_dependent` | Laget som lever på övertidslotteriet |
+| `home_road_split` | Laget med extremt hemma/borta-gap |
+
+### Cron-schema
+
+| Tid | Sajt | Ton |
+|-----|------|-----|
+| 09:00 MWF (1,3,5) | thehockeybrain | Analytiskt djup, 1400–1800 ord |
+| 09:00 TuTh (2,4) | thehockeyanalytics | Tillgänglig coachfokus, 1100–1400 ord |
+
+---
+
 ## Regler
 
 - Max 1 artikel per körning.
 - **TREND-AUTO-crons:** kör hela kedjan utan godkännande (scout → brief → skriv → publicera).
+- **NHL-DATA-AUTO-crons:** kör hela kedjan utan godkännande (fetch → analysera → skriv → publicera).
 - **Slack-trigga (`producera artikel`, `publicera`):** kör utan godkännande.
 - Rapport-only sajter ingår inte i auto-flödet.
 - Varje Slack-meddelande avslutas med **"Nästa steg:"** och exakt vad användaren ska skriva.
-- Rapportera alla fel tydligt i Slack (Umami-fel, Git-fel, modelfel).
+- Rapportera alla fel tydligt i Slack (Umami-fel, Git-fel, modelfel, NHL API-fel).
 - AEO-checklist körs alltid innan draft sparas – aldrig hoppa över.
 - Vid refresh: spara alltid som ny draft – skriv aldrig direkt till repo.
 
