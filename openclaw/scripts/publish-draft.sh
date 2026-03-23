@@ -114,7 +114,7 @@ fi
 
 cp "$CLEAN_DRAFT_FILE" "$TARGET_FILE"
 git -C "$REPO_DIR" add "$TARGET_FILE"
-git -C "$REPO_DIR" -c user.name="OpenClaw SEO" -c user.email="seo@openclaw" commit -m "$COMMIT_MSG"
+git -C "$REPO_DIR" -c user.name="OpenClaw SEO" -c user.email="emilingemarkarlsson@gmail.com" commit -m "$COMMIT_MSG"
 git -C "$REPO_DIR" push origin HEAD
 
 # Clean up draft files

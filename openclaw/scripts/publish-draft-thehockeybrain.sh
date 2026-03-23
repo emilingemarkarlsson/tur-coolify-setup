@@ -230,7 +230,7 @@ rm -f /tmp/_publish_thb.py
 # Commit and push
 git -C "$REPO_DIR" remote set-url origin "$AUTH_REPO_URL"
 git -C "$REPO_DIR" add lib/posts.ts
-git -C "$REPO_DIR" -c user.name="OpenClaw SEO" -c user.email="seo@openclaw" \
+git -C "$REPO_DIR" -c user.name="OpenClaw SEO" -c user.email="emilingemarkarlsson@gmail.com" \
   commit -m "feat: add SEO article – ${SLUG}"
 git -C "$REPO_DIR" push origin HEAD
 
