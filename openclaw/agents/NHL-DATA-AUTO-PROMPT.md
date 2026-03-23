@@ -130,31 +130,35 @@ Struktur:
 
 ## Steg 5 – Frontmatter
 
-**thehockeybrain:**
+**thehockeybrain** – Astro blog-format (src/content/blog):
 ```yaml
 ---
 title: "[Artikel-titel – max 65 tecken, inkludera teamnamnet]"
 description: "[1–2 meningar med target keyword, max 160 tecken]"
-pubDate: "[YYYY-MM-DD]"
-updatedDate: "[YYYY-MM-DD]"
+pubDate: "[YYYY-MM-DD]T09:00:00Z"
+updatedDate: "[YYYY-MM-DD]T09:00:00Z"
 tags: ["nhl analytics", "hockey statistics", "[team name]", "[finding type]"]
 author: "The Hockey Brain Analytics Team"
 heroImage: "/images/blog/placeholder.jpg"
 ---
 ```
 
-**thehockeyanalytics:**
+**thehockeyanalytics** – Astro BasePost-format (src/pages/posts) – VIKTIGT: måste ha layout och imgSrc:
 ```yaml
 ---
-title: "[Artikel-titel – mer tillgänglig, inga jargon-ord i titeln]"
+layout: '@/templates/BasePost.astro'
+title: '[Artikel-titel – mer tillgänglig, inga jargon-ord i titeln]'
 description: "[1–2 meningar, riktar sig till coaches och scouts]"
-pubDate: "[YYYY-MM-DD]"
-updatedDate: "[YYYY-MM-DD]"
-tags: ["hockey analytics", "nhl", "[team name]", "coaching"]
-author: "The Hockey Analytics Team"
-heroImage: "/images/blog/placeholder.jpg"
+pubDate: [YYYY-MM-DD]T09:00:00Z
+updatedDate: [YYYY-MM-DD]T09:00:00Z
+imgSrc: '/assets/images/image-post7.jpeg'
+imgAlt: '[kort beskrivning av bilden, t.ex. hockey analytics data visualization]'
+tags: ['hockey analytics', 'nhl', '[team name]', 'coaching']
+author: 'The Hockey Analytics Team'
 ---
 ```
+
+OBS thehockeyanalytics: utan `layout` och `imgSrc` renderas inte markdown och layouten (inklusive newsletter-banner) laddas inte. Använd alltid exakt detta format.
 
 ---
 
