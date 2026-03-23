@@ -28,23 +28,23 @@ TODAY=$(date +%Y-%m-%d)
 YESTERDAY=$(date -d "yesterday" +%Y-%m-%d 2>/dev/null || date -v-1d +%Y-%m-%d)
 
 echo "[$TODAY] Fetching standings..." >&2
-curl -sf --max-time 15 "https://api-web.nhle.com/v1/standings/now" \
+curl -sfL --max-time 15 "https://api-web.nhle.com/v1/standings/now" \
   > "$TMP_DIR/standings.json" \
   || echo '{"standings":[]}' > "$TMP_DIR/standings.json"
 
 echo "[$TODAY] Fetching scores for $YESTERDAY..." >&2
-curl -sf --max-time 15 "https://api-web.nhle.com/v1/score/$YESTERDAY" \
+curl -sfL --max-time 15 "https://api-web.nhle.com/v1/score/$YESTERDAY" \
   > "$TMP_DIR/scores.json" \
   || echo '{"games":[]}' > "$TMP_DIR/scores.json"
 
 echo "[$TODAY] Fetching skater leaders..." >&2
-curl -sf --max-time 15 \
+curl -sfL --max-time 15 \
   "https://api-web.nhle.com/v1/skater-stats-leaders/current?categories=goals,assists,points,plusMinus,shootingPctg&limit=5" \
   > "$TMP_DIR/skater-leaders.json" \
   || echo '{}' > "$TMP_DIR/skater-leaders.json"
 
 echo "[$TODAY] Fetching goalie leaders..." >&2
-curl -sf --max-time 15 \
+curl -sfL --max-time 15 \
   "https://api-web.nhle.com/v1/goalie-stats-leaders/current?categories=wins,savePct,gaa&limit=5" \
   > "$TMP_DIR/goalie-leaders.json" \
   || echo '{}' > "$TMP_DIR/goalie-leaders.json"
