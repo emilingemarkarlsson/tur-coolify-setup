@@ -31,8 +31,8 @@ Kör fetch-scriptet och spara output:
 
 Läs sedan `/data/.openclaw/nhl-data/latest.json`.
 
-Om scriptet misslyckas (nätverksfel, API nere): rapportera felet till Slack och avbryt.
-Skriv: "NHL API unreachable – skipping today's data article. Will retry at next cron."
+Om scriptet misslyckas (nätverksfel, API nere): rapportera felet till Telegram (kanal: logs) och avbryt.
+Kör: `/data/.openclaw/scripts/telegram-notify.sh logs "❌ NHL API unreachable – skipping today's data article. Will retry at next cron."`
 
 ---
 
@@ -185,22 +185,24 @@ Kontrollera innan draft sparas:
 
 ## Steg 7 – Publicering (automatisk – ingen godkännande behövs)
 
+**VIKTIGT – olika publish-script per sajt:**
+
+| Sajt | Publish-script | Varför |
+|------|---------------|--------|
+| `thehockeybrain` | `/data/.openclaw/scripts/publish-draft-thehockeybrain.sh {slug}` | Next.js – content lagras i `lib/posts.ts` som TypeScript-objekt med HTML |
+| `thehockeyanalytics` | `/data/.openclaw/scripts/publish-draft.sh {slug}` | Astro – content är markdown-filer i `src/pages/posts/` |
+
 ```
 1. Kör AEO-checklist (ovan)
 2. Spara: /data/.openclaw/drafts/{slug}.md
 3. Spara: /data/.openclaw/drafts/{slug}.meta  (en rad: umamiName={umamiName})
-4. Kör: /data/.openclaw/scripts/publish-draft.sh {slug}
+4. Kör rätt publish-script (se tabell ovan)
+   → Scriptet skickar automatiskt Telegram-notis till rätt kanal vid lyckad publicering
 5. Spara finding-type till: /data/.openclaw/nhl-data/last-finding.txt
-6. Rapportera till Slack (#all-tur-ab):
-   "✅ NHL Data Article published
-    Title: [titel]
-    Site: {domain}
-    URL: {url}
-    Finding: {finding.headline}
-    Data: GF% {x}% / Pts% {y}% / {gp} games analyzed"
 ```
 
-Om publish-draft.sh misslyckas: spara draften, rapportera felet i Slack med slug och felmeddelande.
+Om publish-draft.sh misslyckas: spara draften, rapportera felet till Telegram (kanal: logs):
+`/data/.openclaw/scripts/telegram-notify.sh logs "❌ NHL pipeline fel – {slug}: {felmeddelande}"`
 
 ---
 
@@ -230,5 +232,5 @@ Finding-type-short-mappning:
 - Kör alltid nhl-data-fetch.sh först – skriv aldrig utan färsk data
 - Välj aldrig samma finding-type som senaste körningen om alternativ finns
 - Skriv aldrig om ett lag som publicerades de senaste 7 dagarna
-- Rapportera alla fel tydligt i Slack – avbryt aldrig tyst
+- Rapportera alla fel tydligt i Telegram (kanal: logs) – avbryt aldrig tyst
 - Kör alltid AEO-checklist innan draft sparas

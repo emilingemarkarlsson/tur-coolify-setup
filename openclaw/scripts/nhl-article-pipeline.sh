@@ -54,6 +54,7 @@ PYEOF
 
 if [[ "$FINDING_JSON" == "{}" ]]; then
   echo "No findings available in NHL data." >&2
+  "$SCRIPTS_DIR/telegram-notify.sh" "$SITE" "⚠️ <b>NHL pipeline</b> – Inga findings tillgängliga i dagsdata. Hoppar över." || true
   exit 1
 fi
 
@@ -238,6 +239,13 @@ echo "" >&2
 echo "Published: $ARTICLE_URL" >&2
 echo "Finding: $FINDING_HEADLINE" >&2
 
-# Output for Slack
+# Telegram notification
+TG_CHANNEL="$SITE"
+"$SCRIPTS_DIR/telegram-notify.sh" "$TG_CHANNEL" \
+  "✅ <b>NHL Data Article published</b>
+🏒 <b>${FINDING_HEADLINE}</b>
+🔗 ${ARTICLE_URL}" || true
+
+# Output for agent
 echo "PUBLISHED: $ARTICLE_URL"
 echo "FINDING: $FINDING_HEADLINE"

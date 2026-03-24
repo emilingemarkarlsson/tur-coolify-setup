@@ -241,6 +241,12 @@ ARTICLE_URL="https://${DOMAIN}/insights/${SLUG}"
 echo "Published: ${ARTICLE_URL}"
 echo "Repo: $GITHUB_REPO"
 
+# Telegram notification
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+"${SCRIPTS_DIR}/telegram-notify.sh" "thehockeybrain" \
+  "✅ <b>Artikel publicerad</b> – The Hockey Brain
+🔗 ${ARTICLE_URL}" || true
+
 # n8n newsletter webhook
 if [[ -n "$LIST_UUID" ]]; then
   ARTICLE_TITLE=$(python3 -c "

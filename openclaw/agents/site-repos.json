@@ -1,5 +1,13 @@
 {
-  "slackChannel": "#all-tur-ab",
+  "telegram": {
+    "channels": {
+      "thehockeybrain":     "-1003765951395",
+      "thehockeyanalytics": "-1003841635229",
+      "logs":               "-1003767033253",
+      "approvals":          "-1003833003860"
+    },
+    "default_channel": "logs"
+  },
   "umamiBaseUrl": "https://umami.theunnamedroads.com",
   "sites": [
     {

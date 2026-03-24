@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Publicerar en SEO-draft till GitHub: läser draft + metadata, klonar/pullar repo,
-# skriver fil, commit, push. Används när användaren skriver "publicera {slug}" i Slack.
+# skriver fil, commit, push. Triggas av OpenClaw-agenten eller via Telegram.
 #
 # Användning: publish-draft.sh <slug>
 # Kräver: git, python3 (läser site-repos.json). GITHUB_TOKEN (env) eller /data/.openclaw/github-token. Ingen jq behövs.
@@ -33,7 +33,7 @@ if [[ ! -f "$SITE_REPOS" ]]; then
   exit 1
 fi
 
-# Clean draft content: strip Slack "Nästa steg" / "Next steps" helper text if it was
+# Clean draft content: strip "Nästa steg" / "Next steps" helper text if it was
 # accidentally saved into the markdown file. Everything from the helper line and down
 # is removed; the article content above is kept as-is. Matches Swedish and English.
 CLEAN_DRAFT_FILE="${DRAFT_FILE}.clean"
@@ -120,8 +120,7 @@ git -C "$REPO_DIR" push origin HEAD
 # Clean up draft files
 rm -f "$DRAFT_FILE" "$META_FILE" "$CLEAN_DRAFT_FILE"
 
-# Output for Slack (agent can read this). Use urlSegment from site-repos.json if set,
-# otherwise fall back to inferring from contentPath.
+# URL. Use urlSegment from site-repos.json if set, otherwise infer from contentPath.
 if [[ -n "$URL_SEGMENT_FROM_JSON" ]]; then
   URL_SEGMENT="$URL_SEGMENT_FROM_JSON"
 elif [[ "$CONTENT_PATH" == *"posts"* ]]; then
@@ -133,10 +132,21 @@ ARTICLE_URL="https://${DOMAIN}/${URL_SEGMENT}/${SLUG}"
 echo "Published: ${ARTICLE_URL}"
 echo "Repo: $GITHUB_REPO"
 
-# Extract title and description from frontmatter of the clean draft (before deletion)
-# Meta file is already cleaned up; read from the target file in the repo
+# Extract title and description from frontmatter
 ARTICLE_TITLE=$(grep -m1 '^title:' "$TARGET_FILE" 2>/dev/null | sed 's/^title:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "$SLUG")
 ARTICLE_DESC=$(grep -m1 '^description:' "$TARGET_FILE" 2>/dev/null | sed 's/^description:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
+
+# Telegram notification – map umamiName to channel
+TG_CHANNEL="logs"
+case "$UMAMI_NAME" in
+  thehockeybrain)    TG_CHANNEL="thehockeybrain" ;;
+  thehockeyanalytics) TG_CHANNEL="thehockeyanalytics" ;;
+esac
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+"${SCRIPTS_DIR}/telegram-notify.sh" "$TG_CHANNEL" \
+  "✅ <b>Artikel publicerad</b> – ${PROJECT_NAME:-$UMAMI_NAME}
+📌 <b>${ARTICLE_TITLE}</b>
+🔗 ${ARTICLE_URL}" || true
 
 # Notify n8n article-published webhook if list UUID is configured
 if [[ -n "$LIST_UUID" ]]; then
