@@ -12,7 +12,8 @@
       "name": "Telegram Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300]
+      "position": [240, 300],
+      "webhookId": "telegram-callbacks"
     },
     {
       "parameters": {
@@ -64,22 +65,26 @@
     },
     {
       "parameters": {
-        "command": "=docker exec openclaw-w44cc84w8kog4og400008csg bash -c 'SITE={{ $json.site }}; SLUG={{ $json.slug }}; if [ \"$SITE\" = \"thehockeybrain\" ]; then /data/.openclaw/scripts/publish-draft-thehockeybrain.sh \"$SLUG\"; else /data/.openclaw/scripts/publish-draft.sh \"$SLUG\"; fi'"
+        "method": "POST",
+        "url": "=http://10.0.2.1:9191/publish?slug={{ $json.slug }}&site={{ $json.site }}",
+        "options": {}
       },
       "id": "run-publish",
       "name": "Run Publish Script",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1120, 120]
     },
     {
       "parameters": {
-        "command": "=docker exec openclaw-w44cc84w8kog4og400008csg bash -c 'rm -f /data/.openclaw/drafts/{{ $json.slug }}.md /data/.openclaw/drafts/{{ $json.slug }}.meta && echo \"Kasserad: {{ $json.slug }}\"'"
+        "method": "POST",
+        "url": "=http://10.0.2.1:9191/reject?slug={{ $json.slug }}",
+        "options": {}
       },
       "id": "run-reject",
       "name": "Kassera Draft",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1120, 320]
     },
     {
