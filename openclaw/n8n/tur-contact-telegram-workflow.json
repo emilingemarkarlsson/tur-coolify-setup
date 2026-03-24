@@ -1,0 +1,53 @@
+{
+  "name": "tur-contactnotificationtotelegram",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contact",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bd8f8f62-649a-4c70-b894-a5535fa330cd",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "webhookId": "contact"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form – The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>New Contact \\u2013 The Unnamed Roads</b>\\n\\n<b>Name:</b> ${name}\\n<b>Email:</b> ${email}\\n<b>Subject:</b> ${subject}\\n<b>Message:</b> ${message}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+      },
+      "id": "ffb1171f-4942-4e2e-8e2b-50347324f25f",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Thank you for your message! We'll be in touch soon.\" } }}",
+        "options": {}
+      },
+      "id": "2dcd7085-ec3c-4361-9abf-84234caeca35",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [800, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Send Telegram", "type": "main", "index": 0}]]
+    },
+    "Send Telegram": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null
+}
