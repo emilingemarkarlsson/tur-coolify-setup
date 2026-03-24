@@ -5,7 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "telegram-callbacks",
-        "responseMode": "responseNode",
+        "responseMode": "onReceived",
         "options": {}
       },
       "id": "webhook-trigger",
@@ -28,12 +28,10 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true },
-          "conditions": [
+          "string": [
             {
-              "leftValue": "={{ $json.skip }}",
-              "rightValue": true,
-              "operator": { "type": "boolean", "operation": "equals" }
+              "value1": "={{ $json.action }}",
+              "value2": ""
             }
           ]
         }
@@ -41,18 +39,16 @@
       "id": "skip-check",
       "name": "Skip?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [680, 300]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true },
-          "conditions": [
+          "string": [
             {
-              "leftValue": "={{ $json.action }}",
-              "rightValue": "approve",
-              "operator": { "type": "string", "operation": "equals" }
+              "value1": "={{ $json.action }}",
+              "value2": "approve"
             }
           ]
         }
@@ -60,7 +56,7 @@
       "id": "action-check",
       "name": "Approve or Reject?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "typeVersion": 1,
       "position": [900, 200]
     },
     {
@@ -118,7 +114,7 @@
     }
   ],
   "connections": {
-    "Telegram Webhook":      { "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }, { "node": "Parse Callback", "type": "main", "index": 0 }]] },
+    "Telegram Webhook":      { "main": [[{ "node": "Parse Callback", "type": "main", "index": 0 }]] },
     "Parse Callback":        { "main": [[{ "node": "Skip?", "type": "main", "index": 0 }]] },
     "Skip?":                 { "main": [[], [{ "node": "Approve or Reject?", "type": "main", "index": 0 }]] },
     "Approve or Reject?":    { "main": [[{ "node": "Run Publish Script", "type": "main", "index": 0 }], [{ "node": "Kassera Draft", "type": "main", "index": 0 }]] },
