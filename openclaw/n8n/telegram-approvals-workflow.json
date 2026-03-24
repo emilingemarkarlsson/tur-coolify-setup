@@ -90,7 +90,7 @@
         "bodyParameters": {
           "parameters": [
             { "name": "callback_query_id", "value": "={{ $('Parse Callback').item.json.callbackQueryId }}" },
-            { "name": "text",              "value": "={{ $('Action Check').item.json.action === 'approve' ? '✅ Publicering startad!' : '❌ Draft kasserad.' }}" }
+            { "name": "text",              "value": "={{ $('Parse Callback').item.json.action === 'approve' ? '✅ Publicering startad!' : '❌ Draft kasserad.' }}" }
           ]
         },
         "options": {}
