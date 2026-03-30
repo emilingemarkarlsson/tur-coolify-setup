@@ -1,0 +1,719 @@
+{
+  "updatedAt": "2026-03-30T09:37:02.543Z",
+  "createdAt": "2026-03-30T09:37:02.543Z",
+  "id": "cwdzdxHIA4AOD6ND",
+  "name": "Monthly Report",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "sched-1",
+      "name": "Monthly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 9 1 * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "run-monthly-report",
+      "position": [
+        0,
+        60
+      ],
+      "parameters": {
+        "path": "run-monthly-report",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "code-dates",
+      "name": "Prepare Dates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        130
+      ],
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst pad = n => String(n).padStart(2, '0');\nconst yesterday = new Date(now.getTime() - 86400000);\nconst yesterdayStr = yesterday.getFullYear() + '-' + pad(yesterday.getMonth() + 1) + '-' + pad(yesterday.getDate());\nconst months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];\nconst prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);\nconst prevMonthLabel = months[prevMonth.getMonth()] + ' ' + prevMonth.getFullYear();\nreturn [{ json: { yesterday: yesterdayStr, prevMonthLabel } }];"
+      }
+    },
+    {
+      "id": "postgres-1",
+      "name": "Fetch Umami Monthly",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        480,
+        130
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "PLOVoVKhDi0Ae9Le",
+          "name": "Umami Postgres"
+        }
+      },
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT 'site' as record_type, w.domain, w.name, COUNT(CASE WHEN e.created_at >= date_trunc('month', NOW() - INTERVAL '1 month') AND e.created_at < date_trunc('month', NOW()) THEN 1 END)::int as this_month, COUNT(CASE WHEN e.created_at >= date_trunc('month', NOW() - INTERVAL '2 months') AND e.created_at < date_trunc('month', NOW() - INTERVAL '1 month') THEN 1 END)::int as last_month, '' as url_path, 0 as rank FROM website_event e JOIN website w ON w.website_id = e.website_id WHERE e.event_type = 1 AND e.created_at >= date_trunc('month', NOW() - INTERVAL '2 months') AND e.created_at < date_trunc('month', NOW()) GROUP BY w.domain, w.name UNION ALL SELECT 'article', domain, name, views::int, 0, url_path, rank::int FROM (SELECT w.domain, w.name, e.url_path, COUNT(*) as views, ROW_NUMBER() OVER (PARTITION BY w.domain ORDER BY COUNT(*) DESC) as rank FROM website_event e JOIN website w ON w.website_id = e.website_id WHERE e.event_type = 1 AND e.created_at >= date_trunc('month', NOW() - INTERVAL '1 month') AND e.created_at < date_trunc('month', NOW()) AND (e.url_path LIKE '/posts/%' OR e.url_path LIKE '/blog/%' OR e.url_path LIKE '/insights/%') AND length(e.url_path) > 8 GROUP BY w.domain, w.name, e.url_path) t WHERE rank <= 3 UNION ALL SELECT 'dummy', 'none', 'none', 0, 0, '', 0 WHERE NOT EXISTS (SELECT 1 FROM website_event WHERE created_at >= date_trunc('month', NOW() - INTERVAL '2 months'))",
+        "options": {}
+      }
+    },
+    {
+      "id": "http-spend",
+      "name": "Fetch LiteLLM Spend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        130
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/global/spend/logs?limit=62",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "s3-ai-traffic",
+      "name": "Read AI Traffic",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        960,
+        130
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      },
+      "parameters": {
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "={{ 'ai-traffic-' + $('Prepare Dates').first().json.yesterday + '.json' }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "s3-geo",
+      "name": "Read GEO Insights",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        130
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      },
+      "parameters": {
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "geo-aeo-insights.json",
+        "options": {}
+      }
+    },
+    {
+      "id": "code-assemble",
+      "name": "Assemble Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        130
+      ],
+      "parameters": {
+        "jsCode": "// Umami data\nconst rows = $('Fetch Umami Monthly').all().map(i => i.json);\nconst siteRows = rows.filter(r => r.record_type === 'site');\nconst articleRows = rows.filter(r => r.record_type === 'article');\n\nconst siteStats = {};\nfor (const r of siteRows) {\n  if (r.domain === 'none') continue;\n  siteStats[r.domain] = { this_month: parseInt(r.this_month) || 0, last_month: parseInt(r.last_month) || 0 };\n}\n\nconst articlesBySite = {};\nfor (const r of articleRows) {\n  if (!articlesBySite[r.domain]) articlesBySite[r.domain] = [];\n  articlesBySite[r.domain].push({ url: r.url_path, views: parseInt(r.this_month) || 0 });\n}\n\n// LiteLLM spend\nlet spendLogs = [];\ntry {\n  const raw = $('Fetch LiteLLM Spend').first().json;\n  spendLogs = Array.isArray(raw) ? raw : [];\n} catch (e) {}\n\nconst now = new Date();\nconst prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);\nconst prevMonthPrefix = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');\nconst prev2MonthDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);\nconst prev2MonthPrefix = prev2MonthDate.getFullYear() + '-' + String(prev2MonthDate.getMonth() + 1).padStart(2, '0');\n\nconst reportMonthSpend = spendLogs.filter(d => (d.date || '').startsWith(prevMonthPrefix)).reduce((s, d) => s + (d.spend || 0), 0);\nconst prevMonthSpend = spendLogs.filter(d => (d.date || '').startsWith(prev2MonthPrefix)).reduce((s, d) => s + (d.spend || 0), 0);\n\n// AI traffic\nlet aiText = 'Ingen AI-trafik-data tillganglig';\ntry {\n  const aiRaw = $('Read AI Traffic').first().json;\n  const body = aiRaw.Body || '';\n  if (body && !aiRaw.error) {\n    const ai = JSON.parse(body);\n    const total = ai.total || 0;\n    aiText = 'AI-referrertrafik: ' + total + ' sessioner';\n    if (ai.bySource) {\n      const sources = Object.entries(ai.bySource).filter(([, cnt]) => cnt > 0).slice(0, 4);\n      if (sources.length) {\n        aiText += ' (' + sources.map(([s, c]) => s.replace('perplexity.ai', 'perplexity').replace('chatgpt.com', 'chatgpt') + ':' + c).join(', ') + ')';\n      }\n    }\n  }\n} catch (e) {}\n\n// GEO insights\nlet geoText = 'Ingen GEO-data';\ntry {\n  const geoRaw = $('Read GEO Insights').first().json;\n  const body = geoRaw.Body || '';\n  if (body && !geoRaw.error) {\n    const geo = JSON.parse(body);\n    const insights = geo.insights || [];\n    if (insights.length) {\n      geoText = 'Senaste GEO-insikter: ' + insights.slice(0, 2).map(i => i.title || i.insight || '').filter(Boolean).join('; ');\n    }\n  }\n} catch (e) {}\n\nconst dates = $('Prepare Dates').first().json;\n\n// Build Groq prompt\nlet prompt = 'Manadsdata: ' + dates.prevMonthLabel + '\\n\\nTrafikutveckling (MoM):\\n';\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const pct = stats.last_month > 0 ? ((stats.this_month - stats.last_month) / stats.last_month * 100).toFixed(0) + '%' : 'N/A';\n  prompt += domain + ': ' + stats.this_month + ' visningar (forra: ' + stats.last_month + ', forandring: ' + pct + ')\\n';\n}\n\nprompt += '\\nToppinnehall forra manaden:\\n';\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  prompt += domain + ':\\n';\n  for (const a of arts.slice(0, 3)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '');\n    prompt += '  - ' + slug + ' (' + a.views + ' visningar)\\n';\n  }\n}\n\nprompt += '\\nLiteLLM-kostnad: rapportmanad $' + reportMonthSpend.toFixed(4) + ', foregaende manad $' + prevMonthSpend.toFixed(4) + '\\n';\nprompt += aiText + '\\n';\nprompt += geoText;\n\nreturn [{ json: { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText, prompt } }];"
+      }
+    },
+    {
+      "id": "http-groq",
+      "name": "Groq Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        130
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HnNvhJFUVZo7k5Tp",
+          "name": "tha-groqseo"
+        }
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: 'Du ar en tillvaxtstrateg for ett self-hosted AI-automationsprojekt med flera bloggar och sajter. Analysera manadsdata och ge 4 konkreta, prioriterade rekommendationer for nasta manad. Svara pa svenska. Returnera JSON: { summary: string, recommendations: [{ action: string, priority: \"hog\"|\"medel\", site: string }] }' }, { role: 'user', content: $json.prompt }] }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "code-format",
+      "name": "Format Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        130
+      ],
+      "parameters": {
+        "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '\ud83d\udc64',\n  'thehockeyanalytics.com': '\ud83c\udfd2',\n  'thehockeybrain.com': '\ud83e\udde0',\n  'theunnamedroads.com': '\ud83c\udf0d',\n  'theagentfabric.com': '\ud83e\udd16',\n  'theprintroute.com': '\ud83d\udcc4'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '\ud83c\udf10';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '\u25b2' : diff < 0 ? '\u25bc' : '\u2192';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' \u2013 ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '\u25b2' : '\u25bc';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '\ud83d\udd34' : '\ud83d\udfe1';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport \u2013 ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "telegram-1",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        130
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003767033253', text: $json.text, parse_mode: 'HTML', disable_web_page_preview: true }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Monthly Schedule": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Dates": {
+      "main": [
+        [
+          {
+            "node": "Fetch Umami Monthly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Umami Monthly": {
+      "main": [
+        [
+          {
+            "node": "Fetch LiteLLM Spend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch LiteLLM Spend": {
+      "main": [
+        [
+          {
+            "node": "Read AI Traffic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read AI Traffic": {
+      "main": [
+        [
+          {
+            "node": "Read GEO Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read GEO Insights": {
+      "main": [
+        [
+          {
+            "node": "Assemble Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble Data": {
+      "main": [
+        [
+          {
+            "node": "Groq Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Analysis": {
+      "main": [
+        [
+          {
+            "node": "Format Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Telegram": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Monthly Schedule": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+  "activeVersionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+  "versionCounter": 4,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-03-30T09:37:02.543Z",
+      "createdAt": "2026-03-30T09:37:02.543Z",
+      "role": "workflow:owner",
+      "workflowId": "cwdzdxHIA4AOD6ND",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-30T09:37:02.551Z",
+    "createdAt": "2026-03-30T09:37:02.551Z",
+    "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+    "workflowId": "cwdzdxHIA4AOD6ND",
+    "nodes": [
+      {
+        "id": "sched-1",
+        "name": "Monthly Schedule",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 9 1 * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "webhook-1",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "run-monthly-report",
+        "position": [
+          0,
+          60
+        ],
+        "parameters": {
+          "path": "run-monthly-report",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        }
+      },
+      {
+        "id": "code-dates",
+        "name": "Prepare Dates",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          130
+        ],
+        "parameters": {
+          "jsCode": "const now = new Date();\nconst pad = n => String(n).padStart(2, '0');\nconst yesterday = new Date(now.getTime() - 86400000);\nconst yesterdayStr = yesterday.getFullYear() + '-' + pad(yesterday.getMonth() + 1) + '-' + pad(yesterday.getDate());\nconst months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];\nconst prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);\nconst prevMonthLabel = months[prevMonth.getMonth()] + ' ' + prevMonth.getFullYear();\nreturn [{ json: { yesterday: yesterdayStr, prevMonthLabel } }];"
+        }
+      },
+      {
+        "id": "postgres-1",
+        "name": "Fetch Umami Monthly",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          480,
+          130
+        ],
+        "continueOnFail": true,
+        "credentials": {
+          "postgres": {
+            "id": "PLOVoVKhDi0Ae9Le",
+            "name": "Umami Postgres"
+          }
+        },
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT 'site' as record_type, w.domain, w.name, COUNT(CASE WHEN e.created_at >= date_trunc('month', NOW() - INTERVAL '1 month') AND e.created_at < date_trunc('month', NOW()) THEN 1 END)::int as this_month, COUNT(CASE WHEN e.created_at >= date_trunc('month', NOW() - INTERVAL '2 months') AND e.created_at < date_trunc('month', NOW() - INTERVAL '1 month') THEN 1 END)::int as last_month, '' as url_path, 0 as rank FROM website_event e JOIN website w ON w.website_id = e.website_id WHERE e.event_type = 1 AND e.created_at >= date_trunc('month', NOW() - INTERVAL '2 months') AND e.created_at < date_trunc('month', NOW()) GROUP BY w.domain, w.name UNION ALL SELECT 'article', domain, name, views::int, 0, url_path, rank::int FROM (SELECT w.domain, w.name, e.url_path, COUNT(*) as views, ROW_NUMBER() OVER (PARTITION BY w.domain ORDER BY COUNT(*) DESC) as rank FROM website_event e JOIN website w ON w.website_id = e.website_id WHERE e.event_type = 1 AND e.created_at >= date_trunc('month', NOW() - INTERVAL '1 month') AND e.created_at < date_trunc('month', NOW()) AND (e.url_path LIKE '/posts/%' OR e.url_path LIKE '/blog/%' OR e.url_path LIKE '/insights/%') AND length(e.url_path) > 8 GROUP BY w.domain, w.name, e.url_path) t WHERE rank <= 3 UNION ALL SELECT 'dummy', 'none', 'none', 0, 0, '', 0 WHERE NOT EXISTS (SELECT 1 FROM website_event WHERE created_at >= date_trunc('month', NOW() - INTERVAL '2 months'))",
+          "options": {}
+        }
+      },
+      {
+        "id": "http-spend",
+        "name": "Fetch LiteLLM Spend",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          720,
+          130
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/global/spend/logs?limit=62",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "s3-ai-traffic",
+        "name": "Read AI Traffic",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          960,
+          130
+        ],
+        "continueOnFail": true,
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        },
+        "parameters": {
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "={{ 'ai-traffic-' + $('Prepare Dates').first().json.yesterday + '.json' }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "s3-geo",
+        "name": "Read GEO Insights",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          1200,
+          130
+        ],
+        "continueOnFail": true,
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        },
+        "parameters": {
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "geo-aeo-insights.json",
+          "options": {}
+        }
+      },
+      {
+        "id": "code-assemble",
+        "name": "Assemble Data",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1440,
+          130
+        ],
+        "parameters": {
+          "jsCode": "// Umami data\nconst rows = $('Fetch Umami Monthly').all().map(i => i.json);\nconst siteRows = rows.filter(r => r.record_type === 'site');\nconst articleRows = rows.filter(r => r.record_type === 'article');\n\nconst siteStats = {};\nfor (const r of siteRows) {\n  if (r.domain === 'none') continue;\n  siteStats[r.domain] = { this_month: parseInt(r.this_month) || 0, last_month: parseInt(r.last_month) || 0 };\n}\n\nconst articlesBySite = {};\nfor (const r of articleRows) {\n  if (!articlesBySite[r.domain]) articlesBySite[r.domain] = [];\n  articlesBySite[r.domain].push({ url: r.url_path, views: parseInt(r.this_month) || 0 });\n}\n\n// LiteLLM spend\nlet spendLogs = [];\ntry {\n  const raw = $('Fetch LiteLLM Spend').first().json;\n  spendLogs = Array.isArray(raw) ? raw : [];\n} catch (e) {}\n\nconst now = new Date();\nconst prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);\nconst prevMonthPrefix = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');\nconst prev2MonthDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);\nconst prev2MonthPrefix = prev2MonthDate.getFullYear() + '-' + String(prev2MonthDate.getMonth() + 1).padStart(2, '0');\n\nconst reportMonthSpend = spendLogs.filter(d => (d.date || '').startsWith(prevMonthPrefix)).reduce((s, d) => s + (d.spend || 0), 0);\nconst prevMonthSpend = spendLogs.filter(d => (d.date || '').startsWith(prev2MonthPrefix)).reduce((s, d) => s + (d.spend || 0), 0);\n\n// AI traffic\nlet aiText = 'Ingen AI-trafik-data tillganglig';\ntry {\n  const aiRaw = $('Read AI Traffic').first().json;\n  const body = aiRaw.Body || '';\n  if (body && !aiRaw.error) {\n    const ai = JSON.parse(body);\n    const total = ai.total || 0;\n    aiText = 'AI-referrertrafik: ' + total + ' sessioner';\n    if (ai.bySource) {\n      const sources = Object.entries(ai.bySource).filter(([, cnt]) => cnt > 0).slice(0, 4);\n      if (sources.length) {\n        aiText += ' (' + sources.map(([s, c]) => s.replace('perplexity.ai', 'perplexity').replace('chatgpt.com', 'chatgpt') + ':' + c).join(', ') + ')';\n      }\n    }\n  }\n} catch (e) {}\n\n// GEO insights\nlet geoText = 'Ingen GEO-data';\ntry {\n  const geoRaw = $('Read GEO Insights').first().json;\n  const body = geoRaw.Body || '';\n  if (body && !geoRaw.error) {\n    const geo = JSON.parse(body);\n    const insights = geo.insights || [];\n    if (insights.length) {\n      geoText = 'Senaste GEO-insikter: ' + insights.slice(0, 2).map(i => i.title || i.insight || '').filter(Boolean).join('; ');\n    }\n  }\n} catch (e) {}\n\nconst dates = $('Prepare Dates').first().json;\n\n// Build Groq prompt\nlet prompt = 'Manadsdata: ' + dates.prevMonthLabel + '\\n\\nTrafikutveckling (MoM):\\n';\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const pct = stats.last_month > 0 ? ((stats.this_month - stats.last_month) / stats.last_month * 100).toFixed(0) + '%' : 'N/A';\n  prompt += domain + ': ' + stats.this_month + ' visningar (forra: ' + stats.last_month + ', forandring: ' + pct + ')\\n';\n}\n\nprompt += '\\nToppinnehall forra manaden:\\n';\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  prompt += domain + ':\\n';\n  for (const a of arts.slice(0, 3)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '');\n    prompt += '  - ' + slug + ' (' + a.views + ' visningar)\\n';\n  }\n}\n\nprompt += '\\nLiteLLM-kostnad: rapportmanad $' + reportMonthSpend.toFixed(4) + ', foregaende manad $' + prevMonthSpend.toFixed(4) + '\\n';\nprompt += aiText + '\\n';\nprompt += geoText;\n\nreturn [{ json: { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText, prompt } }];"
+        }
+      },
+      {
+        "id": "http-groq",
+        "name": "Groq Analysis",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1680,
+          130
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "HnNvhJFUVZo7k5Tp",
+            "name": "tha-groqseo"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: 'Du ar en tillvaxtstrateg for ett self-hosted AI-automationsprojekt med flera bloggar och sajter. Analysera manadsdata och ge 4 konkreta, prioriterade rekommendationer for nasta manad. Svara pa svenska. Returnera JSON: { summary: string, recommendations: [{ action: string, priority: \"hog\"|\"medel\", site: string }] }' }, { role: 'user', content: $json.prompt }] }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "code-format",
+        "name": "Format Telegram",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          130
+        ],
+        "parameters": {
+          "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '\ud83d\udc64',\n  'thehockeyanalytics.com': '\ud83c\udfd2',\n  'thehockeybrain.com': '\ud83e\udde0',\n  'theunnamedroads.com': '\ud83c\udf0d',\n  'theagentfabric.com': '\ud83e\udd16',\n  'theprintroute.com': '\ud83d\udcc4'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '\ud83c\udf10';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '\u25b2' : diff < 0 ? '\u25bc' : '\u2192';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' \u2013 ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '\u25b2' : '\u25bc';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '\ud83d\udd34' : '\ud83d\udfe1';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport \u2013 ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
+        }
+      },
+      {
+        "id": "telegram-1",
+        "name": "Send Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2160,
+          130
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ chat_id: '-1003767033253', text: $json.text, parse_mode: 'HTML', disable_web_page_preview: true }) }}",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Monthly Schedule": {
+        "main": [
+          [
+            {
+              "node": "Prepare Dates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Prepare Dates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Dates": {
+        "main": [
+          [
+            {
+              "node": "Fetch Umami Monthly",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Umami Monthly": {
+        "main": [
+          [
+            {
+              "node": "Fetch LiteLLM Spend",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch LiteLLM Spend": {
+        "main": [
+          [
+            {
+              "node": "Read AI Traffic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read AI Traffic": {
+        "main": [
+          [
+            {
+              "node": "Read GEO Insights",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read GEO Insights": {
+        "main": [
+          [
+            {
+              "node": "Assemble Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Assemble Data": {
+        "main": [
+          [
+            {
+              "node": "Groq Analysis",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Groq Analysis": {
+        "main": [
+          [
+            {
+              "node": "Format Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Telegram": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-30T09:37:08.854Z",
+        "id": 482,
+        "workflowId": "cwdzdxHIA4AOD6ND",
+        "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}
