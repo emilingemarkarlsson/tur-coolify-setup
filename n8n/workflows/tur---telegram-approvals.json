@@ -1,0 +1,498 @@
+{
+  "id": "rPKUeMG0YZo8OCBY",
+  "name": "TUR – Telegram Approvals",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-callbacks",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Telegram Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "telegram-callbacks"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Telegram callback_query or message\nconst body = $input.first().json.body || $input.first().json;\n\nlet action = null;\nlet slug = null;\nlet site = null;\nlet callbackQueryId = null;\nlet chatId = null;\n\nif (body.callback_query) {\n  const data = body.callback_query.data; // e.g. \"approve:nhl-best-underlying-fla-2026-03-24:thehockeybrain\"\n  const parts = data.split(':');\n  action = parts[0];          // approve | reject\n  slug   = parts[1];          // nhl-best-underlying-fla-2026-03-24\n  site   = parts[2];          // thehockeybrain\n  callbackQueryId = body.callback_query.id;\n  chatId = body.callback_query.message.chat.id;\n} else if (body.message && body.message.text) {\n  // Direct command: /publicera slug site\n  const text = body.message.text.trim();\n  const m = text.match(/^\\/?(publicera|kassera)\\s+(\\S+)(?:\\s+(\\S+))?/);\n  if (m) {\n    action = m[1] === 'publicera' ? 'approve' : 'reject';\n    slug   = m[2];\n    site   = m[3] || 'unknown';\n    chatId = body.message.chat.id;\n  }\n}\n\nif (!action || !slug) {\n  return [{ json: { skip: true, reason: 'no actionable payload' } }];\n}\n\nreturn [{ json: { action, slug, site, callbackQueryId, chatId } }];"
+      },
+      "id": "parse-callback",
+      "name": "Parse Callback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": ""
+            }
+          ]
+        }
+      },
+      "id": "skip-check",
+      "name": "Skip?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "approve"
+            }
+          ]
+        }
+      },
+      "id": "action-check",
+      "name": "Approve or Reject?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://10.0.2.1:9191/publish?slug={{ $json.slug }}&site={{ $json.site }}",
+        "options": {}
+      },
+      "id": "run-publish",
+      "name": "Run Publish Script",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://10.0.2.1:9191/reject?slug={{ $json.slug }}",
+        "options": {}
+      },
+      "id": "run-reject",
+      "name": "Kassera Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/answerCallbackQuery",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "callback_query_id",
+              "value": "={{ $('Parse Callback').item.json.callbackQueryId }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Parse Callback').item.json.action === 'approve' ? '✅ Publicering startad!' : '❌ Draft kasserad.' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "answer-callback",
+      "name": "Answer Callback Query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok"
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        460,
+        500
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Callback": {
+      "main": [
+        [
+          {
+            "node": "Skip?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Approve or Reject?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve or Reject?": {
+      "main": [
+        [
+          {
+            "node": "Run Publish Script",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kassera Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Publish Script": {
+      "main": [
+        [
+          {
+            "node": "Answer Callback Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kassera Draft": {
+      "main": [
+        [
+          {
+            "node": "Answer Callback Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "0a1cf416-1051-4463-b545-2ee6d45b11b1",
+  "versionCounter": 16,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T08:45:48.106Z",
+      "createdAt": "2026-03-24T08:45:48.106Z",
+      "role": "workflow:owner",
+      "workflowId": "rPKUeMG0YZo8OCBY",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-24T07:47:19.091Z",
+      "createdAt": "2026-03-24T07:47:19.091Z",
+      "id": "yQst7WwZfy4YOd73",
+      "name": "telegram"
+    },
+    {
+      "updatedAt": "2026-03-24T07:47:19.091Z",
+      "createdAt": "2026-03-24T07:47:19.091Z",
+      "id": "fh6cQ0mqx5UzqurZ",
+      "name": "openclaw"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T08:45:48.106Z",
+    "createdAt": "2026-03-24T08:45:48.106Z",
+    "versionId": "0a1cf416-1051-4463-b545-2ee6d45b11b1",
+    "workflowId": "rPKUeMG0YZo8OCBY",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "telegram-callbacks",
+          "responseMode": "onReceived",
+          "options": {}
+        },
+        "id": "webhook-trigger",
+        "name": "Telegram Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          240,
+          300
+        ],
+        "webhookId": "telegram-callbacks"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse Telegram callback_query or message\nconst body = $input.first().json.body || $input.first().json;\n\nlet action = null;\nlet slug = null;\nlet site = null;\nlet callbackQueryId = null;\nlet chatId = null;\n\nif (body.callback_query) {\n  const data = body.callback_query.data; // e.g. \"approve:nhl-best-underlying-fla-2026-03-24:thehockeybrain\"\n  const parts = data.split(':');\n  action = parts[0];          // approve | reject\n  slug   = parts[1];          // nhl-best-underlying-fla-2026-03-24\n  site   = parts[2];          // thehockeybrain\n  callbackQueryId = body.callback_query.id;\n  chatId = body.callback_query.message.chat.id;\n} else if (body.message && body.message.text) {\n  // Direct command: /publicera slug site\n  const text = body.message.text.trim();\n  const m = text.match(/^\\/?(publicera|kassera)\\s+(\\S+)(?:\\s+(\\S+))?/);\n  if (m) {\n    action = m[1] === 'publicera' ? 'approve' : 'reject';\n    slug   = m[2];\n    site   = m[3] || 'unknown';\n    chatId = body.message.chat.id;\n  }\n}\n\nif (!action || !slug) {\n  return [{ json: { skip: true, reason: 'no actionable payload' } }];\n}\n\nreturn [{ json: { action, slug, site, callbackQueryId, chatId } }];"
+        },
+        "id": "parse-callback",
+        "name": "Parse Callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          460,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.action }}",
+                "value2": ""
+              }
+            ]
+          }
+        },
+        "id": "skip-check",
+        "name": "Skip?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          680,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.action }}",
+                "value2": "approve"
+              }
+            ]
+          }
+        },
+        "id": "action-check",
+        "name": "Approve or Reject?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          900,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=http://10.0.2.1:9191/publish?slug={{ $json.slug }}&site={{ $json.site }}",
+          "options": {}
+        },
+        "id": "run-publish",
+        "name": "Run Publish Script",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1120,
+          120
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=http://10.0.2.1:9191/reject?slug={{ $json.slug }}",
+          "options": {}
+        },
+        "id": "run-reject",
+        "name": "Kassera Draft",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1120,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/answerCallbackQuery",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "callback_query_id",
+                "value": "={{ $('Parse Callback').item.json.callbackQueryId }}"
+              },
+              {
+                "name": "text",
+                "value": "={{ $('Parse Callback').item.json.action === 'approve' ? '✅ Publicering startad!' : '❌ Draft kasserad.' }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "answer-callback",
+        "name": "Answer Callback Query",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1340,
+          220
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "ok"
+        },
+        "id": "respond-ok",
+        "name": "Respond OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          460,
+          500
+        ]
+      }
+    ],
+    "connections": {
+      "Telegram Webhook": {
+        "main": [
+          [
+            {
+              "node": "Parse Callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Callback": {
+        "main": [
+          [
+            {
+              "node": "Skip?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Skip?": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Approve or Reject?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Approve or Reject?": {
+        "main": [
+          [
+            {
+              "node": "Run Publish Script",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Kassera Draft",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run Publish Script": {
+        "main": [
+          [
+            {
+              "node": "Answer Callback Query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Kassera Draft": {
+        "main": [
+          [
+            {
+              "node": "Answer Callback Query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "import",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": []
+  }
+}

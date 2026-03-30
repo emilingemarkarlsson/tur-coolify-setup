@@ -1,0 +1,125 @@
+{
+  "id": "QTdyZOekzgAzvBO2",
+  "name": "Monitor – Telegram on Error",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "706f856d-a9e3-4850-a469-6cebfdeed41f",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+      },
+      "id": "807993b4-68a6-464d-9928-167578f4aa1c",
+      "name": "Telegram Error Notify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram Error Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "691be77f-8b93-4fb4-b965-2593cd61152d",
+  "versionCounter": 15,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T09:52:25.823Z",
+      "createdAt": "2026-03-24T09:52:25.823Z",
+      "role": "workflow:owner",
+      "workflowId": "QTdyZOekzgAzvBO2",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T09:52:25.823Z",
+    "createdAt": "2026-03-24T09:52:25.823Z",
+    "versionId": "691be77f-8b93-4fb4-b965-2593cd61152d",
+    "workflowId": "QTdyZOekzgAzvBO2",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "706f856d-a9e3-4850-a469-6cebfdeed41f",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+        },
+        "id": "807993b4-68a6-464d-9928-167578f4aa1c",
+        "name": "Telegram Error Notify",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Telegram Error Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "import",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": []
+  }
+}

@@ -1,0 +1,516 @@
+{
+  "id": "Vfbb93XU1UmBgwQ8",
+  "name": "Newsletter Signup Handler",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "node-wh-001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "nl-subscribe-001",
+      "parameters": {
+        "path": "newsletter-subscribe",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-code-002",
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "\nconst body = $input.first().json.body || {};\nconst email = (body.email || '').trim().toLowerCase();\nconst listUuid = (body.l || '').trim();\n\nfunction emailBase({ bg, headerBg, headerText, headerAccent, bodyBg, textColor, mutedColor, borderColor, ctaBg, ctaText, projectName, bullets, url, email, unsubUrl }) {\n  const preheader = \"You're subscribed \\u2014 here's what's coming your way.\";\n  const bulletsHtml = bullets.map(b =>\n    '<tr><td style=\"padding:4px 0 4px 0\"><span style=\"display:inline-block;width:20px;color:' + ctaBg + '\">\\u203a</span><span style=\"font-size:14px;color:' + textColor + ';line-height:1.7\">' + b + '</span></td></tr>'\n  ).join('');\n\n  return '<!DOCTYPE html>' +\n'<html lang=\"en\">' +\n'<head>' +\n'<meta charset=\"utf-8\">' +\n'<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">' +\n'<title>Welcome to ' + projectName + '</title>' +\n'</head>' +\n'<body style=\"margin:0;padding:0;background:' + bg + ';font-family:-apple-system,BlinkMacSystemFont,\\'Segoe UI\\',Helvetica,sans-serif\">' +\n'<div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all\">' + preheader + '\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c</div>' +\n'<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:' + bg + ';padding:40px 16px\">' +\n'<tr><td align=\"center\">' +\n'<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"max-width:560px\">' +\n'<tr><td style=\"background:' + headerBg + ';border-radius:12px 12px 0 0;padding:40px 40px 36px\">' +\n'<p style=\"margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:' + headerAccent + '\">' + projectName + '</p>' +\n'<h1 style=\"margin:0 0 8px;font-size:30px;font-weight:800;color:' + headerText + ';line-height:1.15\">You\\'re in.</h1>' +\n'<p style=\"margin:0;font-size:15px;color:' + headerAccent + ';line-height:1.5;opacity:0.85\">Your subscription is confirmed.</p>' +\n'</td></tr>' +\n'<tr><td style=\"background:' + bodyBg + ';padding:32px 40px 28px;border-left:1px solid ' + borderColor + ';border-right:1px solid ' + borderColor + '\">' +\n'<p style=\"margin:0 0 24px;font-size:15px;color:' + textColor + ';line-height:1.8\">Hi \\u2014 thanks for subscribing. Here\\'s what you\\'ll get:</p>' +\n'<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 28px\">' + bulletsHtml + '</table>' +\n'<p style=\"margin:0 0 28px;font-size:13px;color:' + mutedColor + ';line-height:1.7\">Delivered to <strong style=\"color:' + textColor + '\">' + email + '</strong> \\u2014 one email per week, no spam.</p>' +\n'<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"background:' + ctaBg + ';border-radius:8px\">' +\n'<a href=\"' + url + '\" style=\"display:block;padding:14px 32px;color:' + ctaText + ';text-decoration:none;font-size:14px;font-weight:700;letter-spacing:0.3px\">Visit ' + projectName + ' \\u2192</a>' +\n'</td></tr></table>' +\n'</td></tr>' +\n'<tr><td style=\"background:' + bg + ';border:1px solid ' + borderColor + ';border-top:none;border-radius:0 0 12px 12px;padding:20px 40px\">' +\n'<p style=\"margin:0;font-size:11px;color:' + mutedColor + ';line-height:1.9\">' +\nprojectName + ' is part of <a href=\"https://theunnamedroads.com\" style=\"color:' + mutedColor + ';text-decoration:underline\">The Unnamed Roads</a>.' +\n' \\u00b7 ' +\n'<a href=\"' + unsubUrl + '\" style=\"color:' + mutedColor + ';text-decoration:underline\">Unsubscribe</a>' +\n' \\u00b7 ' +\n'<a href=\"' + unsubUrl + '\" style=\"color:' + mutedColor + ';text-decoration:underline\">Manage preferences</a>' +\n'</p>' +\n'</td></tr>' +\n'</table>' +\n'</td></tr>' +\n'</table>' +\n'</body></html>';\n}\n\nconst UNSUB = \"https://list.theunnamedroads.com/subscription/manage\";\n\nconst projects = {\n  'e7f38861-4bc4-448d-85ae-376e7f7c2fb0': {\n    name: 'The Unnamed Roads',\n    bullets: [\n      'Weekly notes on AI systems, solo building, and the roads worth taking',\n      'Real talk on what\\'s working \\u2014 and what\\'s breaking \\u2014 in practice',\n      'No hype, no fluff. Just signal.'\n    ],\n    url: 'https://theunnamedroads.com',\n    style: { bg:'#0a0a0a', headerBg:'#111', headerText:'#f5f5f5', headerAccent:'#818cf8', bodyBg:'#111', textColor:'#c8c8c8', mutedColor:'#555', borderColor:'#222', ctaBg:'#6366f1', ctaText:'#fff' }\n  },\n  '149f7d0c-5959-409f-9043-d26cf920df84': {\n    name: 'The Hockey Brain',\n    bullets: [\n      'Data-driven analysis of NHL performance, scouting, and team strategy',\n      'Weekly deep dives \\u2014 the numbers that actually explain the game',\n      'No hot takes. Just the metrics that matter.'\n    ],\n    url: 'https://thehockeybrain.com',\n    style: { bg:'#f0f9ff', headerBg:'#0c4a6e', headerText:'#ffffff', headerAccent:'#7dd3fc', bodyBg:'#ffffff', textColor:'#1e3a5f', mutedColor:'#94a3b8', borderColor:'#bae6fd', ctaBg:'#0ea5e9', ctaText:'#fff' }\n  },\n  '8a52a36a-abc5-4e76-84d4-96c5f3000826': {\n    name: 'The Agent Fabric',\n    bullets: [\n      'AI agents in production \\u2014 real architectures, real failures, hard-won lessons',\n      'Weekly breakdowns of what actually works in multi-agent systems',\n      'Skip the hype. Build better agents.'\n    ],\n    url: 'https://theagentfabric.com',\n    style: { bg:'#060d1f', headerBg:'#0b1020', headerText:'#f1f5f9', headerAccent:'#93c5fd', bodyBg:'#0d1526', textColor:'#cbd5e1', mutedColor:'#475569', borderColor:'#1e2d45', ctaBg:'#3b82f6', ctaText:'#fff' }\n  },\n  'dc3c277d-d37a-4753-8b4c-27e7b1755af8': {\n    name: 'The Atomic Network',\n    bullets: [\n      'Cross-chain protocols, decentralized AI, and Web3 infrastructure \\u2014 what matters',\n      'Weekly signal from the edges of the decentralized internet',\n      'Hyperlocal. High signal. Weekly.'\n    ],\n    url: 'https://theatomicnetwork.com',\n    style: { bg:'#f8fafc', headerBg:'#1e3a8a', headerText:'#ffffff', headerAccent:'#93c5fd', bodyBg:'#ffffff', textColor:'#1e293b', mutedColor:'#94a3b8', borderColor:'#e2e8f0', ctaBg:'#2563eb', ctaText:'#fff' }\n  },\n  '9725bc88-729a-4344-99d2-5866a2d7b26b': {\n    name: 'The Print Route',\n    bullets: [\n      'Smart print logistics, provider networks, and automation workflows',\n      'Weekly updates on fulfilment routing, cost optimisation, and industry moves',\n      'Built for founders and operators in the print supply chain.'\n    ],\n    url: 'https://theprintroute.com',\n    style: { bg:'#0f172a', headerBg:'#1e1b4b', headerText:'#f1f5f9', headerAccent:'#a5b4fc', bodyBg:'#1e293b', textColor:'#cbd5e1', mutedColor:'#475569', borderColor:'#334155', ctaBg:'#4f46e5', ctaText:'#fff' }\n  },\n  '55248e17-408c-4ede-ac40-189daabbcb0f': {\n    name: 'Emil Ingemark Karlsson',\n    bullets: [\n      'Notes on data engineering, AI, and automation \\u2014 what works and what breaks',\n      'Projects, experiments, and lessons from building in public',\n      'Honest. Practical. Weekly.'\n    ],\n    url: 'https://emilingemarkarlsson.com',\n    style: { bg:'#f9fafb', headerBg:'#111827', headerText:'#f9fafb', headerAccent:'#9ca3af', bodyBg:'#ffffff', textColor:'#374151', mutedColor:'#9ca3af', borderColor:'#e5e7eb', ctaBg:'#111827', ctaText:'#fff' }\n  }\n};\n\nconst p = projects[listUuid] || projects['e7f38861-4bc4-448d-85ae-376e7f7c2fb0'];\n\nconst thankYouHtml = '<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>You\\'re in</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#f5f5f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.card{max-width:480px;text-align:center}.icon{font-size:48px;margin-bottom:24px}h1{font-size:28px;font-weight:700;margin-bottom:12px}p{color:#888;line-height:1.7;margin-bottom:24px;font-size:15px}a{color:' + p.style.ctaBg + ';text-decoration:none;border-bottom:1px solid ' + p.style.ctaBg + '40;padding-bottom:2px}</style></head><body><div class=\"card\"><div class=\"icon\">\\u2709\\ufe0f</div><h1>You\\'re in.</h1><p>' + p.bullets[0] + '</p><a href=\"' + p.url + '\">\\u2190 Back to ' + p.name + '</a></div></body></html>';\n\nreturn [{json: {\n  email,\n  listUuid,\n  projectName: p.name,\n  projectUrl: p.url,\n  thankYouHtml,\n  welcomeHtml: emailBase({ ...p.style, projectName: p.name, bullets: p.bullets, url: p.url, email, unsubUrl: UNSUB }),\n  welcomeSubject: \"You're in \\u2014 welcome to \" + p.name\n}}];\n"
+      }
+    },
+    {
+      "id": "node-lm-003",
+      "name": "Subscribe in Listmonk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        680,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.9.3:9000/api/public/subscription",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"email\": \"{{ $json.email }}\", \"list_uuids\": [\"{{ $json.listUuid }}\"]}",
+        "options": {
+          "ignoreResponseCode": true
+        }
+      }
+    },
+    {
+      "id": "node-rs-004",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        920,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer re_Yms1HKdL_7FQrPbkNnCYdFC4RruFpUyMh"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "List-Unsubscribe",
+              "value": "={{ '<https://list.theunnamedroads.com/subscription/manage>, <mailto:newsletter@theunnamedroads.com?subject=unsubscribe>' }}"
+            },
+            {
+              "name": "List-Unsubscribe-Post",
+              "value": "List-Unsubscribe=One-Click"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{ $('Prepare Data').item.json.projectName }} <newsletter@theunnamedroads.com>"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Prepare Data').item.json.email }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $('Prepare Data').item.json.welcomeSubject }}"
+            },
+            {
+              "name": "html",
+              "value": "={{ $('Prepare Data').item.json.welcomeHtml }}"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true
+        }
+      }
+    },
+    {
+      "id": "node-sl-005",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        920,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML'\n}) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-rw-006",
+      "name": "Thank You Page",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        300
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('Prepare Data').item.json.thankYouHtml }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Subscribe in Listmonk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscribe in Listmonk": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Thank You Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+  "versionCounter": 84,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-22T07:55:34.022Z",
+      "createdAt": "2026-03-22T07:55:34.022Z",
+      "role": "workflow:owner",
+      "workflowId": "Vfbb93XU1UmBgwQ8",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-29T06:32:30.486Z",
+    "createdAt": "2026-03-29T06:32:30.486Z",
+    "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+    "workflowId": "Vfbb93XU1UmBgwQ8",
+    "nodes": [
+      {
+        "id": "node-wh-001",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          200,
+          300
+        ],
+        "webhookId": "nl-subscribe-001",
+        "parameters": {
+          "path": "newsletter-subscribe",
+          "httpMethod": "POST",
+          "responseMode": "responseNode",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-002",
+        "name": "Prepare Data",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          440,
+          300
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "\nconst body = $input.first().json.body || {};\nconst email = (body.email || '').trim().toLowerCase();\nconst listUuid = (body.l || '').trim();\n\nfunction emailBase({ bg, headerBg, headerText, headerAccent, bodyBg, textColor, mutedColor, borderColor, ctaBg, ctaText, projectName, bullets, url, email, unsubUrl }) {\n  const preheader = \"You're subscribed \\u2014 here's what's coming your way.\";\n  const bulletsHtml = bullets.map(b =>\n    '<tr><td style=\"padding:4px 0 4px 0\"><span style=\"display:inline-block;width:20px;color:' + ctaBg + '\">\\u203a</span><span style=\"font-size:14px;color:' + textColor + ';line-height:1.7\">' + b + '</span></td></tr>'\n  ).join('');\n\n  return '<!DOCTYPE html>' +\n'<html lang=\"en\">' +\n'<head>' +\n'<meta charset=\"utf-8\">' +\n'<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">' +\n'<title>Welcome to ' + projectName + '</title>' +\n'</head>' +\n'<body style=\"margin:0;padding:0;background:' + bg + ';font-family:-apple-system,BlinkMacSystemFont,\\'Segoe UI\\',Helvetica,sans-serif\">' +\n'<div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all\">' + preheader + '\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c\\u200c</div>' +\n'<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:' + bg + ';padding:40px 16px\">' +\n'<tr><td align=\"center\">' +\n'<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"max-width:560px\">' +\n'<tr><td style=\"background:' + headerBg + ';border-radius:12px 12px 0 0;padding:40px 40px 36px\">' +\n'<p style=\"margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:' + headerAccent + '\">' + projectName + '</p>' +\n'<h1 style=\"margin:0 0 8px;font-size:30px;font-weight:800;color:' + headerText + ';line-height:1.15\">You\\'re in.</h1>' +\n'<p style=\"margin:0;font-size:15px;color:' + headerAccent + ';line-height:1.5;opacity:0.85\">Your subscription is confirmed.</p>' +\n'</td></tr>' +\n'<tr><td style=\"background:' + bodyBg + ';padding:32px 40px 28px;border-left:1px solid ' + borderColor + ';border-right:1px solid ' + borderColor + '\">' +\n'<p style=\"margin:0 0 24px;font-size:15px;color:' + textColor + ';line-height:1.8\">Hi \\u2014 thanks for subscribing. Here\\'s what you\\'ll get:</p>' +\n'<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 28px\">' + bulletsHtml + '</table>' +\n'<p style=\"margin:0 0 28px;font-size:13px;color:' + mutedColor + ';line-height:1.7\">Delivered to <strong style=\"color:' + textColor + '\">' + email + '</strong> \\u2014 one email per week, no spam.</p>' +\n'<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"background:' + ctaBg + ';border-radius:8px\">' +\n'<a href=\"' + url + '\" style=\"display:block;padding:14px 32px;color:' + ctaText + ';text-decoration:none;font-size:14px;font-weight:700;letter-spacing:0.3px\">Visit ' + projectName + ' \\u2192</a>' +\n'</td></tr></table>' +\n'</td></tr>' +\n'<tr><td style=\"background:' + bg + ';border:1px solid ' + borderColor + ';border-top:none;border-radius:0 0 12px 12px;padding:20px 40px\">' +\n'<p style=\"margin:0;font-size:11px;color:' + mutedColor + ';line-height:1.9\">' +\nprojectName + ' is part of <a href=\"https://theunnamedroads.com\" style=\"color:' + mutedColor + ';text-decoration:underline\">The Unnamed Roads</a>.' +\n' \\u00b7 ' +\n'<a href=\"' + unsubUrl + '\" style=\"color:' + mutedColor + ';text-decoration:underline\">Unsubscribe</a>' +\n' \\u00b7 ' +\n'<a href=\"' + unsubUrl + '\" style=\"color:' + mutedColor + ';text-decoration:underline\">Manage preferences</a>' +\n'</p>' +\n'</td></tr>' +\n'</table>' +\n'</td></tr>' +\n'</table>' +\n'</body></html>';\n}\n\nconst UNSUB = \"https://list.theunnamedroads.com/subscription/manage\";\n\nconst projects = {\n  'e7f38861-4bc4-448d-85ae-376e7f7c2fb0': {\n    name: 'The Unnamed Roads',\n    bullets: [\n      'Weekly notes on AI systems, solo building, and the roads worth taking',\n      'Real talk on what\\'s working \\u2014 and what\\'s breaking \\u2014 in practice',\n      'No hype, no fluff. Just signal.'\n    ],\n    url: 'https://theunnamedroads.com',\n    style: { bg:'#0a0a0a', headerBg:'#111', headerText:'#f5f5f5', headerAccent:'#818cf8', bodyBg:'#111', textColor:'#c8c8c8', mutedColor:'#555', borderColor:'#222', ctaBg:'#6366f1', ctaText:'#fff' }\n  },\n  '149f7d0c-5959-409f-9043-d26cf920df84': {\n    name: 'The Hockey Brain',\n    bullets: [\n      'Data-driven analysis of NHL performance, scouting, and team strategy',\n      'Weekly deep dives \\u2014 the numbers that actually explain the game',\n      'No hot takes. Just the metrics that matter.'\n    ],\n    url: 'https://thehockeybrain.com',\n    style: { bg:'#f0f9ff', headerBg:'#0c4a6e', headerText:'#ffffff', headerAccent:'#7dd3fc', bodyBg:'#ffffff', textColor:'#1e3a5f', mutedColor:'#94a3b8', borderColor:'#bae6fd', ctaBg:'#0ea5e9', ctaText:'#fff' }\n  },\n  '8a52a36a-abc5-4e76-84d4-96c5f3000826': {\n    name: 'The Agent Fabric',\n    bullets: [\n      'AI agents in production \\u2014 real architectures, real failures, hard-won lessons',\n      'Weekly breakdowns of what actually works in multi-agent systems',\n      'Skip the hype. Build better agents.'\n    ],\n    url: 'https://theagentfabric.com',\n    style: { bg:'#060d1f', headerBg:'#0b1020', headerText:'#f1f5f9', headerAccent:'#93c5fd', bodyBg:'#0d1526', textColor:'#cbd5e1', mutedColor:'#475569', borderColor:'#1e2d45', ctaBg:'#3b82f6', ctaText:'#fff' }\n  },\n  'dc3c277d-d37a-4753-8b4c-27e7b1755af8': {\n    name: 'The Atomic Network',\n    bullets: [\n      'Cross-chain protocols, decentralized AI, and Web3 infrastructure \\u2014 what matters',\n      'Weekly signal from the edges of the decentralized internet',\n      'Hyperlocal. High signal. Weekly.'\n    ],\n    url: 'https://theatomicnetwork.com',\n    style: { bg:'#f8fafc', headerBg:'#1e3a8a', headerText:'#ffffff', headerAccent:'#93c5fd', bodyBg:'#ffffff', textColor:'#1e293b', mutedColor:'#94a3b8', borderColor:'#e2e8f0', ctaBg:'#2563eb', ctaText:'#fff' }\n  },\n  '9725bc88-729a-4344-99d2-5866a2d7b26b': {\n    name: 'The Print Route',\n    bullets: [\n      'Smart print logistics, provider networks, and automation workflows',\n      'Weekly updates on fulfilment routing, cost optimisation, and industry moves',\n      'Built for founders and operators in the print supply chain.'\n    ],\n    url: 'https://theprintroute.com',\n    style: { bg:'#0f172a', headerBg:'#1e1b4b', headerText:'#f1f5f9', headerAccent:'#a5b4fc', bodyBg:'#1e293b', textColor:'#cbd5e1', mutedColor:'#475569', borderColor:'#334155', ctaBg:'#4f46e5', ctaText:'#fff' }\n  },\n  '55248e17-408c-4ede-ac40-189daabbcb0f': {\n    name: 'Emil Ingemark Karlsson',\n    bullets: [\n      'Notes on data engineering, AI, and automation \\u2014 what works and what breaks',\n      'Projects, experiments, and lessons from building in public',\n      'Honest. Practical. Weekly.'\n    ],\n    url: 'https://emilingemarkarlsson.com',\n    style: { bg:'#f9fafb', headerBg:'#111827', headerText:'#f9fafb', headerAccent:'#9ca3af', bodyBg:'#ffffff', textColor:'#374151', mutedColor:'#9ca3af', borderColor:'#e5e7eb', ctaBg:'#111827', ctaText:'#fff' }\n  }\n};\n\nconst p = projects[listUuid] || projects['e7f38861-4bc4-448d-85ae-376e7f7c2fb0'];\n\nconst thankYouHtml = '<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>You\\'re in</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#f5f5f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.card{max-width:480px;text-align:center}.icon{font-size:48px;margin-bottom:24px}h1{font-size:28px;font-weight:700;margin-bottom:12px}p{color:#888;line-height:1.7;margin-bottom:24px;font-size:15px}a{color:' + p.style.ctaBg + ';text-decoration:none;border-bottom:1px solid ' + p.style.ctaBg + '40;padding-bottom:2px}</style></head><body><div class=\"card\"><div class=\"icon\">\\u2709\\ufe0f</div><h1>You\\'re in.</h1><p>' + p.bullets[0] + '</p><a href=\"' + p.url + '\">\\u2190 Back to ' + p.name + '</a></div></body></html>';\n\nreturn [{json: {\n  email,\n  listUuid,\n  projectName: p.name,\n  projectUrl: p.url,\n  thankYouHtml,\n  welcomeHtml: emailBase({ ...p.style, projectName: p.name, bullets: p.bullets, url: p.url, email, unsubUrl: UNSUB }),\n  welcomeSubject: \"You're in \\u2014 welcome to \" + p.name\n}}];\n"
+        }
+      },
+      {
+        "id": "node-lm-003",
+        "name": "Subscribe in Listmonk",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          680,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "http://10.0.9.3:9000/api/public/subscription",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\"email\": \"{{ $json.email }}\", \"list_uuids\": [\"{{ $json.listUuid }}\"]}",
+          "options": {
+            "ignoreResponseCode": true
+          }
+        }
+      },
+      {
+        "id": "node-rs-004",
+        "name": "Send Welcome Email",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          920,
+          160
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.resend.com/emails",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer re_Yms1HKdL_7FQrPbkNnCYdFC4RruFpUyMh"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "List-Unsubscribe",
+                "value": "={{ '<https://list.theunnamedroads.com/subscription/manage>, <mailto:newsletter@theunnamedroads.com?subject=unsubscribe>' }}"
+              },
+              {
+                "name": "List-Unsubscribe-Post",
+                "value": "List-Unsubscribe=One-Click"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "keypair",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "from",
+                "value": "={{ $('Prepare Data').item.json.projectName }} <newsletter@theunnamedroads.com>"
+              },
+              {
+                "name": "to",
+                "value": "={{ $('Prepare Data').item.json.email }}"
+              },
+              {
+                "name": "subject",
+                "value": "={{ $('Prepare Data').item.json.welcomeSubject }}"
+              },
+              {
+                "name": "html",
+                "value": "={{ $('Prepare Data').item.json.welcomeHtml }}"
+              }
+            ]
+          },
+          "options": {
+            "ignoreResponseCode": true
+          }
+        }
+      },
+      {
+        "id": "node-sl-005",
+        "name": "Notify Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          920,
+          440
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML'\n}) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-rw-006",
+        "name": "Thank You Page",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          1160,
+          300
+        ],
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $('Prepare Data').item.json.thankYouHtml }}",
+          "options": {
+            "responseCode": 200,
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Prepare Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Data": {
+        "main": [
+          [
+            {
+              "node": "Subscribe in Listmonk",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Subscribe in Listmonk": {
+        "main": [
+          [
+            {
+              "node": "Send Welcome Email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Notify Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Welcome Email": {
+        "main": [
+          [
+            {
+              "node": "Thank You Page",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-29T06:32:30.536Z",
+        "id": 424,
+        "workflowId": "Vfbb93XU1UmBgwQ8",
+        "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-29T06:32:30.551Z",
+        "id": 425,
+        "workflowId": "Vfbb93XU1UmBgwQ8",
+        "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

@@ -1,0 +1,386 @@
+{
+  "id": "9gn1VOZgC3usXUMw",
+  "name": "eik-keyword-approver",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "approve-keyword",
+        "options": {}
+      },
+      "id": "a72874ac-3f8e-44d1-875b-9b6c63385e91",
+      "name": "Approve Keyword Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "approve-keyword"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract keyword and score from query params\nconst keyword = $input.item.json.query?.keyword || '';\nconst score = $input.item.json.query?.score || 0;\nreturn { keyword, score, status: 'Ready', approved_at: new Date().toISOString() };"
+      },
+      "id": "5928dbc7-a813-4f6b-9392-ea4aefb131a2",
+      "name": "Extract Parameters",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "11WgOz-M43YwwuIQBYwbBN3JYACEM7iyh0MA257RJolw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "1693568455",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WgOz-M43YwwuIQBYwbBN3JYACEM7iyh0MA257RJolw/edit#gid=1693568455"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "Ready",
+            "approved_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "keyword"
+          ],
+          "schema": [
+            {
+              "column": "status",
+              "value": "Ready"
+            },
+            {
+              "column": "approved_at",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c2873431-fa6b-45b9-85d1-496395b7e510",
+      "name": "Update Sheet Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sHynNC5opA9jCQYo",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "4d7fb71b-f765-40d8-a611-251259714b8d",
+      "name": "Telegram Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godknt: ' + (.item.json.keyword || 'oknt'), parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=✅ Keyword \"{{ $('Extract Parameters').item.json.keyword }}\" approved! Status updated to Ready.",
+        "options": {}
+      },
+      "id": "f2c5b525-96e7-4c4b-9b2f-abd9d5122c28",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Approve Keyword Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Parameters": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet Status": {
+      "main": [
+        [
+          {
+            "node": "Telegram Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+  "versionCounter": 46,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-13T11:03:08.209Z",
+      "createdAt": "2025-12-13T11:03:08.209Z",
+      "role": "workflow:owner",
+      "workflowId": "9gn1VOZgC3usXUMw",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T14:58:42.557Z",
+    "createdAt": "2026-03-24T14:58:42.557Z",
+    "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+    "workflowId": "9gn1VOZgC3usXUMw",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "approve-keyword",
+          "options": {}
+        },
+        "id": "a72874ac-3f8e-44d1-875b-9b6c63385e91",
+        "name": "Approve Keyword Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "approve-keyword"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract keyword and score from query params\nconst keyword = $input.item.json.query?.keyword || '';\nconst score = $input.item.json.query?.score || 0;\nreturn { keyword, score, status: 'Ready', approved_at: new Date().toISOString() };"
+        },
+        "id": "5928dbc7-a813-4f6b-9392-ea4aefb131a2",
+        "name": "Extract Parameters",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "11WgOz-M43YwwuIQBYwbBN3JYACEM7iyh0MA257RJolw",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "1693568455",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11WgOz-M43YwwuIQBYwbBN3JYACEM7iyh0MA257RJolw/edit#gid=1693568455"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "Ready",
+              "approved_at": "={{ $now.toISO() }}"
+            },
+            "matchingColumns": [
+              "keyword"
+            ],
+            "schema": [
+              {
+                "column": "status",
+                "value": "Ready"
+              },
+              {
+                "column": "approved_at",
+                "value": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "c2873431-fa6b-45b9-85d1-496395b7e510",
+        "name": "Update Sheet Status",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          0
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "sHynNC5opA9jCQYo",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "id": "4d7fb71b-f765-40d8-a611-251259714b8d",
+        "name": "Telegram Confirmation",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godknt: ' + (.item.json.keyword || 'oknt'), parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "=✅ Keyword \"{{ $('Extract Parameters').item.json.keyword }}\" approved! Status updated to Ready.",
+          "options": {}
+        },
+        "id": "f2c5b525-96e7-4c4b-9b2f-abd9d5122c28",
+        "name": "Respond to Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          896,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Approve Keyword Webhook": {
+        "main": [
+          [
+            {
+              "node": "Extract Parameters",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Parameters": {
+        "main": [
+          [
+            {
+              "node": "Update Sheet Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Sheet Status": {
+        "main": [
+          [
+            {
+              "node": "Telegram Confirmation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Confirmation": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-24T14:58:42.619Z",
+        "id": 218,
+        "workflowId": "9gn1VOZgC3usXUMw",
+        "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:58:42.643Z",
+        "id": 219,
+        "workflowId": "9gn1VOZgC3usXUMw",
+        "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

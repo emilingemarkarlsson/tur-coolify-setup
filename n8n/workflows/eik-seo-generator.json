@@ -1,0 +1,1091 @@
+{
+  "id": "YwlTkR687mZ1HMEY",
+  "name": "eik-seo-generator",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "4b816aa7-bebe-41bf-9ded-2b4967d3bbea",
+      "name": "Daily Trigger (9 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1184,
+        -256
+      ]
+    },
+    {
+      "id": "86986f63-c630-414c-8701-6ec970e2e204",
+      "name": "Read Keywords from Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -256
+      ],
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      },
+      "parameters": {
+        "operation": "getObject",
+        "bucketName": "seo-drafts",
+        "fileKey": "eik-approved-keywords.json",
+        "additionalFields": {}
+      }
+    },
+    {
+      "id": "308755d2-dbf3-43c7-9844-6748a8e86a5f",
+      "name": "Pick Random Keyword",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -256
+      ],
+      "parameters": {
+        "jsCode": "let keywords;\ntry { keywords = JSON.parse($json.Body || $json.body || '[]'); } catch(e) { keywords = []; }\nif (!Array.isArray(keywords) || keywords.length === 0) {\n  keywords = ['data engineering pipeline','n8n automation tutorial','modern data stack 2026','ai agents workflow','databricks lakehouse'];\n}\nconst pick = keywords[Math.floor(Math.random() * keywords.length)];\nconst keyword = typeof pick === 'string' ? pick : pick.keyword;\nreturn [{ json: { keyword } }];"
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt",
+              "name": "prompt",
+              "value": "={{ \"You are Emil Karlsson's AI writing assistant. Emil is a data engineer, full-stack developer, and AI automation specialist based in Stockholm, Sweden.\\n\\nCONTEXT ABOUT EMIL:\\n- Expertise: Data engineering, modern data stacks, web development, AI automation, product development\\n- Primary Tech Stack:\\n  * Languages: Python, JavaScript/TypeScript\\n  * Frontend: Astro, React, Cursor IDE, VS Code\\n  * Data & Analytics: Databricks, Snowflake, MongoDB, PostgreSQL, Apache Kafka, MinIO, Mage AI, Google Analytics, Microsoft Clarity, Power BI, Looker\\n  * Automation & AI: n8n, Groq, OpenAI, Claude, ChatGPT, Perplexity, Apify, Octoparse, Postman\\n  * Deployment & Infrastructure: Netlify, Docker, GitHub, AWS, Google Cloud, Azure, DigitalOcean, Hetzner, Cloudflare, Coolify\\n  * Collaboration: Slack, Linear, Notion, Figma, Trello, Miro\\n  * Low-Code Platforms: Appsmith, OutSystems\\n- Writing Style: Clear, practical, technical but accessible, focuses on real-world applications\\n- Audience: Technical professionals, data engineers, developers, business leaders interested in data & AI\\n- Tone: Professional yet conversational, Swedish pragmatism, actionable insights\\n\\nCRITICAL INSTRUCTION: Reference Emil's ACTUAL toolstack ONLY to ensure authenticity:\\n- Data pipelines: Databricks, Snowflake, Apache Kafka, MongoDB, PostgreSQL, Mage AI\\n- AI/LLMs: Groq, Claude, ChatGPT, OpenAI, Perplexity\\n- Automation: n8n for orchestration, Postman for API testing, Slack for notifications\\n- Web/Frontend: Astro, React, TypeScript\\n- Deployment: Netlify, Docker, GitHub, AWS, Google Cloud, Azure, DigitalOcean\\n- Analytics: Google Analytics, Microsoft Clarity, Power BI, Looker\\n- Data Scraping: Apify, Octoparse\\n- NEVER mention: Apache Airflow, Tableau, IFTTT, Zapier, Wave, Hootsuite, Buffer\\n- Show tool integration: n8n + Groq + PostgreSQL + Slack as complete pipeline\\n\\nTASK: Write an SEO-optimized blog post about: \\\"\" + $json.keyword + \"\\\"\\n\\nREQUIREMENTS:\\n- Length: 1000-1500 words\\n- Write from Emil's perspective with deep technical credibility\\n- Include ONLY tools from Emil's verified toolstack\\n- Integrate tools naturally into real-world, practical examples\\n- Structure with H2 and H3 headings for scannability\\n- Be technical AND accessible to developers and business leaders\\n- Focus on cutting-edge practices (2024-2025)\\n- Include specific, implementable code examples or use-cases when relevant\\n- End with a CTA inviting readers to connect\\n\\nFORMAT:\\nSEO_TITLE: [55-60 characters max - compelling title]\\nMETA_DESC: [CRITICAL: Maximum 155 characters INCLUDING SPACES. Must be engaging and include keyword.]\\n\\n# [Article H1 Title]\\n\\n[Engaging introduction establishing relevance and why Emil cares about this topic]\\n\\n## [First Major Section with Practical Examples]\\n\\n[Use REAL toolstack examples: n8n workflows, Databricks operations, Groq API calls, Astro components, etc.]\\n\\n### [Subsection if needed]\\n\\n[Technical details showing how tools solve this specific problem]\\n\\n## [Second Major Section]\\n\\n[More practical examples showing toolstack integration]\\n\\n## Key Takeaways\\n\\n- [Actionable insight 1 from Emil's experience]\\n- [Actionable insight 2 with toolstack context]\\n- [Actionable insight 3 showing best practices]\\n\\n## What's Next?\\n\\n[Brief closing. Reference related topics or getting in touch for projects.]\\n\\n---\\n\\n*Want to discuss data engineering, AI automation, modern web development, or building with Emil's toolstack? [Reach out](/contact) or explore more [articles on my blog](/blog).*\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30770c28-f582-40b3-b4a1-9345d18ccb15",
+      "name": "Create Content Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -512,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are Emil Karlsson's AI writing assistant. Emil is a data engineer, full-stack developer, and automation expert based in Stockholm. Write technical yet accessible blog content that references his actual toolstack (Databricks, n8n, Groq, Astro, Netlify, etc.) with authentic, real-world examples. Your writing is clear, practical, and shows deep technical understanding. Focus on demonstrating how Emil's tools work together to solve real problems.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.prompt\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 4000,\n  \"top_p\": 0.95\n} }}",
+        "options": {}
+      },
+      "id": "36e21d75-318a-44bc-8913-2d766acf7606",
+      "name": "Generate Content with Groq AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -304,
+        -256
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HnNvhJFUVZo7k5Tp",
+          "name": "tha-groqseo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the generated article content\nconst generatedArticle = $('Generate Content with Groq AI').item.json.choices[0].message.content;\n\n// Create the SEO quality control prompt with toolstack focus\nconst systemPrompt = `You are a senior SEO strategist and content editor. Your mission is to review and improve the generated article to ensure it:\n\n1. TOOLSTACK ALIGNMENT (CRITICAL - DO THIS FIRST):\n   - Scan all tool mentions. KEEP ONLY: n8n, Groq, Claude, ChatGPT, Databricks, Snowflake, PostgreSQL, MongoDB, Apache Kafka, Astro, React, Python, GitHub, Netlify, Docker, Slack, Postman, Power BI, Looker, Google Analytics, Microsoft Clarity, AWS, Google Cloud, Azure, DigitalOcean, Apify, Home Assistant, Raycast, Linear, Notion, etc.\n   - REMOVE: IFTTT, Wave, FreshBooks, Hootsuite, Buffer, Apache Airflow, Tableau, Miro, Figma\n   - REPLACE generic tools with Emil's actual tools (e.g., replace \"Wave\" with \"Databricks\", \"Apache Airflow\" with \"n8n\", \"Tableau\" with \"Power BI\")\n   - INTEGRATE tools naturally showing how they work TOGETHER (n8n + Groq + Slack, or Databricks + PostgreSQL + Power BI)\n   - ADD more toolstack references to increase authenticity and E-A-T\n\n2. Google's guidelines (E-E-A-T, people-first, helpful content):\n   - Experience: Use REAL toolstack examples demonstrating authentic expertise\n   - Expertise: Technical depth with specific tool names and real use cases\n   - Authoritativeness: Confident, informed tone using Emil's actual tools\n   - Trustworthiness: Honest about tool capabilities, no exaggerations\n\n3. Quality standards:\n   - Clear structure with H2/H3 headings\n   - No keyword stuffing, remove repetition\n   - Search intent coverage - answer all user questions\n   - Natural internal linking opportunities\n\nRETURN PURE MARKDOWN ONLY - no JSON or code blocks.\n\nPrioritize toolstack authenticity above all else. Make the article credible through real tool references.`;\n\nconst userPrompt = `Review and improve this article for toolstack alignment (prioritize this), Google guidelines, and quality. Make tool references AUTHENTIC to Emil's actual toolstack:\\n\\n${generatedArticle}`;\n\nreturn {\n  systemPrompt: systemPrompt,\n  userPrompt: userPrompt\n};"
+      },
+      "id": "fb00d938-cda4-41d2-9630-09e9e13738fc",
+      "name": "Create SEO Quality Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": $json.systemPrompt\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.userPrompt\n    }\n  ],\n  \"temperature\": 0.5,\n  \"max_tokens\": 5000,\n  \"top_p\": 0.95\n} }}",
+        "options": {}
+      },
+      "id": "9b1bb4ea-9ff5-445f-ad40-dee6395f4a70",
+      "name": "SEO Quality Enhancement",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        -256
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HnNvhJFUVZo7k5Tp",
+          "name": "tha-groqseo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the generated content from Groq response\nconst response = $input.item.json;\nconst rawContent = response.choices[0].message.content;\n\n// Extract SEO title and meta description\nconst seoTitleMatch = rawContent.match(/SEO_TITLE:\\s*(.+?)\\n/);\nconst metaDescMatch = rawContent.match(/META_DESC:\\s*(.+?)\\n/);\n\n// Remove the SEO lines from content\nlet content = rawContent\n  .replace(/SEO_TITLE:\\s*.+?\\n/, '')\n  .replace(/META_DESC:\\s*.+?\\n/, '')\n  .trim();\n\nconst seoTitle = seoTitleMatch ? seoTitleMatch[1].trim() : $('Pick Random Keyword').item.json.keyword;\nlet metaDescription = metaDescMatch ? metaDescMatch[1].trim() : '';\n\n// CRITICAL: Validate and truncate meta description to max 155 characters\nif (metaDescription.length > 155) {\n  console.log(`WARNING: Meta description too long (${metaDescription.length} chars). Truncating to 155.`);\n  metaDescription = metaDescription.substring(0, 152) + '...';\n}\n\n// Extract H1 title from content (for frontmatter)\nconst h1Match = content.match(/^#\\s*(.+?)\\n/);\nconst title = h1Match ? h1Match[1].trim() : seoTitle;\n\n// CRITICAL: Remove H1 from content since Astro layout displays title from frontmatter\n// This prevents duplicate H1 headers on the page\nif (h1Match) {\n  content = content.replace(/^#\\s*.+?\\n\\n?/, '').trim();\n}\n\n// Create slug from keyword\nconst slug = $('Pick Random Keyword').item.json.keyword\n  .toLowerCase()\n  .replace(/[åäö]/g, match => ({ 'å': 'a', 'ä': 'a', 'ö': 'o' }[match]))\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\n\n// Get current date for filename\nconst now = new Date();\nconst date = now.toISOString().split('T')[0];\nconst publishDate = now.toLocaleDateString('sv-SE');\n\n// Create excerpt from first paragraph (after H1 removal)\nconst firstParagraph = content.split('\\n\\n')[0] || content.substring(0, 200);\nconst excerpt = firstParagraph.length > 150 ? firstParagraph.substring(0, 147) + '...' : firstParagraph;\n\n// Escape YAML strings\nconst escapeYaml = (str) => str.replace(/'/g, \"''\");\n\nreturn {\n  content: content,\n  title: title,\n  seoTitle: seoTitle,\n  metaDescription: metaDescription,\n  excerpt: excerpt,\n  slug: slug,\n  keyword: $('Pick Random Keyword').item.json.keyword,\n  category: $('Pick Random Keyword').item.json.category,\n  publishDate: publishDate,\n  filename: `${slug}.md`\n};"
+      },
+      "id": "cb43aba8-16d8-4bd6-8232-aa526958f3e9",
+      "name": "Format & Extract Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create complete Astro markdown with frontmatter\nconst data = $input.item.json;\n\n// Auto-generate tags based on keyword and category\nconst baseTags = [];\nif (data.category) baseTags.push(data.category);\n\n// Add intelligent tags based on content\nconst contentLower = data.content.toLowerCase();\nconst tagMap = {\n  'data engineering': ['Data Engineering', 'Modern Data Stack'],\n  'python': ['Python'],\n  'databricks': ['Databricks'],\n  'ai': ['Artificial Intelligence', 'AI'],\n  'automation': ['Automation'],\n  'astro': ['Astro', 'Web Development'],\n  'analytics': ['Analytics', 'Business Intelligence'],\n  'cloud': ['Cloud Platforms'],\n  'n8n': ['Automation', 'Workflow'],\n  'sql': ['SQL', 'Data Engineering']\n};\n\nObject.entries(tagMap).forEach(([keyword, tags]) => {\n  if (contentLower.includes(keyword)) {\n    tags.forEach(tag => {\n      if (!baseTags.includes(tag)) baseTags.push(tag);\n    });\n  }\n});\n\n// Limit to 5 tags\nconst tags = baseTags.slice(0, 5);\n\nconst escapeYaml = (str) => str.replace(/'/g, \"''\");\n\nconst markdown = `---\ntitle: '${escapeYaml(data.title)}'\nexcerpt: '${escapeYaml(data.excerpt)}'\npublishDate: '${data.publishDate}'\ntags:\n${tags.map(tag => `  - ${escapeYaml(tag)}`).join('\\n')}\nisFeatured: false\nhidden: true\nseo:\n  title: '${escapeYaml(data.seoTitle)} | Emil Karlsson'\n  description: '${escapeYaml(data.metaDescription)}'\n  image:\n    src: '/hero-desktop.jpg'\n    alt: 'Emil Karlsson'\n---\n\n${data.content}\n`;\n\nreturn {\n  finalContent: markdown,\n  draft_content: markdown,\n  title: data.title,\n  slug: data.slug,\n  keyword: data.keyword,\n  filename: data.filename,\n  seoTitle: data.seoTitle,\n  metaDescription: data.metaDescription,\n  tags: tags\n};"
+      },
+      "id": "e8f330c7-304a-4f70-8a0d-d9c8879fcfab",
+      "name": "Build Final Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Emil-specific personal insights to add authenticity & E-A-T\nconst article = $('Build Final Markdown').item.json.finalContent;\nconst keyword = $('Build Final Markdown').item.json.keyword;\n\nconst systemPrompt = `You are helping add authentic, personal insights from Emil Karlsson to make the article more credible and people-first.\n\nEmil's expertise areas:\n- Data engineering with Databricks, Snowflake, Kafka\n- Automation with n8n\n- AI integration with Groq, Claude\n- Web development with Astro, React\n- Building modern data stacks\n\nAdd 1-2 personal perspective callouts like:\n- \"In my experience with [TOOL]...\"\n- \"When I built [PROJECT], I learned...\"\n- \"A pattern I've noticed...\"\n- \"The mistake I made initially...\"\n\nThese should be specific, credible, and feel authentic from Emil's years of experience.`;\n\nconst userPrompt = `Article keyword: \"${keyword}\"\\n\\nAdd 1-2 authentic personal insights from Emil's perspective. These should:\\n1. Feel genuine and specific (not generic)\\n2. Relate to the article topic\\n3. Be short callout-style additions\\n4. Show practical experience, not just theory\\n\\nReturn ONLY the insights as plain text, one per line, formatted as:\\n\"In my experience [insight]\"\\nor\\n\"A pattern I've noticed [insight]\"\\n\\nArticle:\\n${article.substring(0, 1000)}...`;\n\nreturn {\n  systemPrompt: systemPrompt,\n  userPrompt: userPrompt,\n  keyword: keyword,\n  slug: $('Build Final Markdown').item.json.slug\n};"
+      },
+      "id": "5f9b883b-3d06-4e5e-9199-e5b0832b3eae",
+      "name": "Generate Emil Personal Insights",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": $json.systemPrompt\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.userPrompt\n    }\n  ],\n  \"temperature\": 0.8,\n  \"max_tokens\": 500,\n  \"top_p\": 0.9\n} }}",
+        "options": {}
+      },
+      "id": "046d2b2e-a0d8-4af2-9160-1ad6314f3488",
+      "name": "Groq: Generate Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HnNvhJFUVZo7k5Tp",
+          "name": "tha-groqseo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create comprehensive quality checklist for human review\nconst article = $('Build Final Markdown').item.json.finalContent;\nconst seoTitle = $('Build Final Markdown').item.json.seoTitle;\nconst metaDesc = $('Build Final Markdown').item.json.metaDescription;\nconst keyword = $('Build Final Markdown').item.json.keyword;\nconst insights = $('Groq: Generate Insights').item.json.choices?.[0]?.message?.content || 'No insights generated';\n\n// Quality checks\nconst checks = {\n  content_length: article.length > 1000,\n  has_h2_headings: (article.match(/^## /gm) || []).length >= 2,\n  has_key_takeaways: article.includes('Key Takeaways'),\n  has_cta: article.includes('[reach out](/contact)') || article.includes('[articles on my blog](/blog)'),\n  keyword_in_title: seoTitle.toLowerCase().includes(keyword.toLowerCase()),\n  meta_desc_length: metaDesc.length > 80 && metaDesc.length <= 155,\n  no_excessive_keywords: (article.match(new RegExp(keyword, 'gi')) || []).length < 15,\n  has_code_examples: article.includes('`'),\n  references_toolstack: article.match(/n8n|Groq|Databricks|Astro|Netlify|PostgreSQL|Kafka|Claude|ChatGPT/gi) ? (article.match(/n8n|Groq|Databricks|Astro|Netlify|PostgreSQL|Kafka|Claude|ChatGPT/gi) || []).length >= 3 : false,\n  insights_generated: insights.length > 50\n};\n\n// Score E-A-T (1-10)\nlet eatScore = 5;\nif (checks.references_toolstack) eatScore += 2;\nif (checks.has_code_examples) eatScore += 1;\nif (checks.no_excessive_keywords) eatScore += 1;\nif (checks.insights_generated) eatScore += 1;\n\nconst passedChecks = Object.values(checks).filter(v => v).length;\nconst totalChecks = Object.keys(checks).length;\n\nreturn {\n  quality_checks: checks,\n  passed_checks: passedChecks,\n  total_checks: totalChecks,\n  quality_percentage: Math.round((passedChecks / totalChecks) * 100),\n  eat_score: Math.min(10, eatScore),\n  insights: insights,\n  keyword: keyword,\n  slug: $('Build Final Markdown').item.json.slug,\n  ready_for_review: passedChecks >= 8 // 8+ checks passed = ready\n};"
+      },
+      "id": "8252ea3a-4d92-4b66-9a97-c7ed6ae1ae11",
+      "name": "Generate Quality Checklist",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build enhanced markdown with frontmatter including E-A-T, disclosure, author, JSON-LD schema\nconst data = $('Build Final Markdown').item.json;\nconst checklist = $('Generate Quality Checklist').item.json;\nconst insights = checklist.insights;\n\n// Add Emil's personal insights to article\nlet enhancedContent = data.finalContent;\nif (insights && insights.length > 100) {\n  const insightSection = `\\n\\n> **💡 From Emil's Experience**\\n> ${insights.split('\\n').filter(l => l.trim()).join('\\n> ')}\\n\\n`;\n  // Insert after intro\n  const parts = enhancedContent.split('\\n\\n');\n  if (parts.length > 2) {\n    parts.splice(2, 0, insightSection.trim());\n    enhancedContent = parts.join('\\n\\n');\n  }\n}\n\n// Create JSON-LD schema for E-A-T\nconst jsonLd = {\n  '@context': 'https://schema.org',\n  '@type': 'BlogPosting',\n  headline: data.seoTitle,\n  description: data.metaDescription,\n  author: {\n    '@type': 'Person',\n    name: 'Emil Karlsson',\n    url: 'https://www.emilingemarkarlsson.com',\n    jobTitle: 'Data Engineer & Automation Specialist',\n    image: 'https://www.emilingemarkarlsson.com/hero-desktop.jpg'\n  },\n  datePublished: new Date().toISOString(),\n  dateModified: new Date().toISOString(),\n  keywords: data.keyword,\n  image: {\n    '@type': 'ImageObject',\n    url: 'https://www.emilingemarkarlsson.com/hero-desktop.jpg'\n  }\n};\n\nconst frontmatter = `---\ntitle: '${data.title}'\nexcerpt: '${data.excerpt}'\npublishDate: '${data.publishDate}'\nupdatedDate: '${new Date().toLocaleDateString('sv-SE')}'\nauthor: 'Emil Karlsson'\nauthorUrl: 'https://www.emilingemarkarlsson.com'\nauthorBio: 'Data engineer, full-stack developer, and AI automation specialist based in Stockholm.'\ntags:\n${data.tags.map(tag => `  - ${tag}`).join('\\n')}\nisFeatured: false\nhidden: true\nquality_score: ${checklist.eat_score}/10\nseo:\n  title: '${data.seoTitle} | Emil Karlsson'\n  description: '${data.metaDescription}'\n  image:\n    src: '/hero-desktop.jpg'\n    alt: 'Emil Karlsson'\nschema:\n  ${JSON.stringify(jsonLd).split(',').join(',\\n  ')}\ndisclosure: 'This article was AI-assisted using Groq (LLaMA 3.1 405B) and Claude, with human writing and review by Emil Karlsson. Views and insights are from Emil\\'s professional experience.'\n---\n\n${enhancedContent}`;\n\nreturn {\n  finalMarkdown: frontmatter,\n  title: data.title,\n  slug: data.slug,\n  keyword: data.keyword,\n  quality_score: checklist.eat_score,\n  passed_checks: `${checklist.passed_checks}/${checklist.total_checks}`,\n  ready_for_review: checklist.ready_for_review\n};"
+      },
+      "id": "98876d43-1a96-4a8b-894c-f5b479f3f76b",
+      "name": "Build Enhanced Markdown (E-A-T)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        32
+      ]
+    },
+    {
+      "id": "eik-gen-urls-01",
+      "name": "Generate Approval URLs EIK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        32
+      ],
+      "parameters": {
+        "jsCode": "const slug   = $('Build Enhanced Markdown (E-A-T)').item.json.slug;\nconst kw     = $('Build Enhanced Markdown (E-A-T)').item.json.keyword;\nconst title  = $('Build Enhanced Markdown (E-A-T)').item.json.title;\nconst date   = new Date().toISOString().split('T')[0];\nconst rand   = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');\nconst filename = `${date}-${slug}-${rand}.md`;\n\nconst webhookBase = 'https://n8n.theunnamedroads.com/webhook/seo-approve';\nconst approveUrl  = `${webhookBase}?action=approve&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}&keyword=${encodeURIComponent(kw)}`;\nconst rejectUrl   = `${webhookBase}?action=reject&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}`;\nconst previewUrl  = `https://minio-api.thehockeyanalytics.com/eik-seo-drafts/${filename}`;\n\nreturn { filename, slug, kw, title, approveUrl, rejectUrl, previewUrl };"
+      }
+    },
+    {
+      "id": "eik-upload-minio-01",
+      "name": "Upload Draft to Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        32
+      ],
+      "parameters": {
+        "bucketName": "eik-seo-drafts",
+        "fileName": "={{ $('Generate Approval URLs EIK').item.json.filename }}",
+        "operation": "upload",
+        "binaryData": false,
+        "fileContent": "={{ $('Build Enhanced Markdown (E-A-T)').item.json.finalMarkdown }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "id": "eik-build-tg-01",
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        32
+      ],
+      "parameters": {
+        "jsCode": "const u    = $input.item.json;\nconst meta = $('Build Enhanced Markdown (E-A-T)').item.json;\nconst kw   = $('Pick Random Keyword').item.json;\nconst fmt  = $('Format & Extract Metadata').item.json;\n\nconst text = [\n  '📋 <b>Ny SEO-artikel – emilingemarkarlsson.com</b>',\n  '',\n  '<b>Titel:</b> ' + (meta.title || ''),\n  '<b>Keyword:</b> ' + (meta.keyword || ''),\n  '<b>Slug:</b> /blog/' + (meta.slug || ''),\n  '<b>Kategori:</b> ' + (kw.category || '–'),\n  '',\n  '<b>Kvalitet:</b> ' + (meta.quality_score || '?') + '/10 – ' + (meta.passed_checks || '?') + ' kontroller',\n  '',\n  '<b>Meta:</b>',\n  (fmt.metaDescription || ''),\n  '',\n  '📖 <a href=\"' + u.previewUrl + '\">Granska utkast</a>',\n].join('\\n');\n\nreturn { json: { ...u, telegramText: text, approveUrl: u.approveUrl, rejectUrl: u.rejectUrl } };"
+      }
+    },
+    {
+      "id": "eik-notify-tg-01",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2096,
+        32
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: $json.telegramText,\n  parse_mode: 'HTML',\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger (9 AM)": {
+      "main": [
+        [
+          {
+            "node": "Read Keywords from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Random Keyword": {
+      "main": [
+        [
+          {
+            "node": "Create Content Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Content Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Content with Groq AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content with Groq AI": {
+      "main": [
+        [
+          {
+            "node": "Create SEO Quality Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create SEO Quality Prompt": {
+      "main": [
+        [
+          {
+            "node": "SEO Quality Enhancement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEO Quality Enhancement": {
+      "main": [
+        [
+          {
+            "node": "Format & Extract Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format & Extract Metadata": {
+      "main": [
+        [
+          {
+            "node": "Build Final Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Markdown": {
+      "main": [
+        [
+          {
+            "node": "Generate Emil Personal Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Emil Personal Insights": {
+      "main": [
+        [
+          {
+            "node": "Groq: Generate Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq: Generate Insights": {
+      "main": [
+        [
+          {
+            "node": "Generate Quality Checklist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Quality Checklist": {
+      "main": [
+        [
+          {
+            "node": "Build Enhanced Markdown (E-A-T)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Enhanced Markdown (E-A-T)": {
+      "main": [
+        [
+          {
+            "node": "Generate Approval URLs EIK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Approval URLs EIK": {
+      "main": [
+        [
+          {
+            "node": "Upload Draft to Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Draft to Minio": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Keywords from Minio": {
+      "main": [
+        [
+          {
+            "node": "Pick Random Keyword",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily Trigger (9 AM)": {
+      "recurrenceRules": []
+    },
+    "node:Daily Trigger (9 AM)1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+  "versionCounter": 107,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-02T10:09:55.820Z",
+      "createdAt": "2025-12-02T10:09:55.820Z",
+      "role": "workflow:owner",
+      "workflowId": "YwlTkR687mZ1HMEY",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T14:57:54.595Z",
+    "createdAt": "2026-03-24T14:57:54.595Z",
+    "versionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+    "workflowId": "YwlTkR687mZ1HMEY",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * *"
+              }
+            ]
+          }
+        },
+        "id": "4b816aa7-bebe-41bf-9ded-2b4967d3bbea",
+        "name": "Daily Trigger (9 AM)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -1184,
+          -256
+        ]
+      },
+      {
+        "id": "86986f63-c630-414c-8701-6ec970e2e204",
+        "name": "Read Keywords from Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          -960,
+          -256
+        ],
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        },
+        "parameters": {
+          "operation": "getObject",
+          "bucketName": "seo-drafts",
+          "fileKey": "eik-approved-keywords.json",
+          "additionalFields": {}
+        }
+      },
+      {
+        "id": "308755d2-dbf3-43c7-9844-6748a8e86a5f",
+        "name": "Pick Random Keyword",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -736,
+          -256
+        ],
+        "parameters": {
+          "jsCode": "let keywords;\ntry { keywords = JSON.parse($json.Body || $json.body || '[]'); } catch(e) { keywords = []; }\nif (!Array.isArray(keywords) || keywords.length === 0) {\n  keywords = ['data engineering pipeline','n8n automation tutorial','modern data stack 2026','ai agents workflow','databricks lakehouse'];\n}\nconst pick = keywords[Math.floor(Math.random() * keywords.length)];\nconst keyword = typeof pick === 'string' ? pick : pick.keyword;\nreturn [{ json: { keyword } }];"
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "prompt",
+                "name": "prompt",
+                "value": "={{ \"You are Emil Karlsson's AI writing assistant. Emil is a data engineer, full-stack developer, and AI automation specialist based in Stockholm, Sweden.\\n\\nCONTEXT ABOUT EMIL:\\n- Expertise: Data engineering, modern data stacks, web development, AI automation, product development\\n- Primary Tech Stack:\\n  * Languages: Python, JavaScript/TypeScript\\n  * Frontend: Astro, React, Cursor IDE, VS Code\\n  * Data & Analytics: Databricks, Snowflake, MongoDB, PostgreSQL, Apache Kafka, MinIO, Mage AI, Google Analytics, Microsoft Clarity, Power BI, Looker\\n  * Automation & AI: n8n, Groq, OpenAI, Claude, ChatGPT, Perplexity, Apify, Octoparse, Postman\\n  * Deployment & Infrastructure: Netlify, Docker, GitHub, AWS, Google Cloud, Azure, DigitalOcean, Hetzner, Cloudflare, Coolify\\n  * Collaboration: Slack, Linear, Notion, Figma, Trello, Miro\\n  * Low-Code Platforms: Appsmith, OutSystems\\n- Writing Style: Clear, practical, technical but accessible, focuses on real-world applications\\n- Audience: Technical professionals, data engineers, developers, business leaders interested in data & AI\\n- Tone: Professional yet conversational, Swedish pragmatism, actionable insights\\n\\nCRITICAL INSTRUCTION: Reference Emil's ACTUAL toolstack ONLY to ensure authenticity:\\n- Data pipelines: Databricks, Snowflake, Apache Kafka, MongoDB, PostgreSQL, Mage AI\\n- AI/LLMs: Groq, Claude, ChatGPT, OpenAI, Perplexity\\n- Automation: n8n for orchestration, Postman for API testing, Slack for notifications\\n- Web/Frontend: Astro, React, TypeScript\\n- Deployment: Netlify, Docker, GitHub, AWS, Google Cloud, Azure, DigitalOcean\\n- Analytics: Google Analytics, Microsoft Clarity, Power BI, Looker\\n- Data Scraping: Apify, Octoparse\\n- NEVER mention: Apache Airflow, Tableau, IFTTT, Zapier, Wave, Hootsuite, Buffer\\n- Show tool integration: n8n + Groq + PostgreSQL + Slack as complete pipeline\\n\\nTASK: Write an SEO-optimized blog post about: \\\"\" + $json.keyword + \"\\\"\\n\\nREQUIREMENTS:\\n- Length: 1000-1500 words\\n- Write from Emil's perspective with deep technical credibility\\n- Include ONLY tools from Emil's verified toolstack\\n- Integrate tools naturally into real-world, practical examples\\n- Structure with H2 and H3 headings for scannability\\n- Be technical AND accessible to developers and business leaders\\n- Focus on cutting-edge practices (2024-2025)\\n- Include specific, implementable code examples or use-cases when relevant\\n- End with a CTA inviting readers to connect\\n\\nFORMAT:\\nSEO_TITLE: [55-60 characters max - compelling title]\\nMETA_DESC: [CRITICAL: Maximum 155 characters INCLUDING SPACES. Must be engaging and include keyword.]\\n\\n# [Article H1 Title]\\n\\n[Engaging introduction establishing relevance and why Emil cares about this topic]\\n\\n## [First Major Section with Practical Examples]\\n\\n[Use REAL toolstack examples: n8n workflows, Databricks operations, Groq API calls, Astro components, etc.]\\n\\n### [Subsection if needed]\\n\\n[Technical details showing how tools solve this specific problem]\\n\\n## [Second Major Section]\\n\\n[More practical examples showing toolstack integration]\\n\\n## Key Takeaways\\n\\n- [Actionable insight 1 from Emil's experience]\\n- [Actionable insight 2 with toolstack context]\\n- [Actionable insight 3 showing best practices]\\n\\n## What's Next?\\n\\n[Brief closing. Reference related topics or getting in touch for projects.]\\n\\n---\\n\\n*Want to discuss data engineering, AI automation, modern web development, or building with Emil's toolstack? [Reach out](/contact) or explore more [articles on my blog](/blog).*\" }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "30770c28-f582-40b3-b4a1-9345d18ccb15",
+        "name": "Create Content Prompt",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.3,
+        "position": [
+          -512,
+          -256
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are Emil Karlsson's AI writing assistant. Emil is a data engineer, full-stack developer, and automation expert based in Stockholm. Write technical yet accessible blog content that references his actual toolstack (Databricks, n8n, Groq, Astro, Netlify, etc.) with authentic, real-world examples. Your writing is clear, practical, and shows deep technical understanding. Focus on demonstrating how Emil's tools work together to solve real problems.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.prompt\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 4000,\n  \"top_p\": 0.95\n} }}",
+          "options": {}
+        },
+        "id": "36e21d75-318a-44bc-8913-2d766acf7606",
+        "name": "Generate Content with Groq AI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -304,
+          -256
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "HnNvhJFUVZo7k5Tp",
+            "name": "tha-groqseo"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get the generated article content\nconst generatedArticle = $('Generate Content with Groq AI').item.json.choices[0].message.content;\n\n// Create the SEO quality control prompt with toolstack focus\nconst systemPrompt = `You are a senior SEO strategist and content editor. Your mission is to review and improve the generated article to ensure it:\n\n1. TOOLSTACK ALIGNMENT (CRITICAL - DO THIS FIRST):\n   - Scan all tool mentions. KEEP ONLY: n8n, Groq, Claude, ChatGPT, Databricks, Snowflake, PostgreSQL, MongoDB, Apache Kafka, Astro, React, Python, GitHub, Netlify, Docker, Slack, Postman, Power BI, Looker, Google Analytics, Microsoft Clarity, AWS, Google Cloud, Azure, DigitalOcean, Apify, Home Assistant, Raycast, Linear, Notion, etc.\n   - REMOVE: IFTTT, Wave, FreshBooks, Hootsuite, Buffer, Apache Airflow, Tableau, Miro, Figma\n   - REPLACE generic tools with Emil's actual tools (e.g., replace \"Wave\" with \"Databricks\", \"Apache Airflow\" with \"n8n\", \"Tableau\" with \"Power BI\")\n   - INTEGRATE tools naturally showing how they work TOGETHER (n8n + Groq + Slack, or Databricks + PostgreSQL + Power BI)\n   - ADD more toolstack references to increase authenticity and E-A-T\n\n2. Google's guidelines (E-E-A-T, people-first, helpful content):\n   - Experience: Use REAL toolstack examples demonstrating authentic expertise\n   - Expertise: Technical depth with specific tool names and real use cases\n   - Authoritativeness: Confident, informed tone using Emil's actual tools\n   - Trustworthiness: Honest about tool capabilities, no exaggerations\n\n3. Quality standards:\n   - Clear structure with H2/H3 headings\n   - No keyword stuffing, remove repetition\n   - Search intent coverage - answer all user questions\n   - Natural internal linking opportunities\n\nRETURN PURE MARKDOWN ONLY - no JSON or code blocks.\n\nPrioritize toolstack authenticity above all else. Make the article credible through real tool references.`;\n\nconst userPrompt = `Review and improve this article for toolstack alignment (prioritize this), Google guidelines, and quality. Make tool references AUTHENTIC to Emil's actual toolstack:\\n\\n${generatedArticle}`;\n\nreturn {\n  systemPrompt: systemPrompt,\n  userPrompt: userPrompt\n};"
+        },
+        "id": "fb00d938-cda4-41d2-9630-09e9e13738fc",
+        "name": "Create SEO Quality Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -192,
+          -256
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": $json.systemPrompt\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.userPrompt\n    }\n  ],\n  \"temperature\": 0.5,\n  \"max_tokens\": 5000,\n  \"top_p\": 0.95\n} }}",
+          "options": {}
+        },
+        "id": "9b1bb4ea-9ff5-445f-ad40-dee6395f4a70",
+        "name": "SEO Quality Enhancement",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -80,
+          -256
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "HnNvhJFUVZo7k5Tp",
+            "name": "tha-groqseo"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract the generated content from Groq response\nconst response = $input.item.json;\nconst rawContent = response.choices[0].message.content;\n\n// Extract SEO title and meta description\nconst seoTitleMatch = rawContent.match(/SEO_TITLE:\\s*(.+?)\\n/);\nconst metaDescMatch = rawContent.match(/META_DESC:\\s*(.+?)\\n/);\n\n// Remove the SEO lines from content\nlet content = rawContent\n  .replace(/SEO_TITLE:\\s*.+?\\n/, '')\n  .replace(/META_DESC:\\s*.+?\\n/, '')\n  .trim();\n\nconst seoTitle = seoTitleMatch ? seoTitleMatch[1].trim() : $('Pick Random Keyword').item.json.keyword;\nlet metaDescription = metaDescMatch ? metaDescMatch[1].trim() : '';\n\n// CRITICAL: Validate and truncate meta description to max 155 characters\nif (metaDescription.length > 155) {\n  console.log(`WARNING: Meta description too long (${metaDescription.length} chars). Truncating to 155.`);\n  metaDescription = metaDescription.substring(0, 152) + '...';\n}\n\n// Extract H1 title from content (for frontmatter)\nconst h1Match = content.match(/^#\\s*(.+?)\\n/);\nconst title = h1Match ? h1Match[1].trim() : seoTitle;\n\n// CRITICAL: Remove H1 from content since Astro layout displays title from frontmatter\n// This prevents duplicate H1 headers on the page\nif (h1Match) {\n  content = content.replace(/^#\\s*.+?\\n\\n?/, '').trim();\n}\n\n// Create slug from keyword\nconst slug = $('Pick Random Keyword').item.json.keyword\n  .toLowerCase()\n  .replace(/[åäö]/g, match => ({ 'å': 'a', 'ä': 'a', 'ö': 'o' }[match]))\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\n\n// Get current date for filename\nconst now = new Date();\nconst date = now.toISOString().split('T')[0];\nconst publishDate = now.toLocaleDateString('sv-SE');\n\n// Create excerpt from first paragraph (after H1 removal)\nconst firstParagraph = content.split('\\n\\n')[0] || content.substring(0, 200);\nconst excerpt = firstParagraph.length > 150 ? firstParagraph.substring(0, 147) + '...' : firstParagraph;\n\n// Escape YAML strings\nconst escapeYaml = (str) => str.replace(/'/g, \"''\");\n\nreturn {\n  content: content,\n  title: title,\n  seoTitle: seoTitle,\n  metaDescription: metaDescription,\n  excerpt: excerpt,\n  slug: slug,\n  keyword: $('Pick Random Keyword').item.json.keyword,\n  category: $('Pick Random Keyword').item.json.category,\n  publishDate: publishDate,\n  filename: `${slug}.md`\n};"
+        },
+        "id": "cb43aba8-16d8-4bd6-8232-aa526958f3e9",
+        "name": "Format & Extract Metadata",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          16,
+          -480
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Create complete Astro markdown with frontmatter\nconst data = $input.item.json;\n\n// Auto-generate tags based on keyword and category\nconst baseTags = [];\nif (data.category) baseTags.push(data.category);\n\n// Add intelligent tags based on content\nconst contentLower = data.content.toLowerCase();\nconst tagMap = {\n  'data engineering': ['Data Engineering', 'Modern Data Stack'],\n  'python': ['Python'],\n  'databricks': ['Databricks'],\n  'ai': ['Artificial Intelligence', 'AI'],\n  'automation': ['Automation'],\n  'astro': ['Astro', 'Web Development'],\n  'analytics': ['Analytics', 'Business Intelligence'],\n  'cloud': ['Cloud Platforms'],\n  'n8n': ['Automation', 'Workflow'],\n  'sql': ['SQL', 'Data Engineering']\n};\n\nObject.entries(tagMap).forEach(([keyword, tags]) => {\n  if (contentLower.includes(keyword)) {\n    tags.forEach(tag => {\n      if (!baseTags.includes(tag)) baseTags.push(tag);\n    });\n  }\n});\n\n// Limit to 5 tags\nconst tags = baseTags.slice(0, 5);\n\nconst escapeYaml = (str) => str.replace(/'/g, \"''\");\n\nconst markdown = `---\ntitle: '${escapeYaml(data.title)}'\nexcerpt: '${escapeYaml(data.excerpt)}'\npublishDate: '${data.publishDate}'\ntags:\n${tags.map(tag => `  - ${escapeYaml(tag)}`).join('\\n')}\nisFeatured: false\nhidden: true\nseo:\n  title: '${escapeYaml(data.seoTitle)} | Emil Karlsson'\n  description: '${escapeYaml(data.metaDescription)}'\n  image:\n    src: '/hero-desktop.jpg'\n    alt: 'Emil Karlsson'\n---\n\n${data.content}\n`;\n\nreturn {\n  finalContent: markdown,\n  draft_content: markdown,\n  title: data.title,\n  slug: data.slug,\n  keyword: data.keyword,\n  filename: data.filename,\n  seoTitle: data.seoTitle,\n  metaDescription: data.metaDescription,\n  tags: tags\n};"
+        },
+        "id": "e8f330c7-304a-4f70-8a0d-d9c8879fcfab",
+        "name": "Build Final Markdown",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          320,
+          -480
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Generate Emil-specific personal insights to add authenticity & E-A-T\nconst article = $('Build Final Markdown').item.json.finalContent;\nconst keyword = $('Build Final Markdown').item.json.keyword;\n\nconst systemPrompt = `You are helping add authentic, personal insights from Emil Karlsson to make the article more credible and people-first.\n\nEmil's expertise areas:\n- Data engineering with Databricks, Snowflake, Kafka\n- Automation with n8n\n- AI integration with Groq, Claude\n- Web development with Astro, React\n- Building modern data stacks\n\nAdd 1-2 personal perspective callouts like:\n- \"In my experience with [TOOL]...\"\n- \"When I built [PROJECT], I learned...\"\n- \"A pattern I've noticed...\"\n- \"The mistake I made initially...\"\n\nThese should be specific, credible, and feel authentic from Emil's years of experience.`;\n\nconst userPrompt = `Article keyword: \"${keyword}\"\\n\\nAdd 1-2 authentic personal insights from Emil's perspective. These should:\\n1. Feel genuine and specific (not generic)\\n2. Relate to the article topic\\n3. Be short callout-style additions\\n4. Show practical experience, not just theory\\n\\nReturn ONLY the insights as plain text, one per line, formatted as:\\n\"In my experience [insight]\"\\nor\\n\"A pattern I've noticed [insight]\"\\n\\nArticle:\\n${article.substring(0, 1000)}...`;\n\nreturn {\n  systemPrompt: systemPrompt,\n  userPrompt: userPrompt,\n  keyword: keyword,\n  slug: $('Build Final Markdown').item.json.slug\n};"
+        },
+        "id": "5f9b883b-3d06-4e5e-9199-e5b0832b3eae",
+        "name": "Generate Emil Personal Insights",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          432,
+          32
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": $json.systemPrompt\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.userPrompt\n    }\n  ],\n  \"temperature\": 0.8,\n  \"max_tokens\": 500,\n  \"top_p\": 0.9\n} }}",
+          "options": {}
+        },
+        "id": "046d2b2e-a0d8-4af2-9160-1ad6314f3488",
+        "name": "Groq: Generate Insights",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          736,
+          32
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "HnNvhJFUVZo7k5Tp",
+            "name": "tha-groqseo"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Create comprehensive quality checklist for human review\nconst article = $('Build Final Markdown').item.json.finalContent;\nconst seoTitle = $('Build Final Markdown').item.json.seoTitle;\nconst metaDesc = $('Build Final Markdown').item.json.metaDescription;\nconst keyword = $('Build Final Markdown').item.json.keyword;\nconst insights = $('Groq: Generate Insights').item.json.choices?.[0]?.message?.content || 'No insights generated';\n\n// Quality checks\nconst checks = {\n  content_length: article.length > 1000,\n  has_h2_headings: (article.match(/^## /gm) || []).length >= 2,\n  has_key_takeaways: article.includes('Key Takeaways'),\n  has_cta: article.includes('[reach out](/contact)') || article.includes('[articles on my blog](/blog)'),\n  keyword_in_title: seoTitle.toLowerCase().includes(keyword.toLowerCase()),\n  meta_desc_length: metaDesc.length > 80 && metaDesc.length <= 155,\n  no_excessive_keywords: (article.match(new RegExp(keyword, 'gi')) || []).length < 15,\n  has_code_examples: article.includes('`'),\n  references_toolstack: article.match(/n8n|Groq|Databricks|Astro|Netlify|PostgreSQL|Kafka|Claude|ChatGPT/gi) ? (article.match(/n8n|Groq|Databricks|Astro|Netlify|PostgreSQL|Kafka|Claude|ChatGPT/gi) || []).length >= 3 : false,\n  insights_generated: insights.length > 50\n};\n\n// Score E-A-T (1-10)\nlet eatScore = 5;\nif (checks.references_toolstack) eatScore += 2;\nif (checks.has_code_examples) eatScore += 1;\nif (checks.no_excessive_keywords) eatScore += 1;\nif (checks.insights_generated) eatScore += 1;\n\nconst passedChecks = Object.values(checks).filter(v => v).length;\nconst totalChecks = Object.keys(checks).length;\n\nreturn {\n  quality_checks: checks,\n  passed_checks: passedChecks,\n  total_checks: totalChecks,\n  quality_percentage: Math.round((passedChecks / totalChecks) * 100),\n  eat_score: Math.min(10, eatScore),\n  insights: insights,\n  keyword: keyword,\n  slug: $('Build Final Markdown').item.json.slug,\n  ready_for_review: passedChecks >= 8 // 8+ checks passed = ready\n};"
+        },
+        "id": "8252ea3a-4d92-4b66-9a97-c7ed6ae1ae11",
+        "name": "Generate Quality Checklist",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1008,
+          32
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Build enhanced markdown with frontmatter including E-A-T, disclosure, author, JSON-LD schema\nconst data = $('Build Final Markdown').item.json;\nconst checklist = $('Generate Quality Checklist').item.json;\nconst insights = checklist.insights;\n\n// Add Emil's personal insights to article\nlet enhancedContent = data.finalContent;\nif (insights && insights.length > 100) {\n  const insightSection = `\\n\\n> **💡 From Emil's Experience**\\n> ${insights.split('\\n').filter(l => l.trim()).join('\\n> ')}\\n\\n`;\n  // Insert after intro\n  const parts = enhancedContent.split('\\n\\n');\n  if (parts.length > 2) {\n    parts.splice(2, 0, insightSection.trim());\n    enhancedContent = parts.join('\\n\\n');\n  }\n}\n\n// Create JSON-LD schema for E-A-T\nconst jsonLd = {\n  '@context': 'https://schema.org',\n  '@type': 'BlogPosting',\n  headline: data.seoTitle,\n  description: data.metaDescription,\n  author: {\n    '@type': 'Person',\n    name: 'Emil Karlsson',\n    url: 'https://www.emilingemarkarlsson.com',\n    jobTitle: 'Data Engineer & Automation Specialist',\n    image: 'https://www.emilingemarkarlsson.com/hero-desktop.jpg'\n  },\n  datePublished: new Date().toISOString(),\n  dateModified: new Date().toISOString(),\n  keywords: data.keyword,\n  image: {\n    '@type': 'ImageObject',\n    url: 'https://www.emilingemarkarlsson.com/hero-desktop.jpg'\n  }\n};\n\nconst frontmatter = `---\ntitle: '${data.title}'\nexcerpt: '${data.excerpt}'\npublishDate: '${data.publishDate}'\nupdatedDate: '${new Date().toLocaleDateString('sv-SE')}'\nauthor: 'Emil Karlsson'\nauthorUrl: 'https://www.emilingemarkarlsson.com'\nauthorBio: 'Data engineer, full-stack developer, and AI automation specialist based in Stockholm.'\ntags:\n${data.tags.map(tag => `  - ${tag}`).join('\\n')}\nisFeatured: false\nhidden: true\nquality_score: ${checklist.eat_score}/10\nseo:\n  title: '${data.seoTitle} | Emil Karlsson'\n  description: '${data.metaDescription}'\n  image:\n    src: '/hero-desktop.jpg'\n    alt: 'Emil Karlsson'\nschema:\n  ${JSON.stringify(jsonLd).split(',').join(',\\n  ')}\ndisclosure: 'This article was AI-assisted using Groq (LLaMA 3.1 405B) and Claude, with human writing and review by Emil Karlsson. Views and insights are from Emil\\'s professional experience.'\n---\n\n${enhancedContent}`;\n\nreturn {\n  finalMarkdown: frontmatter,\n  title: data.title,\n  slug: data.slug,\n  keyword: data.keyword,\n  quality_score: checklist.eat_score,\n  passed_checks: `${checklist.passed_checks}/${checklist.total_checks}`,\n  ready_for_review: checklist.ready_for_review\n};"
+        },
+        "id": "98876d43-1a96-4a8b-894c-f5b479f3f76b",
+        "name": "Build Enhanced Markdown (E-A-T)",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1296,
+          32
+        ]
+      },
+      {
+        "id": "eik-gen-urls-01",
+        "name": "Generate Approval URLs EIK",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1616,
+          32
+        ],
+        "parameters": {
+          "jsCode": "const slug   = $('Build Enhanced Markdown (E-A-T)').item.json.slug;\nconst kw     = $('Build Enhanced Markdown (E-A-T)').item.json.keyword;\nconst title  = $('Build Enhanced Markdown (E-A-T)').item.json.title;\nconst date   = new Date().toISOString().split('T')[0];\nconst rand   = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');\nconst filename = `${date}-${slug}-${rand}.md`;\n\nconst webhookBase = 'https://n8n.theunnamedroads.com/webhook/seo-approve';\nconst approveUrl  = `${webhookBase}?action=approve&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}&keyword=${encodeURIComponent(kw)}`;\nconst rejectUrl   = `${webhookBase}?action=reject&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}`;\nconst previewUrl  = `https://minio-api.thehockeyanalytics.com/eik-seo-drafts/${filename}`;\n\nreturn { filename, slug, kw, title, approveUrl, rejectUrl, previewUrl };"
+        }
+      },
+      {
+        "id": "eik-upload-minio-01",
+        "name": "Upload Draft to Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          1936,
+          32
+        ],
+        "parameters": {
+          "bucketName": "eik-seo-drafts",
+          "fileName": "={{ $('Generate Approval URLs EIK').item.json.filename }}",
+          "operation": "upload",
+          "binaryData": false,
+          "fileContent": "={{ $('Build Enhanced Markdown (E-A-T)').item.json.finalMarkdown }}",
+          "additionalFields": {}
+        },
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "id": "eik-build-tg-01",
+        "name": "Build Telegram Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1936,
+          32
+        ],
+        "parameters": {
+          "jsCode": "const u    = $input.item.json;\nconst meta = $('Build Enhanced Markdown (E-A-T)').item.json;\nconst kw   = $('Pick Random Keyword').item.json;\nconst fmt  = $('Format & Extract Metadata').item.json;\n\nconst text = [\n  '📋 <b>Ny SEO-artikel – emilingemarkarlsson.com</b>',\n  '',\n  '<b>Titel:</b> ' + (meta.title || ''),\n  '<b>Keyword:</b> ' + (meta.keyword || ''),\n  '<b>Slug:</b> /blog/' + (meta.slug || ''),\n  '<b>Kategori:</b> ' + (kw.category || '–'),\n  '',\n  '<b>Kvalitet:</b> ' + (meta.quality_score || '?') + '/10 – ' + (meta.passed_checks || '?') + ' kontroller',\n  '',\n  '<b>Meta:</b>',\n  (fmt.metaDescription || ''),\n  '',\n  '📖 <a href=\"' + u.previewUrl + '\">Granska utkast</a>',\n].join('\\n');\n\nreturn { json: { ...u, telegramText: text, approveUrl: u.approveUrl, rejectUrl: u.rejectUrl } };"
+        }
+      },
+      {
+        "id": "eik-notify-tg-01",
+        "name": "Notify Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2096,
+          32
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: $json.telegramText,\n  parse_mode: 'HTML',\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
+        }
+      }
+    ],
+    "connections": {
+      "Daily Trigger (9 AM)": {
+        "main": [
+          [
+            {
+              "node": "Read Keywords from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Random Keyword": {
+        "main": [
+          [
+            {
+              "node": "Create Content Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Content Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate Content with Groq AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Content with Groq AI": {
+        "main": [
+          [
+            {
+              "node": "Create SEO Quality Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create SEO Quality Prompt": {
+        "main": [
+          [
+            {
+              "node": "SEO Quality Enhancement",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SEO Quality Enhancement": {
+        "main": [
+          [
+            {
+              "node": "Format & Extract Metadata",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format & Extract Metadata": {
+        "main": [
+          [
+            {
+              "node": "Build Final Markdown",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Final Markdown": {
+        "main": [
+          [
+            {
+              "node": "Generate Emil Personal Insights",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Emil Personal Insights": {
+        "main": [
+          [
+            {
+              "node": "Groq: Generate Insights",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Groq: Generate Insights": {
+        "main": [
+          [
+            {
+              "node": "Generate Quality Checklist",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Quality Checklist": {
+        "main": [
+          [
+            {
+              "node": "Build Enhanced Markdown (E-A-T)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Enhanced Markdown (E-A-T)": {
+        "main": [
+          [
+            {
+              "node": "Generate Approval URLs EIK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Approval URLs EIK": {
+        "main": [
+          [
+            {
+              "node": "Upload Draft to Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Draft to Minio": {
+        "main": [
+          [
+            {
+              "node": "Build Telegram Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Telegram Message": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Keywords from Minio": {
+        "main": [
+          [
+            {
+              "node": "Pick Random Keyword",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-24T14:57:54.662Z",
+        "id": 209,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:57:54.692Z",
+        "id": 210,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:57:54.781Z",
+        "id": 211,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:57:54.808Z",
+        "id": 212,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "b5ba5af4-fbb4-4377-91f0-406e037a1a93",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}
