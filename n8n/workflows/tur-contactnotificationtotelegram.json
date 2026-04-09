@@ -24,7 +24,20 @@
     },
     {
       "parameters": {
-        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form – The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>New Contact \\u2013 The Unnamed Roads</b>\\n\\n<b>Name:</b> ${name}\\n<b>Email:</b> ${email}\\n<b>Subject:</b> ${subject}\\n<b>Message:</b> ${message}\\n<b>Time:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+        "jsCode": "// Dedup check for contact form - prevent duplicate notifications within 10 minutes\nconst body = $input.first().json.body || $input.first().json;\nconst email = body.email || body.from || 'unknown';\nconst message = body.message || body.content || '';\n// Simple hash: first 20 chars of message\nconst msgHash = message.substring(0, 20).toLowerCase().replace(/[^a-z0-9]/g,'');\nconst key = 'dedup_contact_' + email.toLowerCase().replace(/[^a-z0-9]/g,'') + '_' + msgHash;\nconst now = Date.now();\nconst ttl = 10 * 60 * 1000;\n\nconst stored = $getWorkflowStaticData('global');\nif (!stored.dedup) stored.dedup = {};\n\nfor (const k of Object.keys(stored.dedup)) {\n  if (now - stored.dedup[k] > ttl) {\n    delete stored.dedup[k];\n  }\n}\n\nif (stored.dedup[key]) {\n  return [];\n}\nstored.dedup[key] = now;\nreturn $input.all();"
+      },
+      "id": "e5f6a7b8",
+      "name": "Dedup Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form \u2013 The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktf\u00f6rfr\u00e5gan \u2013 ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>\u00c4mne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>K\u00e4lla:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "ffb1171f-4942-4e2e-8e2b-50347324f25f",
       "name": "Send Telegram",
@@ -53,6 +66,17 @@
   ],
   "connections": {
     "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dedup Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedup Check": {
       "main": [
         [
           {
@@ -131,7 +155,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form – The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>New Contact \\u2013 The Unnamed Roads</b>\\n\\n<b>Name:</b> ${name}\\n<b>Email:</b> ${email}\\n<b>Subject:</b> ${subject}\\n<b>Message:</b> ${message}\\n<b>Time:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+          "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form \u2013 The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktf\u00f6rfr\u00e5gan \u2013 ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>\u00c4mne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>K\u00e4lla:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
         },
         "id": "ffb1171f-4942-4e2e-8e2b-50347324f25f",
         "name": "Send Telegram",
