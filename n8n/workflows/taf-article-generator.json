@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T09:11:05.984Z",
+  "updatedAt": "2026-04-10T09:42:32.402Z",
   "createdAt": "2026-03-24T15:22:03.821Z",
   "id": "ExMw8CCe97Y0ADOl",
   "name": "taf-article-generator",
@@ -28,16 +28,25 @@
       }
     },
     {
-      "id": "taf-article-generator-seeds",
-      "name": "Topic Seeds",
-      "type": "n8n-nodes-base.code",
+      "id": "taf-read-topics-minio",
+      "name": "Read Topics from Minio",
+      "type": "n8n-nodes-base.awsS3",
       "typeVersion": 2,
       "position": [
         -200,
         300
       ],
+      "continueOnFail": true,
+      "credentials": {
+        "aws": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "Minio S3"
+        }
+      },
       "parameters": {
-        "jsCode": "return [{json: {topics: [\"enterprise AI agent deployment patterns\", \"edge AI vs cloud AI for manufacturing\", \"distributed agent orchestration guide\", \"sovereign AI infrastructure for regulated industries\", \"autonomous agents in supply chain\", \"AI agent security enterprise best practices\", \"multi-agent systems architecture\", \"on-premise LLM deployment guide\", \"AI agent observability and monitoring\", \"federated AI learning enterprise\", \"agent-to-agent communication protocols\", \"AI automation ROI measurement\", \"private AI deployment vs public cloud\", \"agentic workflow design patterns\", \"AI governance enterprise framework 2026\"]}}];"
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "taf-topics.json"
       }
     },
     {
@@ -50,7 +59,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const t = $json.topics[Math.floor(Math.random()*$json.topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+date;\nreturn [{json:{topic:t,slug,date}}];"
+        "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"enterprise AI agent deployment patterns\", \"edge AI vs cloud AI for manufacturing\", \"distributed agent orchestration guide\", \"sovereign AI infrastructure for regulated industries\", \"autonomous agents in supply chain\", \"AI agent security enterprise best practices\", \"multi-agent systems architecture\", \"on-premise LLM deployment guide\", \"AI agent observability and monitoring\", \"federated AI learning enterprise\", \"agent-to-agent communication protocols\", \"AI automation ROI measurement\", \"private AI deployment vs public cloud\", \"agentic workflow design patterns\", \"AI governance enterprise framework 2026\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
       }
     },
     {
@@ -191,6 +200,19 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({host: 'tur-theagentfabric.vercel.app', key: '204595099455614bea37043937a7d115', keyLocation: 'https://tur-theagentfabric.vercel.app/204595099455614bea37043937a7d115.txt', urlList: ['https://tur-theagentfabric.vercel.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
       }
+    },
+    {
+      "id": "taf-save-used-slug",
+      "name": "Save Used Slug",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+      }
     }
   ],
   "connections": {
@@ -198,14 +220,14 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Topic Seeds": {
+    "Read Topics from Minio": {
       "main": [
         [
           {
@@ -264,7 +286,7 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
             "type": "main",
             "index": 0
           }
@@ -276,6 +298,17 @@
         [
           {
             "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IndexNow Ping": {
+      "main": [
+        [
+          {
+            "node": "Save Used Slug",
             "type": "main",
             "index": 0
           }
@@ -295,9 +328,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "28e2ad03-309f-4162-becb-36d59edfc9fe",
-  "activeVersionId": "28e2ad03-309f-4162-becb-36d59edfc9fe",
-  "versionCounter": 35,
+  "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
+  "activeVersionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
+  "versionCounter": 38,
   "triggerCount": 2,
   "shared": [
     {
@@ -320,9 +353,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T09:11:05.986Z",
-    "createdAt": "2026-04-10T09:11:05.986Z",
-    "versionId": "28e2ad03-309f-4162-becb-36d59edfc9fe",
+    "updatedAt": "2026-04-10T09:42:32.403Z",
+    "createdAt": "2026-04-10T09:42:32.403Z",
+    "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
     "workflowId": "ExMw8CCe97Y0ADOl",
     "nodes": [
       {
@@ -346,16 +379,25 @@
         }
       },
       {
-        "id": "taf-article-generator-seeds",
-        "name": "Topic Seeds",
-        "type": "n8n-nodes-base.code",
+        "id": "taf-read-topics-minio",
+        "name": "Read Topics from Minio",
+        "type": "n8n-nodes-base.awsS3",
         "typeVersion": 2,
         "position": [
           -200,
           300
         ],
+        "continueOnFail": true,
+        "credentials": {
+          "aws": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "Minio S3"
+          }
+        },
         "parameters": {
-          "jsCode": "return [{json: {topics: [\"enterprise AI agent deployment patterns\", \"edge AI vs cloud AI for manufacturing\", \"distributed agent orchestration guide\", \"sovereign AI infrastructure for regulated industries\", \"autonomous agents in supply chain\", \"AI agent security enterprise best practices\", \"multi-agent systems architecture\", \"on-premise LLM deployment guide\", \"AI agent observability and monitoring\", \"federated AI learning enterprise\", \"agent-to-agent communication protocols\", \"AI automation ROI measurement\", \"private AI deployment vs public cloud\", \"agentic workflow design patterns\", \"AI governance enterprise framework 2026\"]}}];"
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "taf-topics.json"
         }
       },
       {
@@ -368,7 +410,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const t = $json.topics[Math.floor(Math.random()*$json.topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+date;\nreturn [{json:{topic:t,slug,date}}];"
+          "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"enterprise AI agent deployment patterns\", \"edge AI vs cloud AI for manufacturing\", \"distributed agent orchestration guide\", \"sovereign AI infrastructure for regulated industries\", \"autonomous agents in supply chain\", \"AI agent security enterprise best practices\", \"multi-agent systems architecture\", \"on-premise LLM deployment guide\", \"AI agent observability and monitoring\", \"federated AI learning enterprise\", \"agent-to-agent communication protocols\", \"AI automation ROI measurement\", \"private AI deployment vs public cloud\", \"agentic workflow design patterns\", \"AI governance enterprise framework 2026\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
         }
       },
       {
@@ -509,6 +551,19 @@
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({host: 'tur-theagentfabric.vercel.app', key: '204595099455614bea37043937a7d115', keyLocation: 'https://tur-theagentfabric.vercel.app/204595099455614bea37043937a7d115.txt', urlList: ['https://tur-theagentfabric.vercel.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
         }
+      },
+      {
+        "id": "taf-save-used-slug",
+        "name": "Save Used Slug",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1260,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+        }
       }
     ],
     "connections": {
@@ -516,14 +571,14 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Topic Seeds": {
+      "Read Topics from Minio": {
         "main": [
           [
             {
@@ -582,7 +637,7 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
               "type": "main",
               "index": 0
             }
@@ -599,6 +654,17 @@
             }
           ]
         ]
+      },
+      "IndexNow Ping": {
+        "main": [
+          [
+            {
+              "node": "Save Used Slug",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -607,18 +673,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T09:11:06.022Z",
-        "id": 643,
+        "createdAt": "2026-04-10T09:42:32.432Z",
+        "id": 655,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "28e2ad03-309f-4162-becb-36d59edfc9fe",
+        "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T09:11:06.040Z",
-        "id": 644,
+        "createdAt": "2026-04-10T09:42:32.449Z",
+        "id": 656,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "28e2ad03-309f-4162-becb-36d59edfc9fe",
+        "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

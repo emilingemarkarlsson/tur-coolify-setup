@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T09:11:06.141Z",
+  "updatedAt": "2026-04-10T09:42:32.544Z",
   "createdAt": "2026-03-24T15:22:04.028Z",
   "id": "xDuxJANXD3CsKsRq",
   "name": "tpr-article-generator",
@@ -28,16 +28,25 @@
       }
     },
     {
-      "id": "tpr-article-generator-seeds",
-      "name": "Topic Seeds",
-      "type": "n8n-nodes-base.code",
+      "id": "tpr-read-topics-minio",
+      "name": "Read Topics from Minio",
+      "type": "n8n-nodes-base.awsS3",
       "typeVersion": 2,
       "position": [
         -200,
         300
       ],
+      "continueOnFail": true,
+      "credentials": {
+        "aws": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "Minio S3"
+        }
+      },
       "parameters": {
-        "jsCode": "return [{json: {topics: [\"print procurement cost optimization\", \"sustainable print production practices 2026\", \"digital vs offset print decision guide\", \"print on demand vs bulk print economics\", \"supply chain transparency in print industry\", \"carbon footprint of commercial printing\", \"wide format print production workflow\", \"print quality control automation\", \"paper sourcing sustainability FSC certification\", \"print file preparation best practices\", \"variable data printing applications\", \"packaging print innovation 2026\", \"print industry consolidation trends\", \"digital print personalization at scale\", \"cross-media campaign print integration\"]}}];"
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "tpr-topics.json"
       }
     },
     {
@@ -50,7 +59,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const t = $json.topics[Math.floor(Math.random()*$json.topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+date;\nreturn [{json:{topic:t,slug,date}}];"
+        "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"print procurement cost optimization\", \"sustainable print production practices 2026\", \"digital vs offset print decision guide\", \"print on demand vs bulk print economics\", \"supply chain transparency in print industry\", \"carbon footprint of commercial printing\", \"wide format print production workflow\", \"print quality control automation\", \"paper sourcing sustainability FSC certification\", \"print file preparation best practices\", \"variable data printing applications\", \"packaging print innovation 2026\", \"print industry consolidation trends\", \"digital print personalization at scale\", \"cross-media campaign print integration\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
       }
     },
     {
@@ -191,6 +200,19 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({host: 'theprintroute.com', key: 'eb640c5bef6ff7673a55792a64b0e212', keyLocation: 'https://theprintroute.com/eb640c5bef6ff7673a55792a64b0e212.txt', urlList: ['https://theprintroute.com/blog/' + $('Pick Topic').item.json.slug]}) }}"
       }
+    },
+    {
+      "id": "tpr-save-used-slug",
+      "name": "Save Used Slug",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+      }
     }
   ],
   "connections": {
@@ -198,14 +220,14 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Topic Seeds": {
+    "Read Topics from Minio": {
       "main": [
         [
           {
@@ -275,7 +297,18 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IndexNow Ping": {
+      "main": [
+        [
+          {
+            "node": "Save Used Slug",
             "type": "main",
             "index": 0
           }
@@ -295,9 +328,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "c076b6d2-c060-473e-8133-e6462aeb2c49",
-  "activeVersionId": "c076b6d2-c060-473e-8133-e6462aeb2c49",
-  "versionCounter": 66,
+  "versionId": "ce54731e-b1f4-4dd4-8bf7-8a25631e7b3d",
+  "activeVersionId": "ce54731e-b1f4-4dd4-8bf7-8a25631e7b3d",
+  "versionCounter": 69,
   "triggerCount": 2,
   "shared": [
     {
@@ -320,9 +353,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T09:11:06.142Z",
-    "createdAt": "2026-04-10T09:11:06.142Z",
-    "versionId": "c076b6d2-c060-473e-8133-e6462aeb2c49",
+    "updatedAt": "2026-04-10T09:42:32.545Z",
+    "createdAt": "2026-04-10T09:42:32.545Z",
+    "versionId": "ce54731e-b1f4-4dd4-8bf7-8a25631e7b3d",
     "workflowId": "xDuxJANXD3CsKsRq",
     "nodes": [
       {
@@ -346,16 +379,25 @@
         }
       },
       {
-        "id": "tpr-article-generator-seeds",
-        "name": "Topic Seeds",
-        "type": "n8n-nodes-base.code",
+        "id": "tpr-read-topics-minio",
+        "name": "Read Topics from Minio",
+        "type": "n8n-nodes-base.awsS3",
         "typeVersion": 2,
         "position": [
           -200,
           300
         ],
+        "continueOnFail": true,
+        "credentials": {
+          "aws": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "Minio S3"
+          }
+        },
         "parameters": {
-          "jsCode": "return [{json: {topics: [\"print procurement cost optimization\", \"sustainable print production practices 2026\", \"digital vs offset print decision guide\", \"print on demand vs bulk print economics\", \"supply chain transparency in print industry\", \"carbon footprint of commercial printing\", \"wide format print production workflow\", \"print quality control automation\", \"paper sourcing sustainability FSC certification\", \"print file preparation best practices\", \"variable data printing applications\", \"packaging print innovation 2026\", \"print industry consolidation trends\", \"digital print personalization at scale\", \"cross-media campaign print integration\"]}}];"
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "tpr-topics.json"
         }
       },
       {
@@ -368,7 +410,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const t = $json.topics[Math.floor(Math.random()*$json.topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+date;\nreturn [{json:{topic:t,slug,date}}];"
+          "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"print procurement cost optimization\", \"sustainable print production practices 2026\", \"digital vs offset print decision guide\", \"print on demand vs bulk print economics\", \"supply chain transparency in print industry\", \"carbon footprint of commercial printing\", \"wide format print production workflow\", \"print quality control automation\", \"paper sourcing sustainability FSC certification\", \"print file preparation best practices\", \"variable data printing applications\", \"packaging print innovation 2026\", \"print industry consolidation trends\", \"digital print personalization at scale\", \"cross-media campaign print integration\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
         }
       },
       {
@@ -509,6 +551,19 @@
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({host: 'theprintroute.com', key: 'eb640c5bef6ff7673a55792a64b0e212', keyLocation: 'https://theprintroute.com/eb640c5bef6ff7673a55792a64b0e212.txt', urlList: ['https://theprintroute.com/blog/' + $('Pick Topic').item.json.slug]}) }}"
         }
+      },
+      {
+        "id": "tpr-save-used-slug",
+        "name": "Save Used Slug",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1260,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+        }
       }
     ],
     "connections": {
@@ -516,14 +571,14 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Topic Seeds": {
+      "Read Topics from Minio": {
         "main": [
           [
             {
@@ -593,7 +648,18 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IndexNow Ping": {
+        "main": [
+          [
+            {
+              "node": "Save Used Slug",
               "type": "main",
               "index": 0
             }
@@ -607,18 +673,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T09:11:06.178Z",
-        "id": 645,
+        "createdAt": "2026-04-10T09:42:32.579Z",
+        "id": 657,
         "workflowId": "xDuxJANXD3CsKsRq",
-        "versionId": "c076b6d2-c060-473e-8133-e6462aeb2c49",
+        "versionId": "ce54731e-b1f4-4dd4-8bf7-8a25631e7b3d",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T09:11:06.215Z",
-        "id": 646,
+        "createdAt": "2026-04-10T09:42:32.594Z",
+        "id": 658,
         "workflowId": "xDuxJANXD3CsKsRq",
-        "versionId": "c076b6d2-c060-473e-8133-e6462aeb2c49",
+        "versionId": "ce54731e-b1f4-4dd4-8bf7-8a25631e7b3d",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

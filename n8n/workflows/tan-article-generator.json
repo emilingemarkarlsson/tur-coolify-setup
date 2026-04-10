@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T09:11:05.828Z",
+  "updatedAt": "2026-04-10T09:42:32.243Z",
   "createdAt": "2026-03-24T15:13:28.636Z",
   "id": "XdnfbkbCL8NDjBdo",
   "name": "tan-article-generator",
@@ -28,16 +28,25 @@
       }
     },
     {
-      "id": "tan-article-generator-topics",
-      "name": "Topic Seeds",
-      "type": "n8n-nodes-base.code",
+      "id": "tan-read-topics-minio",
+      "name": "Read Topics from Minio",
+      "type": "n8n-nodes-base.awsS3",
       "typeVersion": 2,
       "position": [
         -200,
         300
       ],
+      "continueOnFail": true,
+      "credentials": {
+        "aws": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "Minio S3"
+        }
+      },
       "parameters": {
-        "jsCode": "return [{json: {topics: [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"]}}];"
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "tan-topics.json"
       }
     },
     {
@@ -50,7 +59,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+        "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
       }
     },
     {
@@ -191,6 +200,19 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({host: 'tan-website.netlify.app', key: '45dd255c1afd3b0b0a18d077af5d2d43', keyLocation: 'https://tan-website.netlify.app/45dd255c1afd3b0b0a18d077af5d2d43.txt', urlList: ['https://tan-website.netlify.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
       }
+    },
+    {
+      "id": "tan-save-used-slug",
+      "name": "Save Used Slug",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+      }
     }
   ],
   "connections": {
@@ -198,14 +220,14 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Topic Seeds": {
+    "Read Topics from Minio": {
       "main": [
         [
           {
@@ -264,7 +286,7 @@
       "main": [
         [
           {
-            "node": "Topic Seeds",
+            "node": "Read Topics from Minio",
             "type": "main",
             "index": 0
           }
@@ -276,6 +298,17 @@
         [
           {
             "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IndexNow Ping": {
+      "main": [
+        [
+          {
+            "node": "Save Used Slug",
             "type": "main",
             "index": 0
           }
@@ -295,9 +328,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
-  "activeVersionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
-  "versionCounter": 32,
+  "versionId": "38d18190-3bc3-4128-86af-7984f4ddcd65",
+  "activeVersionId": "38d18190-3bc3-4128-86af-7984f4ddcd65",
+  "versionCounter": 35,
   "triggerCount": 2,
   "shared": [
     {
@@ -320,9 +353,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T09:11:05.830Z",
-    "createdAt": "2026-04-10T09:11:05.830Z",
-    "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
+    "updatedAt": "2026-04-10T09:42:32.244Z",
+    "createdAt": "2026-04-10T09:42:32.244Z",
+    "versionId": "38d18190-3bc3-4128-86af-7984f4ddcd65",
     "workflowId": "XdnfbkbCL8NDjBdo",
     "nodes": [
       {
@@ -346,16 +379,25 @@
         }
       },
       {
-        "id": "tan-article-generator-topics",
-        "name": "Topic Seeds",
-        "type": "n8n-nodes-base.code",
+        "id": "tan-read-topics-minio",
+        "name": "Read Topics from Minio",
+        "type": "n8n-nodes-base.awsS3",
         "typeVersion": 2,
         "position": [
           -200,
           300
         ],
+        "continueOnFail": true,
+        "credentials": {
+          "aws": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "Minio S3"
+          }
+        },
         "parameters": {
-          "jsCode": "return [{json: {topics: [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"]}}];"
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "tan-topics.json"
         }
       },
       {
@@ -368,7 +410,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+          "jsCode": "// Read topics from Minio, fall back to hardcoded list\nlet topics = [];\ntry {\n  const raw = $('Read Topics from Minio').item.json.Body;\n  topics = JSON.parse(raw || '[]');\n} catch(e) { topics = []; }\n\n// Fallback topics if Minio empty\nif (topics.length === 0) {\n  topics = [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"];\n}\n\n// Pick random topic\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{ json: { topic } }];"
         }
       },
       {
@@ -509,6 +551,19 @@
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({host: 'tan-website.netlify.app', key: '45dd255c1afd3b0b0a18d077af5d2d43', keyLocation: 'https://tan-website.netlify.app/45dd255c1afd3b0b0a18d077af5d2d43.txt', urlList: ['https://tan-website.netlify.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
         }
+      },
+      {
+        "id": "tan-save-used-slug",
+        "name": "Save Used Slug",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1260,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+        }
       }
     ],
     "connections": {
@@ -516,14 +571,14 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Topic Seeds": {
+      "Read Topics from Minio": {
         "main": [
           [
             {
@@ -582,7 +637,7 @@
         "main": [
           [
             {
-              "node": "Topic Seeds",
+              "node": "Read Topics from Minio",
               "type": "main",
               "index": 0
             }
@@ -599,6 +654,17 @@
             }
           ]
         ]
+      },
+      "IndexNow Ping": {
+        "main": [
+          [
+            {
+              "node": "Save Used Slug",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -607,18 +673,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T09:11:05.863Z",
-        "id": 641,
+        "createdAt": "2026-04-10T09:42:32.284Z",
+        "id": 653,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
+        "versionId": "38d18190-3bc3-4128-86af-7984f4ddcd65",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T09:11:05.878Z",
-        "id": 642,
+        "createdAt": "2026-04-10T09:42:32.307Z",
+        "id": 654,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
+        "versionId": "38d18190-3bc3-4128-86af-7984f4ddcd65",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

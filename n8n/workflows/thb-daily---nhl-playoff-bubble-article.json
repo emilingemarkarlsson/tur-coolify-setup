@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-04-10T08:09:56.178Z",
+  "updatedAt": "2026-04-10T09:43:08.583Z",
   "createdAt": "2026-03-22T09:50:05.801Z",
   "id": "amDvkYTucdcSRBWP",
-  "name": "THB Daily – NHL Playoff Bubble Article",
+  "name": "THB Daily \u2013 NHL Playoff Bubble Article",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -59,7 +59,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "\nconst standings = $input.item.json.standings || [];\nconst today = new Date().toISOString().split('T')[0];\n\nfunction abbrev(t) { return (t.teamAbbrev?.default || t.teamAbbrev || '???'); }\nfunction name(t)   { return (t.teamCommonName?.default || t.teamName?.default || abbrev(t)); }\nconst byPoints = (a, b) => (b.points - a.points) || ((b.regulationWins||0) - (a.regulationWins||0));\n\nfunction toTeamInfo(t, inPlayoffs) {\n  return {\n    abbrev: abbrev(t), name: name(t),\n    division: t.divisionAbbrev || '?',\n    points: t.points || 0, gp: t.gamesPlayed || 0,\n    wins: t.wins || 0, losses: t.losses || 0, otLosses: t.otLosses || 0,\n    row: t.regulationWins || 0, inPlayoffs: !!inPlayoffs\n  };\n}\n\n// Eastern teams only\nconst eastern = standings.filter(t => t.conferenceAbbrev === 'E');\n\n// Sort each division separately, then take top 3 — this is the key correctness fix\n// (prevents conference-wide sort from misidentifying division leaders)\nconst atlantic = [...eastern.filter(t => t.divisionAbbrev === 'A')].sort(byPoints);\nconst metro    = [...eastern.filter(t => t.divisionAbbrev === 'M')].sort(byPoints);\n\nconst divChamps = [...atlantic.slice(0, 3), ...metro.slice(0, 3)];\nconst divChampSet = new Set(divChamps.map(abbrev));\n\n// Wildcard pool: all eastern teams not in top-3 of their division, sorted by points\nconst wildcardPool = eastern\n  .filter(t => !divChampSet.has(abbrev(t)))\n  .sort(byPoints);\n\n// NHL wildcard: top 2 = in playoffs, rest = out\nconst wc1      = wildcardPool[0]; // 1st wildcard (safely in)\nconst wc2      = wildcardPool[1]; // 2nd wildcard = LAST IN\nconst firstOut = wildcardPool[2]; // FIRST OUT\n\n// Bubble display: wildcard pool top 6\nconst bubbleTeams = wildcardPool.slice(0, 6).map(t =>\n  toTeamInfo(t, abbrev(t) === abbrev(wc1) || abbrev(t) === abbrev(wc2))\n);\n\nconst teamColors = {\n  BOS:'#FCB514', BUF:'#003087', DET:'#CE1126', FLA:'#C8102E',\n  MTL:'#CF0A2C', OTT:'#C52032', TBL:'#002868', TOR:'#003E7E',\n  CAR:'#CE1126', CBJ:'#002654', NJD:'#CE1126', NYI:'#00539B',\n  NYR:'#0038A8', PHI:'#F74902', PIT:'#FCB514', WSH:'#041E42',\n  VGK:'#B4975A', EDM:'#FC4C02', CGY:'#C8102E', VAN:'#00843D',\n};\n\nreturn [{\n  json: {\n    today,\n    bubbleTeams,\n    lastIn:   toTeamInfo(wc2, true),\n    firstOut: toTeamInfo(firstOut, false),\n    pointsGap: (firstOut?.points || 0) - (wc2?.points || 0),\n    colors: bubbleTeams.map(t => teamColors[t.abbrev] || '#64748b'),\n    divChampions: divChamps.map(t => toTeamInfo(t, true))\n  }\n}];\n"
+        "jsCode": "\nconst standings = $input.item.json.standings || [];\nconst today = new Date().toISOString().split('T')[0];\n\nfunction abbrev(t) { return (t.teamAbbrev?.default || t.teamAbbrev || '???'); }\nfunction name(t)   { return (t.teamCommonName?.default || t.teamName?.default || abbrev(t)); }\nconst byPoints = (a, b) => (b.points - a.points) || ((b.regulationWins||0) - (a.regulationWins||0));\n\nfunction toTeamInfo(t, inPlayoffs) {\n  return {\n    abbrev: abbrev(t), name: name(t),\n    division: t.divisionAbbrev || '?',\n    points: t.points || 0, gp: t.gamesPlayed || 0,\n    wins: t.wins || 0, losses: t.losses || 0, otLosses: t.otLosses || 0,\n    row: t.regulationWins || 0, inPlayoffs: !!inPlayoffs\n  };\n}\n\n// Eastern teams only\nconst eastern = standings.filter(t => t.conferenceAbbrev === 'E');\n\n// Sort each division separately, then take top 3 \u2014 this is the key correctness fix\n// (prevents conference-wide sort from misidentifying division leaders)\nconst atlantic = [...eastern.filter(t => t.divisionAbbrev === 'A')].sort(byPoints);\nconst metro    = [...eastern.filter(t => t.divisionAbbrev === 'M')].sort(byPoints);\n\nconst divChamps = [...atlantic.slice(0, 3), ...metro.slice(0, 3)];\nconst divChampSet = new Set(divChamps.map(abbrev));\n\n// Wildcard pool: all eastern teams not in top-3 of their division, sorted by points\nconst wildcardPool = eastern\n  .filter(t => !divChampSet.has(abbrev(t)))\n  .sort(byPoints);\n\n// NHL wildcard: top 2 = in playoffs, rest = out\nconst wc1      = wildcardPool[0]; // 1st wildcard (safely in)\nconst wc2      = wildcardPool[1]; // 2nd wildcard = LAST IN\nconst firstOut = wildcardPool[2]; // FIRST OUT\n\n// Bubble display: wildcard pool top 6\nconst bubbleTeams = wildcardPool.slice(0, 6).map(t =>\n  toTeamInfo(t, abbrev(t) === abbrev(wc1) || abbrev(t) === abbrev(wc2))\n);\n\nconst teamColors = {\n  BOS:'#FCB514', BUF:'#003087', DET:'#CE1126', FLA:'#C8102E',\n  MTL:'#CF0A2C', OTT:'#C52032', TBL:'#002868', TOR:'#003E7E',\n  CAR:'#CE1126', CBJ:'#002654', NJD:'#CE1126', NYI:'#00539B',\n  NYR:'#0038A8', PHI:'#F74902', PIT:'#FCB514', WSH:'#041E42',\n  VGK:'#B4975A', EDM:'#FC4C02', CGY:'#C8102E', VAN:'#00843D',\n};\n\nreturn [{\n  json: {\n    today,\n    bubbleTeams,\n    lastIn:   toTeamInfo(wc2, true),\n    firstOut: toTeamInfo(firstOut, false),\n    pointsGap: (firstOut?.points || 0) - (wc2?.points || 0),\n    colors: bubbleTeams.map(t => teamColors[t.abbrev] || '#64748b'),\n    divChampions: divChamps.map(t => toTeamInfo(t, true))\n  }\n}];\n"
       }
     },
     {
@@ -97,11 +97,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        980,
+        1420,
         300
       ],
       "parameters": {
-        "jsCode": "\nconst bubble = $('Parse Bubble Data').item.json;\nconst charts = $input.item.json;\nconst d = { ...bubble, ...charts };\nconst { bubbleTeams, lastIn, firstOut, pointsGap, today, chartUrl, chart2Url } = d;\n\nconst bubbleStr = bubbleTeams.map((t, i) =>\n  `${i+1}. ${t.name} (${t.abbrev}) — ${t.points} pts, ${t.gp} GP, ROW: ${t.row}` +\n  (i === 0 ? ' [WC1 IN]' : i === 1 ? ' [WC2 LAST IN]' : i === 2 ? ' [FIRST OUT]' : '')\n).join('\\n');\n\nconst dateFormatted = new Date(today + 'T12:00:00Z').toLocaleDateString('en-US', {\n  month: 'long', day: 'numeric', year: 'numeric'\n});\nconst gap = Math.abs(pointsGap || 0);\n\nconst systemPrompt = `You are the lead writer for The Hockey Brain (thehockeybrain.com) — a smart hockey analytics publication.\n\nOUTPUT FORMAT — follow exactly, output ONLY the HTML below, nothing else:\n\n<div class=\"article-bottom-line\">\n<strong>The Call</strong>\n[1-2 sentences. Direct, opinionated prediction: who makes the playoffs and who doesn't. Back it with one key data point.]\n</div>\n\n<div class=\"article-quick-take\">\n<p><strong>Quick Take</strong></p>\n<ul>\n<li>[1-sentence fact about who currently holds the bubble lead]</li>\n<li>[1-sentence: exact points for last-in vs first-out, and the gap]</li>\n<li>[1-sentence: tiebreaker or schedule insight]</li>\n</ul>\n</div>\n\n<div class=\"article-key-stat\">\n<span class=\"stat-number\">[THE KEY NUMBER — e.g. 1 or 2]</span>\n<span class=\"stat-label\">[short label, e.g. \"point separates the last playoff spot from elimination\"]</span>\n</div>\n\n<p>[Paragraph 1: Hook — the human drama in 2-3 sentences. Name specific teams and players.]</p>\n\n<p>[Paragraph 2: The cutoff line — exactly who is in and who is out, with point totals.]</p>\n\n<p>[Paragraph 3: ROW tiebreaker — what happens if teams finish tied in points.]</p>\n\n<p>[Paragraph 4: Schedule and momentum — who has the tougher road, who is playing well.]</p>\n\nRULES:\n- Use <strong>Team Name (X pts)</strong> for teams, e.g. <strong>Detroit Red Wings (84 pts)</strong>\n- Each <p> is 2-3 sentences max — short, punchy\n- NO markdown, NO asterisks, NO h1/h2 tags\n- Start immediately with <div class=\"article-bottom-line\"> — zero preamble\n- In the Quick Take <li> bullets: do NOT wrap entire sentences in <strong>. Only bold the team name or number, not the whole sentence.`;\n\nconst userPrompt = `Write the playoff bubble article for ${dateFormatted}.\n\nEASTERN BUBBLE DATA:\n${bubbleStr}\n\nLast team IN:   ${lastIn?.name} (${lastIn?.abbrev}) — ${lastIn?.points} pts, ${lastIn?.gp} GP, ROW: ${lastIn?.row}\nFirst team OUT: ${firstOut?.name} (${firstOut?.abbrev}) — ${firstOut?.points} pts, ${firstOut?.gp} GP, ROW: ${firstOut?.row}\nGap: ${gap} point(s) between last-in and first-out\n\nOutput ONLY the HTML. Start immediately with <div class=\"article-bottom-line\">.`;\n\nreturn [{ json: { ...d, dateFormatted, systemPrompt, userPrompt } }];\n"
+        "jsCode": "\nconst bubble = $('Parse Bubble Data').item.json;\nconst scheduleInfo = $('Parse Schedule').item.json;\nconst charts = $input.item.json;\nconst d = { ...bubble, ...charts };\nconst { bubbleTeams, lastIn, firstOut, pointsGap, today, chartUrl, chart2Url } = d;\nconst scheduleText = scheduleInfo.scheduleText || 'Schedule data unavailable';\n\nconst bubbleStr = bubbleTeams.map((t, i) =>\n  `${i+1}. ${t.name} (${t.abbrev}) \u2014 ${t.points} pts, ${t.gp} GP, ROW: ${t.row}` +\n  (i === 0 ? ' [WC1 IN]' : i === 1 ? ' [WC2 LAST IN]' : i === 2 ? ' [FIRST OUT]' : '')\n).join('\\n');\n\nconst dateFormatted = new Date(today + 'T12:00:00Z').toLocaleDateString('en-US', {\n  month: 'long', day: 'numeric', year: 'numeric'\n});\nconst gap = Math.abs(pointsGap || 0);\n\nconst systemPrompt = `You are the lead writer for The Hockey Brain (thehockeybrain.com) \u2014 a smart hockey analytics publication.\n\nOUTPUT FORMAT \u2014 follow exactly, output ONLY the HTML below, nothing else:\n\n<div class=\"article-bottom-line\">\n<strong>The Call</strong>\n[1-2 sentences. Direct, opinionated prediction: who makes the playoffs and who doesn't. Back it with one key data point.]\n</div>\n\n<div class=\"article-quick-take\">\n<p><strong>Quick Take</strong></p>\n<ul>\n<li>[1-sentence fact about who currently holds the bubble lead]</li>\n<li>[1-sentence: exact points for last-in vs first-out, and the gap]</li>\n<li>[1-sentence: tiebreaker or schedule insight]</li>\n</ul>\n</div>\n\n<div class=\"article-key-stat\">\n<span class=\"stat-number\">[THE KEY NUMBER \u2014 e.g. 1 or 2]</span>\n<span class=\"stat-label\">[short label, e.g. \"point separates the last playoff spot from elimination\"]</span>\n</div>\n\n<p>[Paragraph 1: Hook \u2014 the human drama in 2-3 sentences. Name specific teams and players.]</p>\n\n<p>[Paragraph 2: The cutoff line \u2014 exactly who is in and who is out, with point totals.]</p>\n\n<p>[Paragraph 3: ROW tiebreaker \u2014 what happens if teams finish tied in points.]</p>\n\n<p>[Paragraph 4: Schedule and momentum \u2014 who has the tougher road, who is playing well.]</p>\n\nRULES:\n- Use <strong>Team Name (X pts)</strong> for teams, e.g. <strong>Detroit Red Wings (84 pts)</strong>\n- Each <p> is 2-3 sentences max \u2014 short, punchy\n- NO markdown, NO asterisks, NO h1/h2 tags\n- Start immediately with <div class=\"article-bottom-line\"> \u2014 zero preamble\n- In the Quick Take <li> bullets: do NOT wrap entire sentences in <strong>. Only bold the team name or number, not the whole sentence.`;\n\nconst userPrompt = `Write the playoff bubble article for ${dateFormatted}.\n\nEASTERN BUBBLE DATA:\n${bubbleStr}\n\nLast team IN:   ${lastIn?.name} (${lastIn?.abbrev}) \u2014 ${lastIn?.points} pts, ${lastIn?.gp} GP, ROW: ${lastIn?.row}\nFirst team OUT: ${firstOut?.name} (${firstOut?.abbrev}) \u2014 ${firstOut?.points} pts, ${firstOut?.gp} GP, ROW: ${firstOut?.row}\nGap: ${gap} point(s) between last-in and first-out\n\nUPCOMING GAMES (next 7 days for bubble teams): ${scheduleText}\n\nOutput ONLY the HTML. Start immediately with <div class=\"article-bottom-line\">.`;\n\nreturn [{ json: { ...d, dateFormatted, systemPrompt, userPrompt } }];\n"
       }
     },
     {
@@ -110,7 +110,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
+        1640,
         300
       ],
       "parameters": {
@@ -143,11 +143,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1420,
+        1860,
         300
       ],
       "parameters": {
-        "jsCode": "\nconst articleHtml = $input.item.json.choices?.[0]?.message?.content || '';\nconst d = $('Build Gemini Prompt').item.json;\nconst { today, chartUrl, chart2Url, bubbleTeams, lastIn, firstOut, dateFormatted } = d;\n\nconst slug        = 'eastern-playoff-bubble-' + today;\nconst readableDate = dateFormatted || today;\nconst gap         = Math.abs(d.pointsGap || 0);\n\nconst title    = 'Eastern Playoff Bubble: ' + (lastIn?.name || 'Last In') + ' vs ' + (firstOut?.name || 'First Out') + ' | ' + readableDate;\nconst metaTitle = 'NHL Eastern Playoff Race ' + readableDate + ' | The Hockey Brain';\nconst metaDesc  = (lastIn?.name || 'Last in') + ' (' + (lastIn?.points || 0) + ' pts) hold the final wildcard, ' + gap + ' point(s) ahead of ' + (firstOut?.name || 'First out') + '. Full bubble breakdown ' + readableDate + '.';\nconst year = (today || '2026').substring(0, 4);\nconst keywords = [\n  'nhl playoff race', 'eastern conference standings', 'nhl bubble teams',\n  (lastIn?.name || '').toLowerCase(), (firstOut?.name || '').toLowerCase(),\n  'nhl wildcard race ' + year, 'hockey analytics'\n].filter(Boolean);\n\n// Chart 2 appended at the end of the article (after paragraphs)\nconst chart2Html = '<div class=\"article-chart-secondary\"><img src=\"' + (chart2Url || '') +\n  '\" alt=\"Points vs Regulation Wins – Tiebreaker Context\" /></div>';\n\nconst content = articleHtml.trim() + '\\n' + chart2Html;\n\nconst safeContent = content.replace(/\\\\/g, '\\\\\\\\').replace(/`/g, '\\\\`').replace(/\\$\\{/g, '\\\\${');\nconst postObj = '  {\\n' +\n  '    slug: '            + JSON.stringify(slug)         + ',\\n' +\n  '    title: '           + JSON.stringify(title)        + ',\\n' +\n  '    metaTitle: '       + JSON.stringify(metaTitle)    + ',\\n' +\n  '    metaDescription: ' + JSON.stringify(metaDesc)     + ',\\n' +\n  '    keywords: '        + JSON.stringify(keywords)     + ',\\n' +\n  '    publishedAt: '     + JSON.stringify(today)        + ',\\n' +\n  '    chartUrl: '        + JSON.stringify(chartUrl||'') + ',\\n' +\n  '    content: `'        + safeContent + '`,\\n' +\n  '  },';\n\nreturn [{ json: { slug, title, metaDesc, chartUrl, chart2Url, postObj, articlePreview: content.substring(0, 600) } }];\n"
+        "jsCode": "\nconst articleHtml = $input.item.json.choices?.[0]?.message?.content || '';\nconst d = $('Build Gemini Prompt').item.json;\nconst { today, chartUrl, chart2Url, bubbleTeams, lastIn, firstOut, dateFormatted } = d;\n\nconst slug        = 'eastern-playoff-bubble-' + today;\nconst readableDate = dateFormatted || today;\nconst gap         = Math.abs(d.pointsGap || 0);\n\nconst title    = 'Eastern Playoff Bubble: ' + (lastIn?.name || 'Last In') + ' vs ' + (firstOut?.name || 'First Out') + ' | ' + readableDate;\nconst metaTitle = 'NHL Eastern Playoff Race ' + readableDate + ' | The Hockey Brain';\nconst metaDesc  = (lastIn?.name || 'Last in') + ' (' + (lastIn?.points || 0) + ' pts) hold the final wildcard, ' + gap + ' point(s) ahead of ' + (firstOut?.name || 'First out') + '. Full bubble breakdown ' + readableDate + '.';\nconst year = (today || '2026').substring(0, 4);\nconst keywords = [\n  'nhl playoff race', 'eastern conference standings', 'nhl bubble teams',\n  (lastIn?.name || '').toLowerCase(), (firstOut?.name || '').toLowerCase(),\n  'nhl wildcard race ' + year, 'hockey analytics'\n].filter(Boolean);\n\n// Chart 2 appended at the end of the article (after paragraphs)\nconst chart2Html = '<div class=\"article-chart-secondary\"><img src=\"' + (chart2Url || '') +\n  '\" alt=\"Points vs Regulation Wins \u2013 Tiebreaker Context\" /></div>';\n\nconst content = articleHtml.trim() + '\\n' + chart2Html;\n\nconst safeContent = content.replace(/\\\\/g, '\\\\\\\\').replace(/`/g, '\\\\`').replace(/\\$\\{/g, '\\\\${');\nconst postObj = '  {\\n' +\n  '    slug: '            + JSON.stringify(slug)         + ',\\n' +\n  '    title: '           + JSON.stringify(title)        + ',\\n' +\n  '    metaTitle: '       + JSON.stringify(metaTitle)    + ',\\n' +\n  '    metaDescription: ' + JSON.stringify(metaDesc)     + ',\\n' +\n  '    keywords: '        + JSON.stringify(keywords)     + ',\\n' +\n  '    publishedAt: '     + JSON.stringify(today)        + ',\\n' +\n  '    chartUrl: '        + JSON.stringify(chartUrl||'') + ',\\n' +\n  '    content: `'        + safeContent + '`,\\n' +\n  '  },';\n\nreturn [{ json: { slug, title, metaDesc, chartUrl, chart2Url, postObj, articlePreview: content.substring(0, 600) } }];\n"
       }
     },
     {
@@ -156,7 +156,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1640,
+        2080,
         300
       ],
       "parameters": {
@@ -184,7 +184,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1860,
+        2300,
         300
       ],
       "parameters": {
@@ -197,7 +197,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2080,
+        2520,
         300
       ],
       "parameters": {
@@ -222,7 +222,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"message\": \"feat: auto-publish NHL playoff bubble article – {{ $json.slug }}\", \"content\": \"{{ $json.newContentB64 }}\", \"sha\": \"{{ $json.sha }}\"}",
+        "jsonBody": "={\"message\": \"feat: auto-publish NHL playoff bubble article \u2013 {{ $json.slug }}\", \"content\": \"{{ $json.newContentB64 }}\", \"sha\": \"{{ $json.sha }}\"}",
         "options": {
           "timeout": 30000
         }
@@ -234,7 +234,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2300,
+        2740,
         300
       ],
       "parameters": {
@@ -257,11 +257,11 @@
     },
     {
       "id": "c12",
-      "name": "Notify Telegram – Published",
+      "name": "Notify Telegram \u2013 Published",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2520,
+        2960,
         300
       ],
       "parameters": {
@@ -309,6 +309,34 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  host: 'thehockeybrain.com',\n  key: 'c9d5e1f7a3b6c8d4e2f9a5b7c3d8e6f2',\n  keyLocation: 'https://www.thehockeybrain.com/c9d5e1f7a3b6c8d4e2f9a5b7c3d8e6f2.txt',\n  urlList: ['https://www.thehockeybrain.com/insights/' + $('Inject + Push to GitHub').item.json.slug]\n}) }}"
       }
+    },
+    {
+      "id": "thb-fetch-schedule",
+      "name": "Fetch NHL Schedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        980,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://api-web.nhle.com/v1/schedule/now"
+      }
+    },
+    {
+      "id": "thb-parse-schedule",
+      "name": "Parse Schedule",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Extract upcoming games for bubble teams\nlet scheduleGames = [];\ntry {\n  const scheduleData = $('Fetch NHL Schedule').item.json;\n  const gameWeek = scheduleData.gameWeek || [];\n  \n  // Get bubble team abbreviations from Parse Bubble Data\n  const bubbleData = $('Parse Bubble Data').item.json;\n  const bubbleTeams = (bubbleData.bubbleTeams || []).map(t => t.abbrev || t.teamAbbrev || '');\n  \n  // Find games involving bubble teams in next 7 days\n  for (const day of gameWeek.slice(0, 7)) {\n    for (const game of (day.games || [])) {\n      const home = game.homeTeam?.abbrev || '';\n      const away = game.awayTeam?.abbrev || '';\n      if (bubbleTeams.includes(home) || bubbleTeams.includes(away)) {\n        scheduleGames.push({\n          date: day.date,\n          home,\n          away,\n          venue: game.venue?.default || ''\n        });\n      }\n    }\n  }\n} catch(e) {\n  scheduleGames = [];\n}\n\nconst inputJson = $input.item.json;\nreturn [{\n  json: {\n    ...inputJson,\n    scheduleGames,\n    scheduleText: scheduleGames.length > 0 \n      ? scheduleGames.map(g => g.date + ': ' + g.away + ' @ ' + g.home).join(', ')\n      : 'Schedule data unavailable'\n  }\n}];"
+      }
     }
   ],
   "connections": {
@@ -349,7 +377,7 @@
       "main": [
         [
           {
-            "node": "Build Gemini Prompt",
+            "node": "Fetch NHL Schedule",
             "type": "main",
             "index": 0
           }
@@ -448,7 +476,29 @@
       "main": [
         [
           {
-            "node": "Notify Telegram – Published",
+            "node": "Notify Telegram \u2013 Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch NHL Schedule": {
+      "main": [
+        [
+          {
+            "node": "Parse Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Schedule": {
+      "main": [
+        [
+          {
+            "node": "Build Gemini Prompt",
             "type": "main",
             "index": 0
           }
@@ -467,9 +517,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
-  "activeVersionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
-  "versionCounter": 109,
+  "versionId": "f3ebd1da-66f1-41e9-9014-8f914ed660c9",
+  "activeVersionId": "f3ebd1da-66f1-41e9-9014-8f914ed660c9",
+  "versionCounter": 112,
   "triggerCount": 2,
   "shared": [
     {
@@ -492,9 +542,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T08:09:20.581Z",
-    "createdAt": "2026-04-10T08:09:20.581Z",
-    "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
+    "updatedAt": "2026-04-10T09:43:08.584Z",
+    "createdAt": "2026-04-10T09:43:08.584Z",
+    "versionId": "f3ebd1da-66f1-41e9-9014-8f914ed660c9",
     "workflowId": "amDvkYTucdcSRBWP",
     "nodes": [
       {
@@ -549,7 +599,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "\nconst standings = $input.item.json.standings || [];\nconst today = new Date().toISOString().split('T')[0];\n\nfunction abbrev(t) { return (t.teamAbbrev?.default || t.teamAbbrev || '???'); }\nfunction name(t)   { return (t.teamCommonName?.default || t.teamName?.default || abbrev(t)); }\nconst byPoints = (a, b) => (b.points - a.points) || ((b.regulationWins||0) - (a.regulationWins||0));\n\nfunction toTeamInfo(t, inPlayoffs) {\n  return {\n    abbrev: abbrev(t), name: name(t),\n    division: t.divisionAbbrev || '?',\n    points: t.points || 0, gp: t.gamesPlayed || 0,\n    wins: t.wins || 0, losses: t.losses || 0, otLosses: t.otLosses || 0,\n    row: t.regulationWins || 0, inPlayoffs: !!inPlayoffs\n  };\n}\n\n// Eastern teams only\nconst eastern = standings.filter(t => t.conferenceAbbrev === 'E');\n\n// Sort each division separately, then take top 3 — this is the key correctness fix\n// (prevents conference-wide sort from misidentifying division leaders)\nconst atlantic = [...eastern.filter(t => t.divisionAbbrev === 'A')].sort(byPoints);\nconst metro    = [...eastern.filter(t => t.divisionAbbrev === 'M')].sort(byPoints);\n\nconst divChamps = [...atlantic.slice(0, 3), ...metro.slice(0, 3)];\nconst divChampSet = new Set(divChamps.map(abbrev));\n\n// Wildcard pool: all eastern teams not in top-3 of their division, sorted by points\nconst wildcardPool = eastern\n  .filter(t => !divChampSet.has(abbrev(t)))\n  .sort(byPoints);\n\n// NHL wildcard: top 2 = in playoffs, rest = out\nconst wc1      = wildcardPool[0]; // 1st wildcard (safely in)\nconst wc2      = wildcardPool[1]; // 2nd wildcard = LAST IN\nconst firstOut = wildcardPool[2]; // FIRST OUT\n\n// Bubble display: wildcard pool top 6\nconst bubbleTeams = wildcardPool.slice(0, 6).map(t =>\n  toTeamInfo(t, abbrev(t) === abbrev(wc1) || abbrev(t) === abbrev(wc2))\n);\n\nconst teamColors = {\n  BOS:'#FCB514', BUF:'#003087', DET:'#CE1126', FLA:'#C8102E',\n  MTL:'#CF0A2C', OTT:'#C52032', TBL:'#002868', TOR:'#003E7E',\n  CAR:'#CE1126', CBJ:'#002654', NJD:'#CE1126', NYI:'#00539B',\n  NYR:'#0038A8', PHI:'#F74902', PIT:'#FCB514', WSH:'#041E42',\n  VGK:'#B4975A', EDM:'#FC4C02', CGY:'#C8102E', VAN:'#00843D',\n};\n\nreturn [{\n  json: {\n    today,\n    bubbleTeams,\n    lastIn:   toTeamInfo(wc2, true),\n    firstOut: toTeamInfo(firstOut, false),\n    pointsGap: (firstOut?.points || 0) - (wc2?.points || 0),\n    colors: bubbleTeams.map(t => teamColors[t.abbrev] || '#64748b'),\n    divChampions: divChamps.map(t => toTeamInfo(t, true))\n  }\n}];\n"
+          "jsCode": "\nconst standings = $input.item.json.standings || [];\nconst today = new Date().toISOString().split('T')[0];\n\nfunction abbrev(t) { return (t.teamAbbrev?.default || t.teamAbbrev || '???'); }\nfunction name(t)   { return (t.teamCommonName?.default || t.teamName?.default || abbrev(t)); }\nconst byPoints = (a, b) => (b.points - a.points) || ((b.regulationWins||0) - (a.regulationWins||0));\n\nfunction toTeamInfo(t, inPlayoffs) {\n  return {\n    abbrev: abbrev(t), name: name(t),\n    division: t.divisionAbbrev || '?',\n    points: t.points || 0, gp: t.gamesPlayed || 0,\n    wins: t.wins || 0, losses: t.losses || 0, otLosses: t.otLosses || 0,\n    row: t.regulationWins || 0, inPlayoffs: !!inPlayoffs\n  };\n}\n\n// Eastern teams only\nconst eastern = standings.filter(t => t.conferenceAbbrev === 'E');\n\n// Sort each division separately, then take top 3 \u2014 this is the key correctness fix\n// (prevents conference-wide sort from misidentifying division leaders)\nconst atlantic = [...eastern.filter(t => t.divisionAbbrev === 'A')].sort(byPoints);\nconst metro    = [...eastern.filter(t => t.divisionAbbrev === 'M')].sort(byPoints);\n\nconst divChamps = [...atlantic.slice(0, 3), ...metro.slice(0, 3)];\nconst divChampSet = new Set(divChamps.map(abbrev));\n\n// Wildcard pool: all eastern teams not in top-3 of their division, sorted by points\nconst wildcardPool = eastern\n  .filter(t => !divChampSet.has(abbrev(t)))\n  .sort(byPoints);\n\n// NHL wildcard: top 2 = in playoffs, rest = out\nconst wc1      = wildcardPool[0]; // 1st wildcard (safely in)\nconst wc2      = wildcardPool[1]; // 2nd wildcard = LAST IN\nconst firstOut = wildcardPool[2]; // FIRST OUT\n\n// Bubble display: wildcard pool top 6\nconst bubbleTeams = wildcardPool.slice(0, 6).map(t =>\n  toTeamInfo(t, abbrev(t) === abbrev(wc1) || abbrev(t) === abbrev(wc2))\n);\n\nconst teamColors = {\n  BOS:'#FCB514', BUF:'#003087', DET:'#CE1126', FLA:'#C8102E',\n  MTL:'#CF0A2C', OTT:'#C52032', TBL:'#002868', TOR:'#003E7E',\n  CAR:'#CE1126', CBJ:'#002654', NJD:'#CE1126', NYI:'#00539B',\n  NYR:'#0038A8', PHI:'#F74902', PIT:'#FCB514', WSH:'#041E42',\n  VGK:'#B4975A', EDM:'#FC4C02', CGY:'#C8102E', VAN:'#00843D',\n};\n\nreturn [{\n  json: {\n    today,\n    bubbleTeams,\n    lastIn:   toTeamInfo(wc2, true),\n    firstOut: toTeamInfo(firstOut, false),\n    pointsGap: (firstOut?.points || 0) - (wc2?.points || 0),\n    colors: bubbleTeams.map(t => teamColors[t.abbrev] || '#64748b'),\n    divChampions: divChamps.map(t => toTeamInfo(t, true))\n  }\n}];\n"
         }
       },
       {
@@ -587,11 +637,11 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          980,
+          1420,
           300
         ],
         "parameters": {
-          "jsCode": "\nconst bubble = $('Parse Bubble Data').item.json;\nconst charts = $input.item.json;\nconst d = { ...bubble, ...charts };\nconst { bubbleTeams, lastIn, firstOut, pointsGap, today, chartUrl, chart2Url } = d;\n\nconst bubbleStr = bubbleTeams.map((t, i) =>\n  `${i+1}. ${t.name} (${t.abbrev}) — ${t.points} pts, ${t.gp} GP, ROW: ${t.row}` +\n  (i === 0 ? ' [WC1 IN]' : i === 1 ? ' [WC2 LAST IN]' : i === 2 ? ' [FIRST OUT]' : '')\n).join('\\n');\n\nconst dateFormatted = new Date(today + 'T12:00:00Z').toLocaleDateString('en-US', {\n  month: 'long', day: 'numeric', year: 'numeric'\n});\nconst gap = Math.abs(pointsGap || 0);\n\nconst systemPrompt = `You are the lead writer for The Hockey Brain (thehockeybrain.com) — a smart hockey analytics publication.\n\nOUTPUT FORMAT — follow exactly, output ONLY the HTML below, nothing else:\n\n<div class=\"article-bottom-line\">\n<strong>The Call</strong>\n[1-2 sentences. Direct, opinionated prediction: who makes the playoffs and who doesn't. Back it with one key data point.]\n</div>\n\n<div class=\"article-quick-take\">\n<p><strong>Quick Take</strong></p>\n<ul>\n<li>[1-sentence fact about who currently holds the bubble lead]</li>\n<li>[1-sentence: exact points for last-in vs first-out, and the gap]</li>\n<li>[1-sentence: tiebreaker or schedule insight]</li>\n</ul>\n</div>\n\n<div class=\"article-key-stat\">\n<span class=\"stat-number\">[THE KEY NUMBER — e.g. 1 or 2]</span>\n<span class=\"stat-label\">[short label, e.g. \"point separates the last playoff spot from elimination\"]</span>\n</div>\n\n<p>[Paragraph 1: Hook — the human drama in 2-3 sentences. Name specific teams and players.]</p>\n\n<p>[Paragraph 2: The cutoff line — exactly who is in and who is out, with point totals.]</p>\n\n<p>[Paragraph 3: ROW tiebreaker — what happens if teams finish tied in points.]</p>\n\n<p>[Paragraph 4: Schedule and momentum — who has the tougher road, who is playing well.]</p>\n\nRULES:\n- Use <strong>Team Name (X pts)</strong> for teams, e.g. <strong>Detroit Red Wings (84 pts)</strong>\n- Each <p> is 2-3 sentences max — short, punchy\n- NO markdown, NO asterisks, NO h1/h2 tags\n- Start immediately with <div class=\"article-bottom-line\"> — zero preamble\n- In the Quick Take <li> bullets: do NOT wrap entire sentences in <strong>. Only bold the team name or number, not the whole sentence.`;\n\nconst userPrompt = `Write the playoff bubble article for ${dateFormatted}.\n\nEASTERN BUBBLE DATA:\n${bubbleStr}\n\nLast team IN:   ${lastIn?.name} (${lastIn?.abbrev}) — ${lastIn?.points} pts, ${lastIn?.gp} GP, ROW: ${lastIn?.row}\nFirst team OUT: ${firstOut?.name} (${firstOut?.abbrev}) — ${firstOut?.points} pts, ${firstOut?.gp} GP, ROW: ${firstOut?.row}\nGap: ${gap} point(s) between last-in and first-out\n\nOutput ONLY the HTML. Start immediately with <div class=\"article-bottom-line\">.`;\n\nreturn [{ json: { ...d, dateFormatted, systemPrompt, userPrompt } }];\n"
+          "jsCode": "\nconst bubble = $('Parse Bubble Data').item.json;\nconst scheduleInfo = $('Parse Schedule').item.json;\nconst charts = $input.item.json;\nconst d = { ...bubble, ...charts };\nconst { bubbleTeams, lastIn, firstOut, pointsGap, today, chartUrl, chart2Url } = d;\nconst scheduleText = scheduleInfo.scheduleText || 'Schedule data unavailable';\n\nconst bubbleStr = bubbleTeams.map((t, i) =>\n  `${i+1}. ${t.name} (${t.abbrev}) \u2014 ${t.points} pts, ${t.gp} GP, ROW: ${t.row}` +\n  (i === 0 ? ' [WC1 IN]' : i === 1 ? ' [WC2 LAST IN]' : i === 2 ? ' [FIRST OUT]' : '')\n).join('\\n');\n\nconst dateFormatted = new Date(today + 'T12:00:00Z').toLocaleDateString('en-US', {\n  month: 'long', day: 'numeric', year: 'numeric'\n});\nconst gap = Math.abs(pointsGap || 0);\n\nconst systemPrompt = `You are the lead writer for The Hockey Brain (thehockeybrain.com) \u2014 a smart hockey analytics publication.\n\nOUTPUT FORMAT \u2014 follow exactly, output ONLY the HTML below, nothing else:\n\n<div class=\"article-bottom-line\">\n<strong>The Call</strong>\n[1-2 sentences. Direct, opinionated prediction: who makes the playoffs and who doesn't. Back it with one key data point.]\n</div>\n\n<div class=\"article-quick-take\">\n<p><strong>Quick Take</strong></p>\n<ul>\n<li>[1-sentence fact about who currently holds the bubble lead]</li>\n<li>[1-sentence: exact points for last-in vs first-out, and the gap]</li>\n<li>[1-sentence: tiebreaker or schedule insight]</li>\n</ul>\n</div>\n\n<div class=\"article-key-stat\">\n<span class=\"stat-number\">[THE KEY NUMBER \u2014 e.g. 1 or 2]</span>\n<span class=\"stat-label\">[short label, e.g. \"point separates the last playoff spot from elimination\"]</span>\n</div>\n\n<p>[Paragraph 1: Hook \u2014 the human drama in 2-3 sentences. Name specific teams and players.]</p>\n\n<p>[Paragraph 2: The cutoff line \u2014 exactly who is in and who is out, with point totals.]</p>\n\n<p>[Paragraph 3: ROW tiebreaker \u2014 what happens if teams finish tied in points.]</p>\n\n<p>[Paragraph 4: Schedule and momentum \u2014 who has the tougher road, who is playing well.]</p>\n\nRULES:\n- Use <strong>Team Name (X pts)</strong> for teams, e.g. <strong>Detroit Red Wings (84 pts)</strong>\n- Each <p> is 2-3 sentences max \u2014 short, punchy\n- NO markdown, NO asterisks, NO h1/h2 tags\n- Start immediately with <div class=\"article-bottom-line\"> \u2014 zero preamble\n- In the Quick Take <li> bullets: do NOT wrap entire sentences in <strong>. Only bold the team name or number, not the whole sentence.`;\n\nconst userPrompt = `Write the playoff bubble article for ${dateFormatted}.\n\nEASTERN BUBBLE DATA:\n${bubbleStr}\n\nLast team IN:   ${lastIn?.name} (${lastIn?.abbrev}) \u2014 ${lastIn?.points} pts, ${lastIn?.gp} GP, ROW: ${lastIn?.row}\nFirst team OUT: ${firstOut?.name} (${firstOut?.abbrev}) \u2014 ${firstOut?.points} pts, ${firstOut?.gp} GP, ROW: ${firstOut?.row}\nGap: ${gap} point(s) between last-in and first-out\n\nUPCOMING GAMES (next 7 days for bubble teams): ${scheduleText}\n\nOutput ONLY the HTML. Start immediately with <div class=\"article-bottom-line\">.`;\n\nreturn [{ json: { ...d, dateFormatted, systemPrompt, userPrompt } }];\n"
         }
       },
       {
@@ -600,7 +650,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1200,
+          1640,
           300
         ],
         "parameters": {
@@ -633,11 +683,11 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1420,
+          1860,
           300
         ],
         "parameters": {
-          "jsCode": "\nconst articleHtml = $input.item.json.choices?.[0]?.message?.content || '';\nconst d = $('Build Gemini Prompt').item.json;\nconst { today, chartUrl, chart2Url, bubbleTeams, lastIn, firstOut, dateFormatted } = d;\n\nconst slug        = 'eastern-playoff-bubble-' + today;\nconst readableDate = dateFormatted || today;\nconst gap         = Math.abs(d.pointsGap || 0);\n\nconst title    = 'Eastern Playoff Bubble: ' + (lastIn?.name || 'Last In') + ' vs ' + (firstOut?.name || 'First Out') + ' | ' + readableDate;\nconst metaTitle = 'NHL Eastern Playoff Race ' + readableDate + ' | The Hockey Brain';\nconst metaDesc  = (lastIn?.name || 'Last in') + ' (' + (lastIn?.points || 0) + ' pts) hold the final wildcard, ' + gap + ' point(s) ahead of ' + (firstOut?.name || 'First out') + '. Full bubble breakdown ' + readableDate + '.';\nconst year = (today || '2026').substring(0, 4);\nconst keywords = [\n  'nhl playoff race', 'eastern conference standings', 'nhl bubble teams',\n  (lastIn?.name || '').toLowerCase(), (firstOut?.name || '').toLowerCase(),\n  'nhl wildcard race ' + year, 'hockey analytics'\n].filter(Boolean);\n\n// Chart 2 appended at the end of the article (after paragraphs)\nconst chart2Html = '<div class=\"article-chart-secondary\"><img src=\"' + (chart2Url || '') +\n  '\" alt=\"Points vs Regulation Wins – Tiebreaker Context\" /></div>';\n\nconst content = articleHtml.trim() + '\\n' + chart2Html;\n\nconst safeContent = content.replace(/\\\\/g, '\\\\\\\\').replace(/`/g, '\\\\`').replace(/\\$\\{/g, '\\\\${');\nconst postObj = '  {\\n' +\n  '    slug: '            + JSON.stringify(slug)         + ',\\n' +\n  '    title: '           + JSON.stringify(title)        + ',\\n' +\n  '    metaTitle: '       + JSON.stringify(metaTitle)    + ',\\n' +\n  '    metaDescription: ' + JSON.stringify(metaDesc)     + ',\\n' +\n  '    keywords: '        + JSON.stringify(keywords)     + ',\\n' +\n  '    publishedAt: '     + JSON.stringify(today)        + ',\\n' +\n  '    chartUrl: '        + JSON.stringify(chartUrl||'') + ',\\n' +\n  '    content: `'        + safeContent + '`,\\n' +\n  '  },';\n\nreturn [{ json: { slug, title, metaDesc, chartUrl, chart2Url, postObj, articlePreview: content.substring(0, 600) } }];\n"
+          "jsCode": "\nconst articleHtml = $input.item.json.choices?.[0]?.message?.content || '';\nconst d = $('Build Gemini Prompt').item.json;\nconst { today, chartUrl, chart2Url, bubbleTeams, lastIn, firstOut, dateFormatted } = d;\n\nconst slug        = 'eastern-playoff-bubble-' + today;\nconst readableDate = dateFormatted || today;\nconst gap         = Math.abs(d.pointsGap || 0);\n\nconst title    = 'Eastern Playoff Bubble: ' + (lastIn?.name || 'Last In') + ' vs ' + (firstOut?.name || 'First Out') + ' | ' + readableDate;\nconst metaTitle = 'NHL Eastern Playoff Race ' + readableDate + ' | The Hockey Brain';\nconst metaDesc  = (lastIn?.name || 'Last in') + ' (' + (lastIn?.points || 0) + ' pts) hold the final wildcard, ' + gap + ' point(s) ahead of ' + (firstOut?.name || 'First out') + '. Full bubble breakdown ' + readableDate + '.';\nconst year = (today || '2026').substring(0, 4);\nconst keywords = [\n  'nhl playoff race', 'eastern conference standings', 'nhl bubble teams',\n  (lastIn?.name || '').toLowerCase(), (firstOut?.name || '').toLowerCase(),\n  'nhl wildcard race ' + year, 'hockey analytics'\n].filter(Boolean);\n\n// Chart 2 appended at the end of the article (after paragraphs)\nconst chart2Html = '<div class=\"article-chart-secondary\"><img src=\"' + (chart2Url || '') +\n  '\" alt=\"Points vs Regulation Wins \u2013 Tiebreaker Context\" /></div>';\n\nconst content = articleHtml.trim() + '\\n' + chart2Html;\n\nconst safeContent = content.replace(/\\\\/g, '\\\\\\\\').replace(/`/g, '\\\\`').replace(/\\$\\{/g, '\\\\${');\nconst postObj = '  {\\n' +\n  '    slug: '            + JSON.stringify(slug)         + ',\\n' +\n  '    title: '           + JSON.stringify(title)        + ',\\n' +\n  '    metaTitle: '       + JSON.stringify(metaTitle)    + ',\\n' +\n  '    metaDescription: ' + JSON.stringify(metaDesc)     + ',\\n' +\n  '    keywords: '        + JSON.stringify(keywords)     + ',\\n' +\n  '    publishedAt: '     + JSON.stringify(today)        + ',\\n' +\n  '    chartUrl: '        + JSON.stringify(chartUrl||'') + ',\\n' +\n  '    content: `'        + safeContent + '`,\\n' +\n  '  },';\n\nreturn [{ json: { slug, title, metaDesc, chartUrl, chart2Url, postObj, articlePreview: content.substring(0, 600) } }];\n"
         }
       },
       {
@@ -646,7 +696,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1640,
+          2080,
           300
         ],
         "parameters": {
@@ -674,7 +724,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1860,
+          2300,
           300
         ],
         "parameters": {
@@ -687,7 +737,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2080,
+          2520,
           300
         ],
         "parameters": {
@@ -712,7 +762,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\"message\": \"feat: auto-publish NHL playoff bubble article – {{ $json.slug }}\", \"content\": \"{{ $json.newContentB64 }}\", \"sha\": \"{{ $json.sha }}\"}",
+          "jsonBody": "={\"message\": \"feat: auto-publish NHL playoff bubble article \u2013 {{ $json.slug }}\", \"content\": \"{{ $json.newContentB64 }}\", \"sha\": \"{{ $json.sha }}\"}",
           "options": {
             "timeout": 30000
           }
@@ -724,7 +774,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2300,
+          2740,
           300
         ],
         "parameters": {
@@ -747,11 +797,11 @@
       },
       {
         "id": "c12",
-        "name": "Notify Telegram – Published",
+        "name": "Notify Telegram \u2013 Published",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2520,
+          2960,
           300
         ],
         "parameters": {
@@ -799,6 +849,34 @@
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({\n  host: 'thehockeybrain.com',\n  key: 'c9d5e1f7a3b6c8d4e2f9a5b7c3d8e6f2',\n  keyLocation: 'https://www.thehockeybrain.com/c9d5e1f7a3b6c8d4e2f9a5b7c3d8e6f2.txt',\n  urlList: ['https://www.thehockeybrain.com/insights/' + $('Inject + Push to GitHub').item.json.slug]\n}) }}"
         }
+      },
+      {
+        "id": "thb-fetch-schedule",
+        "name": "Fetch NHL Schedule",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          980,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://api-web.nhle.com/v1/schedule/now"
+        }
+      },
+      {
+        "id": "thb-parse-schedule",
+        "name": "Parse Schedule",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Extract upcoming games for bubble teams\nlet scheduleGames = [];\ntry {\n  const scheduleData = $('Fetch NHL Schedule').item.json;\n  const gameWeek = scheduleData.gameWeek || [];\n  \n  // Get bubble team abbreviations from Parse Bubble Data\n  const bubbleData = $('Parse Bubble Data').item.json;\n  const bubbleTeams = (bubbleData.bubbleTeams || []).map(t => t.abbrev || t.teamAbbrev || '');\n  \n  // Find games involving bubble teams in next 7 days\n  for (const day of gameWeek.slice(0, 7)) {\n    for (const game of (day.games || [])) {\n      const home = game.homeTeam?.abbrev || '';\n      const away = game.awayTeam?.abbrev || '';\n      if (bubbleTeams.includes(home) || bubbleTeams.includes(away)) {\n        scheduleGames.push({\n          date: day.date,\n          home,\n          away,\n          venue: game.venue?.default || ''\n        });\n      }\n    }\n  }\n} catch(e) {\n  scheduleGames = [];\n}\n\nconst inputJson = $input.item.json;\nreturn [{\n  json: {\n    ...inputJson,\n    scheduleGames,\n    scheduleText: scheduleGames.length > 0 \n      ? scheduleGames.map(g => g.date + ': ' + g.away + ' @ ' + g.home).join(', ')\n      : 'Schedule data unavailable'\n  }\n}];"
+        }
       }
     ],
     "connections": {
@@ -839,7 +917,7 @@
         "main": [
           [
             {
-              "node": "Build Gemini Prompt",
+              "node": "Fetch NHL Schedule",
               "type": "main",
               "index": 0
             }
@@ -938,7 +1016,29 @@
         "main": [
           [
             {
-              "node": "Notify Telegram – Published",
+              "node": "Notify Telegram \u2013 Published",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch NHL Schedule": {
+        "main": [
+          [
+            {
+              "node": "Parse Schedule",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Schedule": {
+        "main": [
+          [
+            {
+              "node": "Build Gemini Prompt",
               "type": "main",
               "index": 0
             }
@@ -952,34 +1052,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T08:09:20.615Z",
-        "id": 585,
+        "createdAt": "2026-04-10T09:43:08.637Z",
+        "id": 659,
         "workflowId": "amDvkYTucdcSRBWP",
-        "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
+        "versionId": "f3ebd1da-66f1-41e9-9014-8f914ed660c9",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T08:09:20.641Z",
-        "id": 586,
+        "createdAt": "2026-04-10T09:43:08.659Z",
+        "id": 660,
         "workflowId": "amDvkYTucdcSRBWP",
-        "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-04-10T08:09:56.214Z",
-        "id": 619,
-        "workflowId": "amDvkYTucdcSRBWP",
-        "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-04-10T08:09:56.242Z",
-        "id": 620,
-        "workflowId": "amDvkYTucdcSRBWP",
-        "versionId": "d8ca414f-af30-4e82-8842-38f64cfaa327",
+        "versionId": "f3ebd1da-66f1-41e9-9014-8f914ed660c9",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

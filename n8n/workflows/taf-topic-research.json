@@ -1,0 +1,479 @@
+{
+  "updatedAt": "2026-04-10T09:34:06.665Z",
+  "createdAt": "2026-04-10T09:34:06.665Z",
+  "id": "NIdfMYU8jGyB09TN",
+  "name": "taf-topic-research",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "taf-topic-research-sched",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "taf-topic-research-wh",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        500
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "run-taf-topics",
+        "webhookId": "wh-taf-topics-01",
+        "responseMode": "onReceived",
+        "responseData": ""
+      }
+    },
+    {
+      "id": "taf-topic-research-read",
+      "name": "Read Used Slugs",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        300
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "aws": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "Minio S3"
+        }
+      },
+      "parameters": {
+        "operation": "get",
+        "bucketName": "seo-drafts",
+        "fileKey": "taf-used-slugs.json"
+      }
+    },
+    {
+      "id": "taf-topic-research-groq",
+      "name": "Generate Topics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        40,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REDACTED_GROQ_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', temperature: 0.9, max_tokens: 2000, messages: [{ role: 'system', content: \"You are a content strategist for The Agent Fabric \\u2014 enterprise AI agent infrastructure. Generate 30 specific technical article topics about: AI agent orchestration, multi-agent systems, enterprise AI deployment, LLM ops, autonomous workflow design, AI governance, agent security, RAG architectures. Topics must be technical, specific, and relevant to CTOs and ML engineers.\" + '\\nPreviously used slugs: ' + (function(){ try { return JSON.stringify(JSON.parse($('Read Used Slugs').item.json.Body || '[]')); } catch(e){ return '[]'; } })() },{ role: 'user', content: 'Generate exactly 30 unique, specific article topics. Return ONLY a JSON array of strings, no other text. Example: [\"topic one\", \"topic two\"]' }] }) }}"
+      }
+    },
+    {
+      "id": "taf-topic-research-parse",
+      "name": "Parse Topics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Parse Groq response and filter against used slugs\nconst response = $('Generate Topics').item.json;\nconst content = response.choices[0].message.content.trim();\n\n// Extract JSON array from response\nlet topics = [];\ntry {\n  const match = content.match(/\\\\[[\\\\s\\\\S]*\\\\]/);\n  topics = JSON.parse(match ? match[0] : content);\n} catch(e) {\n  topics = content.split('\\n').filter(t => t.trim().length > 10).slice(0, 30);\n}\n\n// Get used slugs\nlet usedSlugs = [];\ntry {\n  const raw = $('Read Used Slugs').item.json.Body;\n  usedSlugs = JSON.parse(raw || '[]');\n} catch(e) { usedSlugs = []; }\n\n// Filter out topics whose slug would match a used slug\nfunction toSlug(t) {\n  return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 60);\n}\n\nconst filtered = topics.filter(t => !usedSlugs.includes(toSlug(t)));\n\nreturn [{\n  json: {\n    topics: filtered.slice(0, 30),\n    count: filtered.length,\n    usedCount: usedSlugs.length,\n    site: 'taf'\n  }\n}];"
+      }
+    },
+    {
+      "id": "taf-topic-research-save",
+      "name": "Save Topics to Minio",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ],
+      "credentials": {
+        "aws": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "Minio S3"
+        }
+      },
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "seo-drafts",
+        "fileName": "taf-topics.json",
+        "fileContent": "={{ JSON.stringify($json.topics) }}"
+      }
+    },
+    {
+      "id": "taf-topic-research-tg",
+      "name": "Telegram Notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', message_thread_id: 5, parse_mode: 'HTML', text: '\ud83d\udccb <b>The Agent Fabric topics uppdaterade</b>\\n\\n<b>Nya topics:</b> ' + $json.count + '\\n<b>Anv\u00e4nda slugs filtrerade:</b> ' + $json.usedCount + '\\n\\nTopics sparade till Minio och redo f\u00f6r generering.' }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Used Slugs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Used Slugs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Used Slugs": {
+      "main": [
+        [
+          {
+            "node": "Generate Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Topics": {
+      "main": [
+        [
+          {
+            "node": "Parse Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Topics": {
+      "main": [
+        [
+          {
+            "node": "Save Topics to Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Topics to Minio": {
+      "main": [
+        [
+          {
+            "node": "Telegram Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "84a97bfd-dc98-475c-9a7b-0d7d957cd684",
+  "activeVersionId": "84a97bfd-dc98-475c-9a7b-0d7d957cd684",
+  "versionCounter": 4,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T09:34:06.665Z",
+      "createdAt": "2026-04-10T09:34:06.665Z",
+      "role": "workflow:owner",
+      "workflowId": "NIdfMYU8jGyB09TN",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-10T09:34:06.672Z",
+    "createdAt": "2026-04-10T09:34:06.672Z",
+    "versionId": "84a97bfd-dc98-475c-9a7b-0d7d957cd684",
+    "workflowId": "NIdfMYU8jGyB09TN",
+    "nodes": [
+      {
+        "id": "taf-topic-research-sched",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 7 * * 1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "taf-topic-research-wh",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -400,
+          500
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "run-taf-topics",
+          "webhookId": "wh-taf-topics-01",
+          "responseMode": "onReceived",
+          "responseData": ""
+        }
+      },
+      {
+        "id": "taf-topic-research-read",
+        "name": "Read Used Slugs",
+        "type": "n8n-nodes-base.awsS3",
+        "typeVersion": 2,
+        "position": [
+          -180,
+          300
+        ],
+        "continueOnFail": true,
+        "credentials": {
+          "aws": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "Minio S3"
+          }
+        },
+        "parameters": {
+          "operation": "get",
+          "bucketName": "seo-drafts",
+          "fileKey": "taf-used-slugs.json"
+        }
+      },
+      {
+        "id": "taf-topic-research-groq",
+        "name": "Generate Topics",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          40,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer REDACTED_GROQ_API_KEY"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', temperature: 0.9, max_tokens: 2000, messages: [{ role: 'system', content: \"You are a content strategist for The Agent Fabric \\u2014 enterprise AI agent infrastructure. Generate 30 specific technical article topics about: AI agent orchestration, multi-agent systems, enterprise AI deployment, LLM ops, autonomous workflow design, AI governance, agent security, RAG architectures. Topics must be technical, specific, and relevant to CTOs and ML engineers.\" + '\\nPreviously used slugs: ' + (function(){ try { return JSON.stringify(JSON.parse($('Read Used Slugs').item.json.Body || '[]')); } catch(e){ return '[]'; } })() },{ role: 'user', content: 'Generate exactly 30 unique, specific article topics. Return ONLY a JSON array of strings, no other text. Example: [\"topic one\", \"topic two\"]' }] }) }}"
+        }
+      },
+      {
+        "id": "taf-topic-research-parse",
+        "name": "Parse Topics",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          280,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Parse Groq response and filter against used slugs\nconst response = $('Generate Topics').item.json;\nconst content = response.choices[0].message.content.trim();\n\n// Extract JSON array from response\nlet topics = [];\ntry {\n  const match = content.match(/\\\\[[\\\\s\\\\S]*\\\\]/);\n  topics = JSON.parse(match ? match[0] : content);\n} catch(e) {\n  topics = content.split('\\n').filter(t => t.trim().length > 10).slice(0, 30);\n}\n\n// Get used slugs\nlet usedSlugs = [];\ntry {\n  const raw = $('Read Used Slugs').item.json.Body;\n  usedSlugs = JSON.parse(raw || '[]');\n} catch(e) { usedSlugs = []; }\n\n// Filter out topics whose slug would match a used slug\nfunction toSlug(t) {\n  return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 60);\n}\n\nconst filtered = topics.filter(t => !usedSlugs.includes(toSlug(t)));\n\nreturn [{\n  json: {\n    topics: filtered.slice(0, 30),\n    count: filtered.length,\n    usedCount: usedSlugs.length,\n    site: 'taf'\n  }\n}];"
+        }
+      },
+      {
+        "id": "taf-topic-research-save",
+        "name": "Save Topics to Minio",
+        "type": "n8n-nodes-base.awsS3",
+        "typeVersion": 2,
+        "position": [
+          520,
+          300
+        ],
+        "credentials": {
+          "aws": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "Minio S3"
+          }
+        },
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "seo-drafts",
+          "fileName": "taf-topics.json",
+          "fileContent": "={{ JSON.stringify($json.topics) }}"
+        }
+      },
+      {
+        "id": "taf-topic-research-tg",
+        "name": "Telegram Notify",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          760,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "contentType": "json",
+          "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', message_thread_id: 5, parse_mode: 'HTML', text: '\ud83d\udccb <b>The Agent Fabric topics uppdaterade</b>\\n\\n<b>Nya topics:</b> ' + $json.count + '\\n<b>Anv\u00e4nda slugs filtrerade:</b> ' + $json.usedCount + '\\n\\nTopics sparade till Minio och redo f\u00f6r generering.' }) }}"
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Read Used Slugs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Read Used Slugs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Used Slugs": {
+        "main": [
+          [
+            {
+              "node": "Generate Topics",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Topics": {
+        "main": [
+          [
+            {
+              "node": "Parse Topics",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Topics": {
+        "main": [
+          [
+            {
+              "node": "Save Topics to Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Topics to Minio": {
+        "main": [
+          [
+            {
+              "node": "Telegram Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Admin null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-10T09:34:06.836Z",
+        "id": 649,
+        "workflowId": "NIdfMYU8jGyB09TN",
+        "versionId": "84a97bfd-dc98-475c-9a7b-0d7d957cd684",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}
