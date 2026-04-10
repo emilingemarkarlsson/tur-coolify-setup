@@ -1,0 +1,71 @@
+{
+  "name": "cmo-content-push",
+  "active": true,
+  "nodes": [
+    {
+      "id": "cmo-hook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "cmo-publish-webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmo-publish",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "cmo-validate",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0],
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\nconst slug = body.slug;\nconst umamiName = body.umamiName;\nconst content = body.content;\nif (!slug || !umamiName || !content) {\n  throw new Error('Missing required fields: slug, umamiName, content');\n}\nreturn [{ json: { slug, umamiName, content } }];"
+      }
+    },
+    {
+      "id": "cmo-publish",
+      "name": "Publish via OpenClaw",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:9191/store-and-publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ slug: $json.slug, umamiName: $json.umamiName, content: $json.content }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "cmo-tg",
+      "name": "Telegram Notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [780, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', message_thread_id: 4, text: '🤖 <b>CMO publicerade artikel</b>\\nSlug: ' + $('Validate Input').item.json.slug + '\\nSajt: ' + $('Validate Input').item.json.umamiName, parse_mode: 'HTML' }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]] },
+    "Validate Input": { "main": [[{ "node": "Publish via OpenClaw", "type": "main", "index": 0 }]] },
+    "Publish via OpenClaw": { "main": [[{ "node": "Telegram Notify", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}

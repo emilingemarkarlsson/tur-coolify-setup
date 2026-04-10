@@ -1,0 +1,117 @@
+{
+  "name": "fin-article-generator",
+  "active": true,
+  "nodes": [
+    {
+      "id": "fin-sched",
+      "name": "Daily 10:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 220],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "30 10 * * *" }]
+        }
+      }
+    },
+    {
+      "id": "fin-hook",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "fin-article-generator-manual",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "run-fin-gen",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "fin-topic",
+      "name": "Pick Topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 110],
+      "parameters": {
+        "jsCode": "const topics = [\n  'Senaste nytt från Finnboda hamn – vad händer i hamnområdet',\n  'Hamnens utbyggnad och framtidsplaner för Finnboda',\n  'Kajplatser och förtöjningsmöjligheter i Finnboda hamn',\n  'Säsongstart i Finnboda – hamnens öppning och förberedelser',\n  'Båtliv i Nacka – segling och motorbåtar runt Finnboda',\n  'Bästa segelleder från Finnboda hamn ut i Stockholms skärgård',\n  'Vinterförvaring av båtar nära Finnboda hamn',\n  'Båtklubbar och föreningar kring Finnboda och Sicklön',\n  'Kommande evenemang och aktiviteter i Finnboda hamn',\n  'Kulturarvet i Finnboda varvsområde och dess historia',\n  'Sjösäkerhet runt Finnboda – tips och regler att känna till',\n  'Sjöräddning och nödprocedurer för båtägare i Nacka',\n  'Väder och vindförhållanden vid Finnboda – hur man planerar sin tur',\n  'Miljöarbetet i Finnboda hamn – hållbarhet på vattnet',\n  'Fågellivet och naturvärden kring Finnboda och Järlasjön',\n  'Vattnets kvalitet i Sicklaviken – mätningar och åtgärder',\n  'Bottenfärger och miljövänligt båtunderhåll i Finnboda',\n  'Marint naturreservat nära Finnboda – vad gäller?',\n  'Guidade turer och upplevelser i gamla varvsområdet',\n  'Hamnfesten i Finnboda – historia och traditioner'\n];\nconst dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);\nconst topic = topics[dayOfYear % topics.length];\nconst today = new Date().toISOString().split('T')[0];\nreturn [{ json: { topic, today } }];"
+      }
+    },
+    {
+      "id": "fin-llm",
+      "name": "Generate Article",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 110],
+      "parameters": {
+        "method": "POST",
+        "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'gemini-25-flash', messages: [{ role: 'system', content: 'Du är en expert på Finnboda hamn och båtliv i Nacka/Stockholm. Du skriver välstrukturerade, informativa artiklar på svenska för webbplatsen finnbodahamnplan.se. Artiklarna ska vara SEO-vänliga, engagerande och trovärdiga.' }, { role: 'user', content: 'Skriv en artikel på svenska om: ' + $json.topic + '\\n\\nKrav:\\n- Rubrik: engagerande och SEO-vänlig (max 70 tecken)\\n- Ingress: 2-3 meningar som sammanfattar artikeln\\n- Brödtext: 400-600 ord, välstrukturerad med rubriker (##)\\n- Avslutning: en uppmaning till läsaren\\n- Taggar: 3-5 relevanta SEO-taggar på svenska\\n\\nSvara med ett JSON-objekt med fälten: title, description, tags (array), body (markdown)' }], temperature: 0.7, response_format: { type: 'json_object' } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "fin-format",
+      "name": "Format with Frontmatter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [780, 110],
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst topicData = $('Pick Topic').item.json;\nlet articleData;\ntry {\n  articleData = JSON.parse(response.choices[0].message.content);\n} catch(e) {\n  throw new Error('Failed to parse LLM response: ' + e.message);\n}\nconst { title, description, tags, body } = articleData;\nconst today = topicData.today;\nconst slug = title\n  .toLowerCase()\n  .replace(/[åä]/g, 'a').replace(/ö/g, 'o')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '')\n  .substring(0, 60);\nconst tagsStr = Array.isArray(tags) ? tags.map(t => '\"' + t + '\"').join(', ') : '\"hamn\", \"båtliv\", \"finnboda\"';\nconst content = '---\\ntitle: \"' + title + '\"\\ndescription: \"' + description + '\"\\npubDate: ' + today + '\\ntags: [' + tagsStr + ']\\n---\\n\\n' + body;\nreturn [{ json: { slug, content, title, today } }];"
+      }
+    },
+    {
+      "id": "fin-publish",
+      "name": "Publish to FIN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 110],
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:9191/store-and-publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ slug: $json.slug, umamiName: 'finnbodahamnplan.se', content: $json.content }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "fin-tg",
+      "name": "Telegram Notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 110],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', message_thread_id: 4, text: '📝 <b>FIN artikel publicerad</b>\\n' + $('Format with Frontmatter').item.json.title + '\\nfinnbodahamnplan.se', parse_mode: 'HTML' }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Daily 10:30": { "main": [[{ "node": "Pick Topic", "type": "main", "index": 0 }]] },
+    "Manual Trigger": { "main": [[{ "node": "Pick Topic", "type": "main", "index": 0 }]] },
+    "Pick Topic": { "main": [[{ "node": "Generate Article", "type": "main", "index": 0 }]] },
+    "Generate Article": { "main": [[{ "node": "Format with Frontmatter", "type": "main", "index": 0 }]] },
+    "Format with Frontmatter": { "main": [[{ "node": "Publish to FIN", "type": "main", "index": 0 }]] },
+    "Publish to FIN": { "main": [[{ "node": "Telegram Notify", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
