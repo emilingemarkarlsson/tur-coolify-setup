@@ -1,0 +1,615 @@
+{
+  "updatedAt": "2026-04-10T11:14:40.749Z",
+  "createdAt": "2026-04-10T11:14:01.143Z",
+  "id": "iTJGqn1f1cLyj858",
+  "name": "weekly-idea-digest",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Schedule Mon 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n2",
+      "name": "Webhook Manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        420
+      ],
+      "webhookId": "idea-digest-manual-001",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "run-idea-digest",
+        "responseMode": "onReceived"
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Fetch HN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30",
+        "options": {}
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Fetch Reddit AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.reddit.com/r/artificial+MachineLearning/.json?limit=25&sort=hot",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-idea-bot/1.0"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n5",
+      "name": "Fetch Reddit Hockey",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.reddit.com/r/hockey/.json?limit=15&sort=hot",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-idea-bot/1.0"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n6",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "jsCode": "let hnTitles = [];\nlet raiTitles = [];\nlet rhTitles = [];\ntry {\n  const hn = $('Fetch HN').first().json;\n  hnTitles = (hn.hits || []).slice(0,20).map(h => h.title).filter(Boolean);\n} catch(e) {}\ntry {\n  const r = $('Fetch Reddit AI').first().json;\n  raiTitles = ((r.data && r.data.children) ? r.data.children : []).slice(0,15).map(c => (c.data && c.data.title) ? c.data.title : '').filter(Boolean);\n} catch(e) {}\ntry {\n  const r = $('Fetch Reddit Hockey').first().json;\n  rhTitles = ((r.data && r.data.children) ? r.data.children : []).slice(0,10).map(c => (c.data && c.data.title) ? c.data.title : '').filter(Boolean);\n} catch(e) {}\n\nconst today = new Date().toLocaleDateString('sv-SE');\n\nconst systemPrompt = 'Du är en startup-analytiker för ett AI-venture bolag. Grundaren har djup expertis inom: 1) Hockey analytics, NHL-data och sportanalys 2) B2B-försäljning av trädgårds- och friluftsprodukter 3) AI-agenter, autonoma system och agentic UX. Fokusera på agentic systems som ersätter mänskliga arbetsflöden, UX-paradigmskiftet bort från point-and-click mot röst/agent/push, och produkter som kan byggas som MVP på 2-4 veckor.';\n\nconst lines = [];\nlines.push('VECKANS TRENDER (' + today + '):');\nlines.push('');\nlines.push('## HackerNews Top Stories:');\nhnTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('## Reddit AI/ML:');\nraiTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('## Reddit Hockey:');\nrhTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('Generera exakt 5 konkreta affärsidéer. Minst 2 ska koppla till hockey/sport, minst 1 till B2B trädgård, minst 2 till agentic AI.');\nlines.push('');\nlines.push('För varje idé, använd EXAKT detta format (HTML-taggar för Telegram):');\nlines.push('');\nlines.push('💡 [domän-emoji] <b>[Idétitel]</b>');\nlines.push('<b>Problem:</b> (1 mening)');\nlines.push('<b>Lösning:</b> (2-3 meningar, konkret)');\nlines.push('<b>Kund:</b> (vem betalar, uppskattad storlek)');\nlines.push('<b>Revenue:</b> (SaaS/engång/provision och storleksordning)');\nlines.push('<b>MVP 2-4v:</b> (minsta byggbart)');\nlines.push('---');\n\nconst userPrompt = lines.join('\\n');\nreturn [{ json: { systemPrompt, userPrompt } }];"
+      }
+    },
+    {
+      "id": "n7",
+      "name": "Generate Ideas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({model:'gemini-25-flash',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.8,max_tokens:2500}) }}"
+      }
+    },
+    {
+      "id": "n8",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const content = ($json.choices && $json.choices[0] && $json.choices[0].message)\n  ? $json.choices[0].message.content\n  : 'Inga idéer genererades denna vecka.';\nconst today = new Date().toLocaleDateString('sv-SE');\nconst text = '📅 <b>Veckodigest – Affärsidéer ' + today + '</b>\\n\\n' + content;\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "n9",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id:-1003919428238,message_thread_id:5,text:$json.text,parse_mode:'HTML'}) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Mon 08:00": {
+      "main": [
+        [
+          {
+            "node": "Fetch HN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Manual": {
+      "main": [
+        [
+          {
+            "node": "Fetch HN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch HN": {
+      "main": [
+        [
+          {
+            "node": "Fetch Reddit AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Reddit AI": {
+      "main": [
+        [
+          {
+            "node": "Fetch Reddit Hockey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Reddit Hockey": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Ideas": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Mon 08:00": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+  "activeVersionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+  "versionCounter": 9,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T11:14:01.143Z",
+      "createdAt": "2026-04-10T11:14:01.143Z",
+      "role": "workflow:owner",
+      "workflowId": "iTJGqn1f1cLyj858",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-10T11:14:40.750Z",
+    "createdAt": "2026-04-10T11:14:40.750Z",
+    "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+    "workflowId": "iTJGqn1f1cLyj858",
+    "nodes": [
+      {
+        "id": "n1",
+        "name": "Schedule Mon 08:00",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 8 * * 1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "n2",
+        "name": "Webhook Manual",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          420
+        ],
+        "webhookId": "idea-digest-manual-001",
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "run-idea-digest",
+          "responseMode": "onReceived"
+        }
+      },
+      {
+        "id": "n3",
+        "name": "Fetch HN",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          220,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30",
+          "options": {}
+        }
+      },
+      {
+        "id": "n4",
+        "name": "Fetch Reddit AI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          440,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://www.reddit.com/r/artificial+MachineLearning/.json?limit=25&sort=hot",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "User-Agent",
+                "value": "n8n-idea-bot/1.0"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "n5",
+        "name": "Fetch Reddit Hockey",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          660,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://www.reddit.com/r/hockey/.json?limit=15&sort=hot",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "User-Agent",
+                "value": "n8n-idea-bot/1.0"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "n6",
+        "name": "Build Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          300
+        ],
+        "parameters": {
+          "jsCode": "let hnTitles = [];\nlet raiTitles = [];\nlet rhTitles = [];\ntry {\n  const hn = $('Fetch HN').first().json;\n  hnTitles = (hn.hits || []).slice(0,20).map(h => h.title).filter(Boolean);\n} catch(e) {}\ntry {\n  const r = $('Fetch Reddit AI').first().json;\n  raiTitles = ((r.data && r.data.children) ? r.data.children : []).slice(0,15).map(c => (c.data && c.data.title) ? c.data.title : '').filter(Boolean);\n} catch(e) {}\ntry {\n  const r = $('Fetch Reddit Hockey').first().json;\n  rhTitles = ((r.data && r.data.children) ? r.data.children : []).slice(0,10).map(c => (c.data && c.data.title) ? c.data.title : '').filter(Boolean);\n} catch(e) {}\n\nconst today = new Date().toLocaleDateString('sv-SE');\n\nconst systemPrompt = 'Du är en startup-analytiker för ett AI-venture bolag. Grundaren har djup expertis inom: 1) Hockey analytics, NHL-data och sportanalys 2) B2B-försäljning av trädgårds- och friluftsprodukter 3) AI-agenter, autonoma system och agentic UX. Fokusera på agentic systems som ersätter mänskliga arbetsflöden, UX-paradigmskiftet bort från point-and-click mot röst/agent/push, och produkter som kan byggas som MVP på 2-4 veckor.';\n\nconst lines = [];\nlines.push('VECKANS TRENDER (' + today + '):');\nlines.push('');\nlines.push('## HackerNews Top Stories:');\nhnTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('## Reddit AI/ML:');\nraiTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('## Reddit Hockey:');\nrhTitles.forEach(function(t,i){ lines.push((i+1)+'. '+t); });\nlines.push('');\nlines.push('Generera exakt 5 konkreta affärsidéer. Minst 2 ska koppla till hockey/sport, minst 1 till B2B trädgård, minst 2 till agentic AI.');\nlines.push('');\nlines.push('För varje idé, använd EXAKT detta format (HTML-taggar för Telegram):');\nlines.push('');\nlines.push('💡 [domän-emoji] <b>[Idétitel]</b>');\nlines.push('<b>Problem:</b> (1 mening)');\nlines.push('<b>Lösning:</b> (2-3 meningar, konkret)');\nlines.push('<b>Kund:</b> (vem betalar, uppskattad storlek)');\nlines.push('<b>Revenue:</b> (SaaS/engång/provision och storleksordning)');\nlines.push('<b>MVP 2-4v:</b> (minsta byggbart)');\nlines.push('---');\n\nconst userPrompt = lines.join('\\n');\nreturn [{ json: { systemPrompt, userPrompt } }];"
+        }
+      },
+      {
+        "id": "n7",
+        "name": "Generate Ideas",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1100,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({model:'gemini-25-flash',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.8,max_tokens:2500}) }}"
+        }
+      },
+      {
+        "id": "n8",
+        "name": "Parse Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1320,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const content = ($json.choices && $json.choices[0] && $json.choices[0].message)\n  ? $json.choices[0].message.content\n  : 'Inga idéer genererades denna vecka.';\nconst today = new Date().toLocaleDateString('sv-SE');\nconst text = '📅 <b>Veckodigest – Affärsidéer ' + today + '</b>\\n\\n' + content;\nreturn [{ json: { text } }];"
+        }
+      },
+      {
+        "id": "n9",
+        "name": "Send Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1540,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id:-1003919428238,message_thread_id:5,text:$json.text,parse_mode:'HTML'}) }}"
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Mon 08:00": {
+        "main": [
+          [
+            {
+              "node": "Fetch HN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Manual": {
+        "main": [
+          [
+            {
+              "node": "Fetch HN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch HN": {
+        "main": [
+          [
+            {
+              "node": "Fetch Reddit AI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Reddit AI": {
+        "main": [
+          [
+            {
+              "node": "Fetch Reddit Hockey",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Reddit Hockey": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate Ideas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Ideas": {
+        "main": [
+          [
+            {
+              "node": "Parse Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Response": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Admin null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-10T11:14:40.810Z",
+        "id": 686,
+        "workflowId": "iTJGqn1f1cLyj858",
+        "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T11:14:40.834Z",
+        "id": 687,
+        "workflowId": "iTJGqn1f1cLyj858",
+        "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T11:14:40.965Z",
+        "id": 688,
+        "workflowId": "iTJGqn1f1cLyj858",
+        "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T11:14:41.015Z",
+        "id": 689,
+        "workflowId": "iTJGqn1f1cLyj858",
+        "versionId": "7816ccbf-8375-4558-8683-11f53451ea5e",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}
