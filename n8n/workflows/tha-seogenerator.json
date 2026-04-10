@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T08:09:55.579Z",
+  "updatedAt": "2026-04-10T09:09:46.304Z",
   "createdAt": "2025-12-01T09:18:05.053Z",
   "id": "9R1IVjLC2c2LN51n",
   "name": "tha-seogenerator",
@@ -231,12 +231,12 @@
         0
       ],
       "parameters": {
-        "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '🤖 <b>Auto-publicerad – thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '🔗 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
+        "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '\ud83e\udd16 <b>Auto-publicerad \u2013 thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '\ud83d\udd17 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
       }
     },
     {
       "id": "tha-auto-tg-http",
-      "name": "Notify Telegram – Auto",
+      "name": "Notify Telegram \u2013 Auto",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -269,6 +269,57 @@
         "responseMode": "onReceived",
         "options": {}
       }
+    },
+    {
+      "id": "tha-qgate-01",
+      "name": "Quality Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-qs-01",
+              "leftValue": "={{ $json.quality_score }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "tha-lowq-tg",
+      "name": "Low Quality \u2013 Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        200
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', message_thread_id: 4, parse_mode: 'HTML', text: '\\u26a0\\ufe0f <b>THA artikel under kvalitetsgr\\u00e4ns</b>\\n\\n<b>Keyword:</b> ' + $json.keyword + '\\n<b>Kvalitet:</b> ' + $json.quality_score + '/10\\n<b>Titel:</b> ' + $json.title + '\\n\\nArtikeln publicerades INTE automatiskt.'}) }}"
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -364,7 +415,7 @@
       "main": [
         [
           {
-            "node": "Auto-Publish to GitHub",
+            "node": "Quality Gate",
             "type": "main",
             "index": 0
           }
@@ -386,7 +437,7 @@
       "main": [
         [
           {
-            "node": "Notify Telegram – Auto",
+            "node": "Notify Telegram \u2013 Auto",
             "type": "main",
             "index": 0
           }
@@ -414,6 +465,24 @@
           }
         ]
       ]
+    },
+    "Quality Gate": {
+      "main": [
+        [
+          {
+            "node": "Auto-Publish to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Low Quality \u2013 Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -433,9 +502,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
-  "activeVersionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
-  "versionCounter": 239,
+  "versionId": "dee5a2ca-9a9c-4511-9c1c-62b34ff6e029",
+  "activeVersionId": "dee5a2ca-9a9c-4511-9c1c-62b34ff6e029",
+  "versionCounter": 242,
   "triggerCount": 2,
   "shared": [
     {
@@ -458,9 +527,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T08:09:19.577Z",
-    "createdAt": "2026-04-10T08:09:19.577Z",
-    "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
+    "updatedAt": "2026-04-10T09:09:46.305Z",
+    "createdAt": "2026-04-10T09:09:46.305Z",
+    "versionId": "dee5a2ca-9a9c-4511-9c1c-62b34ff6e029",
     "workflowId": "9R1IVjLC2c2LN51n",
     "nodes": [
       {
@@ -687,12 +756,12 @@
           0
         ],
         "parameters": {
-          "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '🤖 <b>Auto-publicerad – thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '🔗 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
+          "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '\ud83e\udd16 <b>Auto-publicerad \u2013 thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '\ud83d\udd17 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
         }
       },
       {
         "id": "tha-auto-tg-http",
-        "name": "Notify Telegram – Auto",
+        "name": "Notify Telegram \u2013 Auto",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
@@ -725,6 +794,57 @@
           "responseMode": "onReceived",
           "options": {}
         }
+      },
+      {
+        "id": "tha-qgate-01",
+        "name": "Quality Gate",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1872,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "cond-qs-01",
+                "leftValue": "={{ $json.quality_score }}",
+                "rightValue": 6,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "tha-lowq-tg",
+        "name": "Low Quality \u2013 Review",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2032,
+          200
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', message_thread_id: 4, parse_mode: 'HTML', text: '\\u26a0\\ufe0f <b>THA artikel under kvalitetsgr\\u00e4ns</b>\\n\\n<b>Keyword:</b> ' + $json.keyword + '\\n<b>Kvalitet:</b> ' + $json.quality_score + '/10\\n<b>Titel:</b> ' + $json.title + '\\n\\nArtikeln publicerades INTE automatiskt.'}) }}"
+        },
+        "continueOnFail": true
       }
     ],
     "connections": {
@@ -820,7 +940,7 @@
         "main": [
           [
             {
-              "node": "Auto-Publish to GitHub",
+              "node": "Quality Gate",
               "type": "main",
               "index": 0
             }
@@ -842,7 +962,7 @@
         "main": [
           [
             {
-              "node": "Notify Telegram – Auto",
+              "node": "Notify Telegram \u2013 Auto",
               "type": "main",
               "index": 0
             }
@@ -870,6 +990,24 @@
             }
           ]
         ]
+      },
+      "Quality Gate": {
+        "main": [
+          [
+            {
+              "node": "Auto-Publish to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Low Quality \u2013 Review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -878,34 +1016,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T08:09:19.648Z",
-        "id": 579,
+        "createdAt": "2026-04-10T09:09:46.376Z",
+        "id": 637,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
+        "versionId": "dee5a2ca-9a9c-4511-9c1c-62b34ff6e029",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T08:09:19.682Z",
-        "id": 580,
+        "createdAt": "2026-04-10T09:09:46.400Z",
+        "id": 638,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-04-10T08:09:55.612Z",
-        "id": 613,
-        "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-04-10T08:09:55.628Z",
-        "id": 614,
-        "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
+        "versionId": "dee5a2ca-9a9c-4511-9c1c-62b34ff6e029",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

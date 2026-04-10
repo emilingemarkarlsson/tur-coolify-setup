@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T07:23:50.858Z",
+  "updatedAt": "2026-04-10T09:11:05.556Z",
   "createdAt": "2026-03-24T15:13:28.454Z",
   "id": "ZG4Jv9RD7liDpcmM",
   "name": "tur-article-generator",
@@ -68,7 +68,7 @@
             {
               "id": "1",
               "name": "systemPrompt",
-              "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) — a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
+              "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) \u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
               "type": "string"
             },
             {
@@ -135,7 +135,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: \"The Unnamed Roads\"\\nauthorUrl: \"https://theunnamedroads.com\"\\ndisclosure: \"AI-assisted content\"\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
       }
     },
     {
@@ -170,6 +170,26 @@
         "httpMethod": "POST",
         "responseMode": "onReceived",
         "options": {}
+      }
+    },
+    {
+      "id": "tur-indexnow-01",
+      "name": "IndexNow Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.indexnow.org/indexnow",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({host: 'theunnamedroads.com', key: '6edbaf3226b0a1af8fb89f0b6c3a7232', keyLocation: 'https://theunnamedroads.com/6edbaf3226b0a1af8fb89f0b6c3a7232.txt', urlList: ['https://theunnamedroads.com/posts/' + $('Pick Topic').item.json.slug]}) }}"
       }
     }
   ],
@@ -250,6 +270,17 @@
           }
         ]
       ]
+    },
+    "Publish via OpenClaw": {
+      "main": [
+        [
+          {
+            "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -264,9 +295,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
-  "activeVersionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
-  "versionCounter": 34,
+  "versionId": "c0861cb5-d232-4a97-b80d-df7c49579989",
+  "activeVersionId": "c0861cb5-d232-4a97-b80d-df7c49579989",
+  "versionCounter": 37,
   "triggerCount": 2,
   "shared": [
     {
@@ -289,9 +320,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T07:23:50.862Z",
-    "createdAt": "2026-04-10T07:23:50.862Z",
-    "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
+    "updatedAt": "2026-04-10T09:11:05.557Z",
+    "createdAt": "2026-04-10T09:11:05.557Z",
+    "versionId": "c0861cb5-d232-4a97-b80d-df7c49579989",
     "workflowId": "ZG4Jv9RD7liDpcmM",
     "nodes": [
       {
@@ -355,7 +386,7 @@
               {
                 "id": "1",
                 "name": "systemPrompt",
-                "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) — a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
+                "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) \u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
                 "type": "string"
               },
               {
@@ -422,7 +453,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: \"The Unnamed Roads\"\\nauthorUrl: \"https://theunnamedroads.com\"\\ndisclosure: \"AI-assisted content\"\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
         }
       },
       {
@@ -457,6 +488,26 @@
           "httpMethod": "POST",
           "responseMode": "onReceived",
           "options": {}
+        }
+      },
+      {
+        "id": "tur-indexnow-01",
+        "name": "IndexNow Ping",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1020,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.indexnow.org/indexnow",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({host: 'theunnamedroads.com', key: '6edbaf3226b0a1af8fb89f0b6c3a7232', keyLocation: 'https://theunnamedroads.com/6edbaf3226b0a1af8fb89f0b6c3a7232.txt', urlList: ['https://theunnamedroads.com/posts/' + $('Pick Topic').item.json.slug]}) }}"
         }
       }
     ],
@@ -537,6 +588,17 @@
             }
           ]
         ]
+      },
+      "Publish via OpenClaw": {
+        "main": [
+          [
+            {
+              "node": "IndexNow Ping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -545,18 +607,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T07:23:50.952Z",
-        "id": 559,
+        "createdAt": "2026-04-10T09:11:05.608Z",
+        "id": 639,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
+        "versionId": "c0861cb5-d232-4a97-b80d-df7c49579989",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T07:23:50.987Z",
-        "id": 560,
+        "createdAt": "2026-04-10T09:11:05.645Z",
+        "id": 640,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
+        "versionId": "c0861cb5-d232-4a97-b80d-df7c49579989",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

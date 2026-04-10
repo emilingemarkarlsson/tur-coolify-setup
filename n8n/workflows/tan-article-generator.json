@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T07:23:51.316Z",
+  "updatedAt": "2026-04-10T09:11:05.828Z",
   "createdAt": "2026-03-24T15:13:28.636Z",
   "id": "XdnfbkbCL8NDjBdo",
   "name": "tan-article-generator",
@@ -68,7 +68,7 @@
             {
               "id": "1",
               "name": "systemPrompt",
-              "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) — a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
+              "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) \u2014 a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
               "type": "string"
             },
             {
@@ -135,7 +135,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+        "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"\"\nauthor: \"The Atomic Network\"\nauthorUrl: \"https://theatomicnetwork.com\"\ndisclosure: \"AI-assisted content\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
       }
     },
     {
@@ -170,6 +170,26 @@
         "httpMethod": "POST",
         "responseMode": "onReceived",
         "options": {}
+      }
+    },
+    {
+      "id": "tan-indexnow-01",
+      "name": "IndexNow Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.indexnow.org/indexnow",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({host: 'tan-website.netlify.app', key: '45dd255c1afd3b0b0a18d077af5d2d43', keyLocation: 'https://tan-website.netlify.app/45dd255c1afd3b0b0a18d077af5d2d43.txt', urlList: ['https://tan-website.netlify.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
       }
     }
   ],
@@ -250,6 +270,17 @@
           }
         ]
       ]
+    },
+    "Publish via OpenClaw": {
+      "main": [
+        [
+          {
+            "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -264,9 +295,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
-  "activeVersionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
-  "versionCounter": 29,
+  "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
+  "activeVersionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
+  "versionCounter": 32,
   "triggerCount": 2,
   "shared": [
     {
@@ -289,9 +320,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T07:23:51.317Z",
-    "createdAt": "2026-04-10T07:23:51.317Z",
-    "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
+    "updatedAt": "2026-04-10T09:11:05.830Z",
+    "createdAt": "2026-04-10T09:11:05.830Z",
+    "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
     "workflowId": "XdnfbkbCL8NDjBdo",
     "nodes": [
       {
@@ -355,7 +386,7 @@
               {
                 "id": "1",
                 "name": "systemPrompt",
-                "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) — a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
+                "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) \u2014 a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
                 "type": "string"
               },
               {
@@ -422,7 +453,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+          "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"\"\nauthor: \"The Atomic Network\"\nauthorUrl: \"https://theatomicnetwork.com\"\ndisclosure: \"AI-assisted content\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
         }
       },
       {
@@ -457,6 +488,26 @@
           "httpMethod": "POST",
           "responseMode": "onReceived",
           "options": {}
+        }
+      },
+      {
+        "id": "tan-indexnow-01",
+        "name": "IndexNow Ping",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1020,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.indexnow.org/indexnow",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({host: 'tan-website.netlify.app', key: '45dd255c1afd3b0b0a18d077af5d2d43', keyLocation: 'https://tan-website.netlify.app/45dd255c1afd3b0b0a18d077af5d2d43.txt', urlList: ['https://tan-website.netlify.app/blog/' + $('Pick Topic').item.json.slug]}) }}"
         }
       }
     ],
@@ -537,6 +588,17 @@
             }
           ]
         ]
+      },
+      "Publish via OpenClaw": {
+        "main": [
+          [
+            {
+              "node": "IndexNow Ping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -545,18 +607,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T07:23:51.361Z",
-        "id": 561,
+        "createdAt": "2026-04-10T09:11:05.863Z",
+        "id": 641,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
+        "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T07:23:51.380Z",
-        "id": 562,
+        "createdAt": "2026-04-10T09:11:05.878Z",
+        "id": 642,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
+        "versionId": "dc51c485-d8ed-4f9c-b9f2-d3c819c77a9c",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }
