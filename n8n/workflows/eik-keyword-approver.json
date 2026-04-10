@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T07:25:49.463Z",
+  "updatedAt": "2026-04-10T08:09:55.449Z",
   "createdAt": "2025-12-13T11:03:08.209Z",
   "id": "9gn1VOZgC3usXUMw",
   "name": "eik-keyword-approver",
@@ -101,7 +101,7 @@
         "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML', message_thread_id: 3}) }}"
       }
     },
     {
@@ -174,9 +174,9 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
-  "activeVersionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
-  "versionCounter": 52,
+  "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
+  "activeVersionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
+  "versionCounter": 58,
   "triggerCount": 1,
   "shared": [
     {
@@ -199,9 +199,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T07:25:49.465Z",
-    "createdAt": "2026-04-10T07:25:49.465Z",
-    "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
+    "updatedAt": "2026-04-10T08:09:19.340Z",
+    "createdAt": "2026-04-10T08:09:19.340Z",
+    "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
     "workflowId": "9gn1VOZgC3usXUMw",
     "nodes": [
       {
@@ -298,7 +298,7 @@
           "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML', message_thread_id: 3}) }}"
         }
       },
       {
@@ -369,18 +369,34 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T07:25:49.504Z",
-        "id": 567,
+        "createdAt": "2026-04-10T08:09:19.367Z",
+        "id": 577,
         "workflowId": "9gn1VOZgC3usXUMw",
-        "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
+        "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T07:25:49.521Z",
-        "id": 568,
+        "createdAt": "2026-04-10T08:09:19.382Z",
+        "id": 578,
         "workflowId": "9gn1VOZgC3usXUMw",
-        "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
+        "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.476Z",
+        "id": 611,
+        "workflowId": "9gn1VOZgC3usXUMw",
+        "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.488Z",
+        "id": 612,
+        "workflowId": "9gn1VOZgC3usXUMw",
+        "versionId": "e801bec9-50a8-4662-a5e2-64a8ec843924",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

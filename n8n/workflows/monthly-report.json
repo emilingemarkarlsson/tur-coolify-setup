@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-30T09:37:02.543Z",
+  "updatedAt": "2026-04-10T08:09:56.761Z",
   "createdAt": "2026-03-30T09:37:02.543Z",
   "id": "cwdzdxHIA4AOD6ND",
   "name": "Monthly Report",
@@ -199,7 +199,7 @@
         130
       ],
       "parameters": {
-        "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '\ud83d\udc64',\n  'thehockeyanalytics.com': '\ud83c\udfd2',\n  'thehockeybrain.com': '\ud83e\udde0',\n  'theunnamedroads.com': '\ud83c\udf0d',\n  'theagentfabric.com': '\ud83e\udd16',\n  'theprintroute.com': '\ud83d\udcc4'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '\ud83c\udf10';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '\u25b2' : diff < 0 ? '\u25bc' : '\u2192';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' \u2013 ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '\u25b2' : '\u25bc';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '\ud83d\udd34' : '\ud83d\udfe1';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport \u2013 ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
+        "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '👤',\n  'thehockeyanalytics.com': '🏒',\n  'thehockeybrain.com': '🧠',\n  'theunnamedroads.com': '🌍',\n  'theagentfabric.com': '🤖',\n  'theprintroute.com': '📄'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '🌐';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '→';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' – ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '▲' : '▼';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '🔴' : '🟡';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport – ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
       }
     },
     {
@@ -216,7 +216,7 @@
         "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003767033253', text: $json.text, parse_mode: 'HTML', disable_web_page_preview: true }) }}",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', text: $json.text, parse_mode: 'HTML', message_thread_id: 5, disable_web_page_preview: true }) }}",
         "options": {}
       }
     }
@@ -345,9 +345,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
-  "activeVersionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
-  "versionCounter": 4,
+  "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
+  "activeVersionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
+  "versionCounter": 13,
   "triggerCount": 2,
   "shared": [
     {
@@ -370,9 +370,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-30T09:37:02.551Z",
-    "createdAt": "2026-03-30T09:37:02.551Z",
-    "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+    "updatedAt": "2026-04-10T08:09:21.435Z",
+    "createdAt": "2026-04-10T08:09:21.435Z",
+    "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
     "workflowId": "cwdzdxHIA4AOD6ND",
     "nodes": [
       {
@@ -567,7 +567,7 @@
           130
         ],
         "parameters": {
-          "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '\ud83d\udc64',\n  'thehockeyanalytics.com': '\ud83c\udfd2',\n  'thehockeybrain.com': '\ud83e\udde0',\n  'theunnamedroads.com': '\ud83c\udf0d',\n  'theagentfabric.com': '\ud83e\udd16',\n  'theprintroute.com': '\ud83d\udcc4'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '\ud83c\udf10';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '\u25b2' : diff < 0 ? '\u25bc' : '\u2192';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' \u2013 ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '\u25b2' : '\u25bc';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '\ud83d\udd34' : '\ud83d\udfe1';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport \u2013 ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
+          "jsCode": "const data = $('Assemble Data').first().json;\nconst groqResp = $input.first().json;\n\nlet rec = { summary: 'Manadsanalys klar.', recommendations: [] };\ntry {\n  const raw = groqResp.choices[0].message.content;\n  const m = raw.match(/\\{[\\s\\S]*\\}/);\n  if (m) rec = JSON.parse(m[0]);\n} catch (e) {}\n\nconst { siteStats, articlesBySite, reportMonthSpend, prevMonthSpend, dates, aiText, geoText } = data;\n\nconst siteEmojis = {\n  'emilingemarkarlsson.com': '👤',\n  'thehockeyanalytics.com': '🏒',\n  'thehockeybrain.com': '🧠',\n  'theunnamedroads.com': '🌍',\n  'theagentfabric.com': '🤖',\n  'theprintroute.com': '📄'\n};\n\nconst trafficLines = [];\nfor (const [domain, stats] of Object.entries(siteStats)) {\n  const emoji = siteEmojis[domain] || '🌐';\n  const diff = stats.this_month - stats.last_month;\n  const pct = stats.last_month > 0 ? Math.round(diff / stats.last_month * 100) : 0;\n  const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '→';\n  const sign = diff > 0 ? '+' : '';\n  trafficLines.push(emoji + ' ' + domain.replace('.com', '') + ': ' + stats.this_month + ' (' + arrow + sign + pct + '%)');\n}\n\nconst artLines = [];\nfor (const [domain, arts] of Object.entries(articlesBySite)) {\n  for (const a of (arts || []).slice(0, 2)) {\n    const slug = a.url.replace(/^\\/(posts|blog|insights)\\//, '').replace(/\\/$/, '').replace(/-/g, ' ').slice(0, 45);\n    artLines.push('  ' + a.views + ' – ' + slug);\n  }\n}\n\nconst spendDiff = reportMonthSpend - prevMonthSpend;\nconst spendArrow = spendDiff >= 0 ? '▲' : '▼';\nconst spendSign = spendDiff >= 0 ? '+' : '';\n\nconst recLines = [];\nfor (const r of (rec.recommendations || []).slice(0, 4)) {\n  const icon = r.priority === 'hog' ? '🔴' : '🟡';\n  recLines.push(icon + ' ' + (r.site ? '[' + r.site + '] ' : '') + r.action);\n}\n\nconst text = '<b>Manadsrapport – ' + dates.prevMonthLabel + '</b>\\n\\n' +\n  rec.summary + '\\n\\n' +\n  '<b>Trafik (vs foregaende manad):</b>\\n<code>' + trafficLines.join('\\n') + '</code>\\n\\n' +\n  (artLines.length ? '<b>Toppinnehall:</b>\\n<code>' + artLines.join('\\n') + '</code>\\n\\n' : '') +\n  '<b>LiteLLM-kostnad:</b>\\n<code>' +\n  'Rapportmanad: $' + reportMonthSpend.toFixed(4) + '  ' + spendArrow + spendSign + '$' + Math.abs(spendDiff).toFixed(4) + '\\n' +\n  'Foregaende:   $' + prevMonthSpend.toFixed(4) + '</code>\\n\\n' +\n  '<b>AI-trafik:</b>\\n' + aiText + '\\n\\n' +\n  '<b>Prioriteringar nasta manad:</b>\\n' + recLines.join('\\n');\n\nreturn [{ json: { text } }];"
         }
       },
       {
@@ -584,7 +584,7 @@
           "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ chat_id: '-1003767033253', text: $json.text, parse_mode: 'HTML', disable_web_page_preview: true }) }}",
+          "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', text: $json.text, parse_mode: 'HTML', message_thread_id: 5, disable_web_page_preview: true }) }}",
           "options": {}
         }
       }
@@ -701,16 +701,40 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-30T09:37:08.854Z",
-        "id": 482,
+        "createdAt": "2026-04-10T08:09:21.466Z",
+        "id": 591,
         "workflowId": "cwdzdxHIA4AOD6ND",
-        "versionId": "f6dfa3c3-b3f2-4b85-ad3e-d0db7902c78e",
+        "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:21.482Z",
+        "id": 592,
+        "workflowId": "cwdzdxHIA4AOD6ND",
+        "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:56.792Z",
+        "id": 625,
+        "workflowId": "cwdzdxHIA4AOD6ND",
+        "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:56.812Z",
+        "id": 626,
+        "workflowId": "cwdzdxHIA4AOD6ND",
+        "versionId": "d9249fdd-fb85-4774-89ab-283eeb4d8812",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

@@ -1,0 +1,634 @@
+{
+  "id": "XdnfbkbCL8NDjBdo",
+  "name": "tan-article-generator",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "tan-article-generator-sched",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 11 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tan-article-generator-topics",
+      "name": "Topic Seeds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return [{json: {topics: [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"]}}];"
+      }
+    },
+    {
+      "id": "tan-article-generator-pick",
+      "name": "Pick Topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+      }
+    },
+    {
+      "id": "tan-article-generator-prompt",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "systemPrompt",
+              "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) — a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "userPrompt",
+              "value": "Write a comprehensive, SEO-optimized article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Start with a compelling intro (no H1 needed)\n- Use H2 headers for main sections, H3 for subsections\n- Include practical tactics, not just theory\n- Add specific examples and if possible, metrics/numbers\n- End with actionable next steps\n- NO frontmatter, just the article body",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "slug",
+              "value": "={{ $json.slug }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "topic",
+              "value": "={{ $json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tan-article-generator-groq",
+      "name": "Generate with Groq",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        400,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REDACTED_GROQ_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.7,max_tokens:3000}) }}"
+      }
+    },
+    {
+      "id": "tan-article-generator-fmt",
+      "name": "Format Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\n// Capitalize title properly\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+      }
+    },
+    {
+      "id": "tan-article-generator-pub",
+      "name": "Publish via OpenClaw",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        800,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.2.1:9191/store-and-publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theatomicnetwork', content: $json.fullContent}) }}"
+      }
+    },
+    {
+      "id": "tan-article-generator-notify",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1000,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '⚛️ <b>Ny artikel publicerad</b> \\u2013 tan-website.netlify.app\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "id": "wh-XdnfbkbC",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        300
+      ],
+      "webhookId": "run-tan-gen",
+      "parameters": {
+        "path": "run-tan-gen",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Seeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topic Seeds": {
+      "main": [
+        [
+          {
+            "node": "Pick Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Topic": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate with Groq",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate with Groq": {
+      "main": [
+        [
+          {
+            "node": "Format Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Article": {
+      "main": [
+        [
+          {
+            "node": "Publish via OpenClaw",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish via OpenClaw": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Seeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+  "versionCounter": 23,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T15:13:28.636Z",
+      "createdAt": "2026-03-24T15:13:28.636Z",
+      "role": "workflow:owner",
+      "workflowId": "XdnfbkbCL8NDjBdo",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-28T07:29:19.037Z",
+    "createdAt": "2026-03-28T07:29:19.037Z",
+    "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+    "workflowId": "XdnfbkbCL8NDjBdo",
+    "nodes": [
+      {
+        "id": "tan-article-generator-sched",
+        "name": "Daily Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 11 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "tan-article-generator-topics",
+        "name": "Topic Seeds",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -200,
+          300
+        ],
+        "parameters": {
+          "jsCode": "return [{json: {topics: [\"network effects in local business marketing\", \"hyperlocal marketing strategies 2026\", \"AI personalization for small businesses\", \"community-led growth playbook\", \"word-of-mouth marketing systems\", \"referral program design that works\", \"local SEO tactics for service businesses\", \"building brand trust in digital age\", \"customer retention vs acquisition math\", \"social proof optimization strategies\", \"micro-influencer marketing ROI\", \"email marketing for local businesses\", \"Google Business Profile optimization\", \"viral content formulas for B2C brands\", \"paid social vs organic reach 2026\"]}}];"
+        }
+      },
+      {
+        "id": "tan-article-generator-pick",
+        "name": "Pick Topic",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+        }
+      },
+      {
+        "id": "tan-article-generator-prompt",
+        "name": "Build Prompt",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1",
+                "name": "systemPrompt",
+                "value": "You are a marketing strategist writing for The Atomic Network (theatomicnetwork.com) — a publication about growth, marketing, and network effects for modern businesses. Write with authority, use data, be practical and direct. Target audience: marketing managers, growth hackers, and business owners.",
+                "type": "string"
+              },
+              {
+                "id": "2",
+                "name": "userPrompt",
+                "value": "Write a comprehensive, SEO-optimized article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Start with a compelling intro (no H1 needed)\n- Use H2 headers for main sections, H3 for subsections\n- Include practical tactics, not just theory\n- Add specific examples and if possible, metrics/numbers\n- End with actionable next steps\n- NO frontmatter, just the article body",
+                "type": "string"
+              },
+              {
+                "id": "3",
+                "name": "slug",
+                "value": "={{ $json.slug }}",
+                "type": "string"
+              },
+              {
+                "id": "4",
+                "name": "topic",
+                "value": "={{ $json.topic }}",
+                "type": "string"
+              },
+              {
+                "id": "5",
+                "name": "date",
+                "value": "={{ $json.date }}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "tan-article-generator-groq",
+        "name": "Generate with Groq",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          400,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer REDACTED_GROQ_API_KEY"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.7,max_tokens:3000}) }}"
+        }
+      },
+      {
+        "id": "tan-article-generator-fmt",
+        "name": "Format Article",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          300
+        ],
+        "parameters": {
+          "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\n// Capitalize title properly\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+        }
+      },
+      {
+        "id": "tan-article-generator-pub",
+        "name": "Publish via OpenClaw",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          800,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "http://10.0.2.1:9191/store-and-publish",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theatomicnetwork', content: $json.fullContent}) }}"
+        }
+      },
+      {
+        "id": "tan-article-generator-notify",
+        "name": "Notify Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1000,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '⚛️ <b>Ny artikel publicerad</b> \\u2013 tan-website.netlify.app\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "id": "wh-XdnfbkbC",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -680,
+          300
+        ],
+        "webhookId": "run-tan-gen",
+        "parameters": {
+          "path": "run-tan-gen",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Daily Trigger": {
+        "main": [
+          [
+            {
+              "node": "Topic Seeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Topic Seeds": {
+        "main": [
+          [
+            {
+              "node": "Pick Topic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Topic": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate with Groq",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate with Groq": {
+        "main": [
+          [
+            {
+              "node": "Format Article",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Article": {
+        "main": [
+          [
+            {
+              "node": "Publish via OpenClaw",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Publish via OpenClaw": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Topic Seeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-28T07:29:19.065Z",
+        "id": 388,
+        "workflowId": "XdnfbkbCL8NDjBdo",
+        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:19.086Z",
+        "id": 389,
+        "workflowId": "XdnfbkbCL8NDjBdo",
+        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:19.281Z",
+        "id": 390,
+        "workflowId": "XdnfbkbCL8NDjBdo",
+        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:19.893Z",
+        "id": 391,
+        "workflowId": "XdnfbkbCL8NDjBdo",
+        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

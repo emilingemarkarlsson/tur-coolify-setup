@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:54.975Z",
+  "createdAt": "2026-03-24T09:52:23.207Z",
   "id": "pba3YnrjQg893jqU",
   "name": "tur-contactnotificationtotelegram",
   "description": null,
@@ -37,7 +39,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form \u2013 The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktf\u00f6rfr\u00e5gan \u2013 ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>\u00c4mne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>K\u00e4lla:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form – The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktförfrågan – ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>Ämne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>Källa:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003919428238';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', message_thread_id: 2 })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "ffb1171f-4942-4e2e-8e2b-50347324f25f",
       "name": "Send Telegram",
@@ -104,11 +106,18 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "staticData": null,
+  "staticData": {
+    "global": {
+      "dedup": {
+        "dedup_contact_testdeduptest_thisisadeduptest": 1775747846462
+      }
+    }
+  },
   "meta": null,
   "pinData": null,
-  "activeVersionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
-  "versionCounter": 26,
+  "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
+  "activeVersionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
+  "versionCounter": 50,
   "triggerCount": 1,
   "shared": [
     {
@@ -131,9 +140,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-28T07:06:36.422Z",
-    "createdAt": "2026-03-28T07:06:36.422Z",
-    "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+    "updatedAt": "2026-04-10T08:09:18.532Z",
+    "createdAt": "2026-04-10T08:09:18.532Z",
+    "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
     "workflowId": "pba3YnrjQg893jqU",
     "nodes": [
       {
@@ -155,7 +164,20 @@
       },
       {
         "parameters": {
-          "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form \u2013 The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktf\u00f6rfr\u00e5gan \u2013 ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>\u00c4mne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>K\u00e4lla:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+          "jsCode": "// Dedup check for contact form - prevent duplicate notifications within 10 minutes\nconst body = $input.first().json.body || $input.first().json;\nconst email = body.email || body.from || 'unknown';\nconst message = body.message || body.content || '';\n// Simple hash: first 20 chars of message\nconst msgHash = message.substring(0, 20).toLowerCase().replace(/[^a-z0-9]/g,'');\nconst key = 'dedup_contact_' + email.toLowerCase().replace(/[^a-z0-9]/g,'') + '_' + msgHash;\nconst now = Date.now();\nconst ttl = 10 * 60 * 1000;\n\nconst stored = $getWorkflowStaticData('global');\nif (!stored.dedup) stored.dedup = {};\n\nfor (const k of Object.keys(stored.dedup)) {\n  if (now - stored.dedup[k] > ttl) {\n    delete stored.dedup[k];\n  }\n}\n\nif (stored.dedup[key]) {\n  return [];\n}\nstored.dedup[key] = now;\nreturn $input.all();"
+        },
+        "id": "e5f6a7b8",
+        "name": "Dedup Check",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst subject = data.subject || 'N/A';\nconst message = data.message || 'N/A';\nconst source = data.source || 'Contact Form – The Unnamed Roads';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F4EC} <b>Ny kontaktförfrågan – ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}\\n<b>Ämne:</b> ${subject}\\n<b>Meddelande:</b> ${message}\\n<b>Källa:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003919428238';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', message_thread_id: 2 })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
         },
         "id": "ffb1171f-4942-4e2e-8e2b-50347324f25f",
         "name": "Send Telegram",
@@ -187,6 +209,17 @@
         "main": [
           [
             {
+              "node": "Dedup Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dedup Check": {
+        "main": [
+          [
+            {
               "node": "Send Telegram",
               "type": "main",
               "index": 0
@@ -206,72 +239,56 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-28T07:31:21.727Z",
-        "id": 406,
+        "createdAt": "2026-04-10T08:09:18.590Z",
+        "id": 571,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:31:22.311Z",
-        "id": 407,
+        "createdAt": "2026-04-10T08:09:18.604Z",
+        "id": 572,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:06:36.544Z",
-        "id": 326,
+        "createdAt": "2026-04-10T08:09:42.851Z",
+        "id": 603,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:06:36.557Z",
-        "id": 327,
+        "createdAt": "2026-04-10T08:09:42.867Z",
+        "id": 604,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:31:21.634Z",
-        "id": 404,
+        "createdAt": "2026-04-10T08:09:55.009Z",
+        "id": 605,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:31:21.644Z",
-        "id": 405,
+        "createdAt": "2026-04-10T08:09:55.024Z",
+        "id": 606,
         "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:06:36.447Z",
-        "id": 324,
-        "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:06:36.459Z",
-        "id": 325,
-        "workflowId": "pba3YnrjQg893jqU",
-        "versionId": "7fc8fdbb-cf93-4c5c-b320-0227354a8969",
+        "versionId": "6f6fea39-632f-4da5-80a8-4ac7687a44ce",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

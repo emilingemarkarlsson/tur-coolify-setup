@@ -1,0 +1,958 @@
+{
+  "id": "QRgvi4BoB5CYJc2o",
+  "name": "tha-seopublisher",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "approve-seo-article",
+        "options": {}
+      },
+      "id": "9691a1b6-42e8-4204-af30-da97b4f8c636",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1760,
+        80
+      ],
+      "webhookId": "approve-seo-article"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query.action }}",
+              "value2": "approve"
+            }
+          ]
+        }
+      },
+      "id": "0fc2ffae-6c6c-45a4-9588-e72354a52aa9",
+      "name": "Check If Approved",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "bucketName": "seo-drafts",
+        "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}"
+      },
+      "id": "85e4b788-8bd2-4db4-9907-9c35f10284ed",
+      "name": "Download Draft from Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        32
+      ],
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convert binary data to base64 for GitHub API\nconst binaryData = $input.item.binary.data;\nconst base64Content = binaryData.data;\n\nreturn {\n  contentBase64: base64Content\n};"
+      },
+      "id": "3098634f-657e-4c90-8e2b-b6e57a9366d3",
+      "name": "Convert to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ 'https://api.github.com/repos/emilingemarkarlsson/tha-website/contents/src/pages/posts/' + $('Webhook Trigger').item.json.query.filename }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"message\": \"chore: publish SEO article - \" + $('Webhook Trigger').item.json.query.keyword,\n  \"content\": $json.contentBase64,\n  \"branch\": \"main\"\n} }}",
+        "options": {}
+      },
+      "id": "b1683d96-42e3-4488-83a3-3e863b9471d3",
+      "name": "Publish to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        -80
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OH8u2jiS44dDOYi4",
+          "name": "THA GitHub PAT"
+        },
+        "githubApi": {
+          "id": "OH8u2jiS44dDOYi4",
+          "name": "GitHub Content Publishing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const keyword = $('Webhook Trigger').item.json.query.keyword;\nconst slug = $('Webhook Trigger').item.json.query.slug;\nconst filename = $('Webhook Trigger').item.json.query.filename;\n\nreturn {\n  keyword: keyword,\n  status: 'published',\n  published_date: new Date().toISOString().split('T')[0],\n  slug: slug,\n  url: `https://thehockeyanalytics.com/posts/${slug}`\n};"
+      },
+      "id": "c75e8c2a-b1cc-474a-b529-d35e0bc20ef1",
+      "name": "Prepare Sheet Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1w7R4uR0WyZ-zntTXTkS1bC7p2OuruikDR0JHOsc2VLU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 599555510,
+          "mode": "list",
+          "cachedResultName": "SEO Keywords",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w7R4uR0WyZ-zntTXTkS1bC7p2OuruikDR0JHOsc2VLU/edit#gid=599555510"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "keyword"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "beb75913-2f3a-446a-9848-22a05bdac41b",
+      "name": "Update Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        -656,
+        32
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sHynNC5opA9jCQYo",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "bucketName": "seo-drafts",
+        "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}",
+        "options": {}
+      },
+      "id": "7cfde55a-6523-4c9b-9000-800dbc5749dc",
+      "name": "Delete Draft from Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        32
+      ],
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML'\n}) }"
+      },
+      "id": "3ce2c2ca-c701-429c-b734-0118cebd18b2",
+      "name": "Notify Success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Approved</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#2ea44f;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>✅ Article Approved!</h1><p>Publishing to production...</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+        "options": {}
+      },
+      "id": "eb217be0-5867-4b94-a67c-a9e476c14912",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "bucketName": "seo-drafts",
+        "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}",
+        "options": {}
+      },
+      "id": "2a8ffc54-b698-4741-a94f-1e6bb5033490",
+      "name": "Delete Rejected Draft",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        144
+      ],
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML'}) }}"
+      },
+      "id": "588e4c14-31b5-44b8-9f06-d093fd9568d4",
+      "name": "Notify Rejection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Rejected</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#d73a49;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>❌ Article Rejected</h1><p>Draft has been deleted.</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+        "options": {}
+      },
+      "id": "12c77932-86aa-4fdf-becd-7ccee83ea52c",
+      "name": "Respond Rejection",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        144
+      ]
+    },
+    {
+      "id": "tha-indexnow-01",
+      "name": "IndexNow Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1650,
+        -200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.indexnow.org/indexnow",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={ JSON.stringify({\n  host: 'thehockeyanalytics.com',\n  key: 'a7f3b2e1c6d8f4a9b3c5e7d2f6a8b4c1',\n  keyLocation: 'https://www.thehockeyanalytics.com/a7f3b2e1c6d8f4a9b3c5e7d2f6a8b4c1.txt',\n  urlList: ['https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug]\n}) }"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check If Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Approved": {
+      "main": [
+        [
+          {
+            "node": "Download Draft from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Rejected Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Draft from Minio": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Base64": {
+      "main": [
+        [
+          {
+            "node": "Publish to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to GitHub": {
+      "main": [
+        [
+          {
+            "node": "Prepare Sheet Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Update": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Delete Draft from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Draft from Minio": {
+      "main": [
+        [
+          {
+            "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Success": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Rejected Draft": {
+      "main": [
+        [
+          {
+            "node": "Notify Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Rejection": {
+      "main": [
+        [
+          {
+            "node": "Respond Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IndexNow Ping": {
+      "main": [
+        [
+          {
+            "node": "Notify Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+  "versionCounter": 77,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-01T10:17:48.484Z",
+      "createdAt": "2025-12-01T10:17:48.484Z",
+      "role": "workflow:owner",
+      "workflowId": "QRgvi4BoB5CYJc2o",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T14:32:09.952Z",
+    "createdAt": "2026-03-24T14:32:09.952Z",
+    "versionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+    "workflowId": "QRgvi4BoB5CYJc2o",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "approve-seo-article",
+          "options": {}
+        },
+        "id": "9691a1b6-42e8-4204-af30-da97b4f8c636",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [
+          -1760,
+          80
+        ],
+        "webhookId": "approve-seo-article"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.query.action }}",
+                "value2": "approve"
+              }
+            ]
+          }
+        },
+        "id": "0fc2ffae-6c6c-45a4-9588-e72354a52aa9",
+        "name": "Check If Approved",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -1536,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "bucketName": "seo-drafts",
+          "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}"
+        },
+        "id": "85e4b788-8bd2-4db4-9907-9c35f10284ed",
+        "name": "Download Draft from Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          -1328,
+          32
+        ],
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Convert binary data to base64 for GitHub API\nconst binaryData = $input.item.binary.data;\nconst base64Content = binaryData.data;\n\nreturn {\n  contentBase64: base64Content\n};"
+        },
+        "id": "3098634f-657e-4c90-8e2b-b6e57a9366d3",
+        "name": "Convert to Base64",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1216,
+          -80
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "={{ 'https://api.github.com/repos/emilingemarkarlsson/tha-website/contents/src/pages/posts/' + $('Webhook Trigger').item.json.query.filename }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"message\": \"chore: publish SEO article - \" + $('Webhook Trigger').item.json.query.keyword,\n  \"content\": $json.contentBase64,\n  \"branch\": \"main\"\n} }}",
+          "options": {}
+        },
+        "id": "b1683d96-42e3-4488-83a3-3e863b9471d3",
+        "name": "Publish to GitHub",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -1104,
+          -80
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "OH8u2jiS44dDOYi4",
+            "name": "THA GitHub PAT"
+          },
+          "githubApi": {
+            "id": "OH8u2jiS44dDOYi4",
+            "name": "GitHub Content Publishing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const keyword = $('Webhook Trigger').item.json.query.keyword;\nconst slug = $('Webhook Trigger').item.json.query.slug;\nconst filename = $('Webhook Trigger').item.json.query.filename;\n\nreturn {\n  keyword: keyword,\n  status: 'published',\n  published_date: new Date().toISOString().split('T')[0],\n  slug: slug,\n  url: `https://thehockeyanalytics.com/posts/${slug}`\n};"
+        },
+        "id": "c75e8c2a-b1cc-474a-b529-d35e0bc20ef1",
+        "name": "Prepare Sheet Update",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -880,
+          32
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "1w7R4uR0WyZ-zntTXTkS1bC7p2OuruikDR0JHOsc2VLU",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 599555510,
+            "mode": "list",
+            "cachedResultName": "SEO Keywords",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w7R4uR0WyZ-zntTXTkS1bC7p2OuruikDR0JHOsc2VLU/edit#gid=599555510"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [
+              "keyword"
+            ],
+            "schema": []
+          },
+          "options": {}
+        },
+        "id": "beb75913-2f3a-446a-9848-22a05bdac41b",
+        "name": "Update Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          -656,
+          32
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "sHynNC5opA9jCQYo",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "bucketName": "seo-drafts",
+          "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}",
+          "options": {}
+        },
+        "id": "7cfde55a-6523-4c9b-9000-800dbc5749dc",
+        "name": "Delete Draft from Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          -448,
+          32
+        ],
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML'\n}) }"
+        },
+        "id": "3ce2c2ca-c701-429c-b734-0118cebd18b2",
+        "name": "Notify Success",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -224,
+          32
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Approved</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#2ea44f;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>✅ Article Approved!</h1><p>Publishing to production...</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+          "options": {}
+        },
+        "id": "eb217be0-5867-4b94-a67c-a9e476c14912",
+        "name": "Respond Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          0,
+          32
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "bucketName": "seo-drafts",
+          "fileKey": "={{ $('Webhook Trigger').item.json.query.filename }}",
+          "options": {}
+        },
+        "id": "2a8ffc54-b698-4741-a94f-1e6bb5033490",
+        "name": "Delete Rejected Draft",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          -1328,
+          144
+        ],
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML'}) }}"
+        },
+        "id": "588e4c14-31b5-44b8-9f06-d093fd9568d4",
+        "name": "Notify Rejection",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -1104,
+          240
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Rejected</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#d73a49;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>❌ Article Rejected</h1><p>Draft has been deleted.</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+          "options": {}
+        },
+        "id": "12c77932-86aa-4fdf-becd-7ccee83ea52c",
+        "name": "Respond Rejection",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          -880,
+          144
+        ]
+      },
+      {
+        "id": "tha-indexnow-01",
+        "name": "IndexNow Ping",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1650,
+          -200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.indexnow.org/indexnow",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={ JSON.stringify({\n  host: 'thehockeyanalytics.com',\n  key: 'a7f3b2e1c6d8f4a9b3c5e7d2f6a8b4c1',\n  keyLocation: 'https://www.thehockeyanalytics.com/a7f3b2e1c6d8f4a9b3c5e7d2f6a8b4c1.txt',\n  urlList: ['https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug]\n}) }"
+        }
+      }
+    ],
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Check If Approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check If Approved": {
+        "main": [
+          [
+            {
+              "node": "Download Draft from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Delete Rejected Draft",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Draft from Minio": {
+        "main": [
+          [
+            {
+              "node": "Convert to Base64",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert to Base64": {
+        "main": [
+          [
+            {
+              "node": "Publish to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Publish to GitHub": {
+        "main": [
+          [
+            {
+              "node": "Prepare Sheet Update",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Sheet Update": {
+        "main": [
+          [
+            {
+              "node": "Update Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Google Sheets": {
+        "main": [
+          [
+            {
+              "node": "Delete Draft from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Draft from Minio": {
+        "main": [
+          [
+            {
+              "node": "IndexNow Ping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Success": {
+        "main": [
+          [
+            {
+              "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Rejected Draft": {
+        "main": [
+          [
+            {
+              "node": "Notify Rejection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Rejection": {
+        "main": [
+          [
+            {
+              "node": "Respond Rejection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IndexNow Ping": {
+        "main": [
+          [
+            {
+              "node": "Notify Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-24T14:32:10.015Z",
+        "id": 176,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.032Z",
+        "id": 177,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.100Z",
+        "id": 178,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.124Z",
+        "id": 179,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "2e501652-cc86-4951-bdfa-a400da7bc3bc",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

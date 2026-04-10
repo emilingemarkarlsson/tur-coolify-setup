@@ -1,0 +1,911 @@
+{
+  "id": "9R1IVjLC2c2LN51n",
+  "name": "tha-seogenerator",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "63a0ac75-5b6e-42f5-8f51-03dfe235dfa4",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "ac363435-5cf3-4771-9faf-c2501e692614",
+      "name": "Read Keywords from Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      },
+      "parameters": {
+        "operation": "getObject",
+        "bucketName": "seo-drafts",
+        "fileKey": "tha-approved-keywords.json",
+        "additionalFields": {}
+      }
+    },
+    {
+      "id": "47d25a98-998c-45d7-837f-9041d34f80e0",
+      "name": "Pick Random Keyword",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "jsCode": "let keywords;\ntry { keywords = JSON.parse($json.Body || $json.body || '[]'); } catch(e) { keywords = []; }\nif (!Array.isArray(keywords) || keywords.length === 0) {\n  keywords = ['NHL playoff analytics','expected goals hockey explained','Corsi stat guide','hockey analytics 2026','advanced defensive metrics NHL'];\n}\nconst pick = keywords[Math.floor(Math.random() * keywords.length)];\nconst keyword = typeof pick === 'string' ? pick : pick.keyword;\nreturn [{ json: { keyword } }];"
+      }
+    },
+    {
+      "id": "2fc47ca3-4302-44c1-94f9-d4957913f2d5",
+      "name": "Create Content Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt",
+              "name": "prompt",
+              "type": "string",
+              "value": "={{ \"You are an expert hockey analytics content writer and SEO specialist.\\n\\nTASK: Write a comprehensive, SEO-optimized blog post about: \\\"\" + $json.keyword + \"\\\"\\n\\nREQUIREMENTS:\\n- Write 1200-1800 words\\n- Use clear, engaging language suitable for both beginners and analytics enthusiasts\\n- Include practical examples and real-world applications\\n- Structure with H2 and H3 headings\\n- Add actionable insights and key takeaways\\n- Write in Markdown format\\n- Use bullet points and numbered lists where appropriate\\n- Reference real NHL/SHL examples when relevant\\n- Make it informative, not promotional\\n- End with a natural CTA section inviting readers to try our AI hockey analytics assistant on the homepage\\n\\nFORMAT:\\nSEO_TITLE: [60 characters max - catchy title]\\nMETA_DESC: [150-160 characters - compelling description]\\n\\n# [Article H1 Title - can be longer and more descriptive]\\n\\n[Engaging introduction paragraph]\\n\\n## [First H2 Section]\\n\\n[Content with practical examples]\\n\\n## [Second H2 Section]\\n\\n[More content]\\n\\n## Key Takeaways\\n\\n- [Takeaway 1]\\n- [Takeaway 2]\\n- [Takeaway 3]\\n\\n## Try Our Hockey Analytics AI\\n\\nWant to explore hockey analytics further? Try our AI-powered analytics assistant on our homepage. Ask any question about hockey statistics, player performance, or advanced metrics and get instant, data-driven insights. [Visit our homepage](https://thehockeyanalytics.com) to get started.\" }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "bca6542a-54a5-4293-a29b-88e38b5eea72",
+      "name": "Generate Content with Groq",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert hockey analytics writer with deep knowledge of NHL, SHL, advanced metrics, and data analysis.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.prompt\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 4000,\n  \"top_p\": 1\n} }}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HnNvhJFUVZo7k5Tp",
+          "name": "tha-groqseo"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "1a0dd28a-4a9b-4210-9a27-0117ed829829",
+      "name": "Format & Extract Metadata",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1104,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Extract the generated content from Groq response\nconst response = $input.item.json;\nconst rawContent = response.choices[0].message.content;\n\n// Extract SEO title and meta description from new format\nconst seoTitleMatch = rawContent.match(/SEO_TITLE:\\s*(.+?)\\n/);\nconst metaDescMatch = rawContent.match(/META_DESC:\\s*(.+?)\\n/);\n\n// Remove the SEO_TITLE and META_DESC lines from content\nlet content = rawContent\n  .replace(/SEO_TITLE:\\s*.+?\\n/, '')\n  .replace(/META_DESC:\\s*.+?\\n/, '')\n  .trim();\n\nconst seoTitle = seoTitleMatch ? seoTitleMatch[1].trim() : $('Pick Random Keyword').item.json.keyword;\nconst metaDescription = metaDescMatch ? metaDescMatch[1].trim() : '';\n\n// Extract H1 title from content\nconst h1Match = content.match(/^#\\s*(.+?)\\n/);\nconst title = h1Match ? h1Match[1].trim() : seoTitle;\n\n// Remove the H1 from content since PostHeader will render the title\ncontent = content.replace(/^#\\s*.+?\\n/, '').trim();\n\n// Create slug from keyword\nconst slug = $('Pick Random Keyword').item.json.keyword\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\n\n// Get current date and time for unique filename\nconst now = new Date();\nconst date = now.toISOString().split('T')[0];\nconst timestamp = now.getTime().toString().slice(-6);\n\nreturn {\n  content: content,\n  title: title,\n  seoTitle: seoTitle,\n  metaDescription: metaDescription,\n  slug: slug,\n  keyword: $('Pick Random Keyword').item.json.keyword,\n  filename: `${date}-${slug}-${timestamp}.md`\n};"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "ef9434bd-5076-464c-84c0-c338135e1556",
+      "name": "Add Astro Frontmatter",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1328,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "frontmatter",
+              "name": "finalContent",
+              "type": "string",
+              "value": "={{ \"---\\nlayout: '@/templates/BasePost.astro'\\ntitle: '\" + $json.title + \"'\\ndescription: '\" + $json.metaDescription + \"'\\npubDate: \" + new Date().toISOString() + \"\\n---\\n\\n\" + $json.content }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "3eedec73-9958-4e39-8290-ef25a8b07476",
+      "name": "Upload Draft to Minio",
+      "type": "n8n-nodes-base.s3",
+      "position": [
+        1552,
+        0
+      ],
+      "parameters": {
+        "fileName": "={{ $('Format & Extract Metadata').item.json.filename }}",
+        "operation": "upload",
+        "binaryData": false,
+        "bucketName": "seo-drafts",
+        "fileContent": "={{ $json.finalContent }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "21b9eaf1-43f9-41e1-914c-91d71879ccbb",
+      "name": "Generate Approval URLs",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Generate approval webhook URL and Minio preview URL\n// Get metadata from the Format node (before upload)\nconst slug = $('Format & Extract Metadata').item.json.slug;\nconst keyword = $('Format & Extract Metadata').item.json.keyword;\nconst title = $('Format & Extract Metadata').item.json.title;\nconst filename = $('Format & Extract Metadata').item.json.filename;\n\n// Your Minio configuration\nconst minioEndpoint = 'https://minio-api.thehockeyanalytics.com';\nconst minioBucket = 'seo-drafts';\nconst previewUrl = `${minioEndpoint}/${minioBucket}/${filename}`;\n\nconst webhookUrl = 'https://n8n.theunnamedroads.com/webhook/approve-seo-article';\n\n// Pass through all metadata for Slack notification\nreturn {\n  slug: slug,\n  keyword: keyword,\n  title: title,\n  filename: filename,\n  previewUrl: previewUrl,\n  approveUrl: `${webhookUrl}?action=approve&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}&keyword=${encodeURIComponent(keyword)}`,\n  rejectUrl: `${webhookUrl}?action=reject&filename=${encodeURIComponent(filename)}`\n};"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "tha-quality-01",
+      "name": "Quality Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const content = $('Format & Extract Metadata').item.json.content || '';\nconst title = $('Format & Extract Metadata').item.json.title || '';\nconst meta = $('Format & Extract Metadata').item.json.metaDescription || '';\nconst slug = $('Format & Extract Metadata').item.json.slug || '';\n\nlet score = 0;\nconst checks = {};\n\n// Length: 700+ words = 2pts, 400+ = 1pt\nconst wordCount = content.split(/\\s+/).length;\nchecks.word_count = wordCount;\nscore += wordCount >= 700 ? 2 : wordCount >= 400 ? 1 : 0;\n\n// Has H2 headers\nconst h2Count = (content.match(/^## /gm) || []).length;\nchecks.h2_count = h2Count;\nscore += h2Count >= 3 ? 2 : h2Count >= 1 ? 1 : 0;\n\n// Has intro (first para > 100 chars)\nconst firstPara = content.split('\\n\\n')[0] || '';\nchecks.has_intro = firstPara.length > 100;\nscore += checks.has_intro ? 1 : 0;\n\n// Has conclusion/summary\nconst hasConclusion = /conclusion|summary|takeaway|key point/i.test(content);\nchecks.has_conclusion = hasConclusion;\nscore += hasConclusion ? 1 : 0;\n\n// Title has keyword\nconst kw = $('Pick Random Keyword').item.json.keyword || '';\nconst titleHasKw = title.toLowerCase().includes(kw.split('-')[0]);\nchecks.title_has_keyword = titleHasKw;\nscore += titleHasKw ? 1 : 0;\n\n// Meta description exists and is good length\nchecks.meta_length = meta.length;\nscore += meta.length >= 100 && meta.length <= 160 ? 1 : meta.length > 50 ? 0.5 : 0;\n\n// Slug is clean\nchecks.slug_clean = /^[a-z0-9-]+$/.test(slug);\nscore += checks.slug_clean ? 1 : 0;\n\n// No error markers\nconst hasError = /\\[error\\]|undefined|null/i.test(content);\nchecks.no_errors = !hasError;\nscore += !hasError ? 1 : 0;\n\nconst finalScore = Math.min(10, Math.round(score * 10 / 10));\nconst input = $input.item.json;\nreturn { ...input, quality_score: finalScore, quality_checks: checks };"
+      }
+    },
+    {
+      "id": "tha-auto-pub",
+      "name": "Auto-Publish to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://n8n.theunnamedroads.com/webhook/approve-seo-article?action=approve&filename=' + encodeURIComponent($('Generate Approval URLs').item.json.filename) + '&slug=' + encodeURIComponent($('Generate Approval URLs').item.json.slug) + '&keyword=' + encodeURIComponent($('Generate Approval URLs').item.json.keyword) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "tha-auto-tg-code",
+      "name": "Build Auto-Publish Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '🤖 <b>Auto-publicerad – thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '🔗 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
+      }
+    },
+    {
+      "id": "tha-auto-tg-http",
+      "name": "Notify Telegram – Auto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2352,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "id": "wh-9R1IVjLC",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        0
+      ],
+      "webhookId": "run-tha-seo",
+      "parameters": {
+        "path": "run-tha-seo",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Keywords from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Random Keyword": {
+      "main": [
+        [
+          {
+            "node": "Create Content Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Astro Frontmatter": {
+      "main": [
+        [
+          {
+            "node": "Upload Draft to Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Content Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Content with Groq",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Draft to Minio": {
+      "main": [
+        [
+          {
+            "node": "Generate Approval URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Approval URLs": {
+      "main": [
+        [
+          {
+            "node": "Quality Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format & Extract Metadata": {
+      "main": [
+        [
+          {
+            "node": "Add Astro Frontmatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content with Groq": {
+      "main": [
+        [
+          {
+            "node": "Format & Extract Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Score": {
+      "main": [
+        [
+          {
+            "node": "Auto-Publish to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-Publish to GitHub": {
+      "main": [
+        [
+          {
+            "node": "Build Auto-Publish Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Auto-Publish Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram – Auto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Keywords from Minio": {
+      "main": [
+        [
+          {
+            "node": "Pick Random Keyword",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Keywords from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger1": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "activeVersionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+  "versionCounter": 226,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-12-01T09:18:05.053Z",
+      "createdAt": "2025-12-01T09:18:05.053Z",
+      "role": "workflow:owner",
+      "workflowId": "9R1IVjLC2c2LN51n",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-28T07:38:40.900Z",
+    "createdAt": "2026-03-28T07:38:40.900Z",
+    "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+    "workflowId": "9R1IVjLC2c2LN51n",
+    "nodes": [
+      {
+        "id": "63a0ac75-5b6e-42f5-8f51-03dfe235dfa4",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 10 * * *"
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.1
+      },
+      {
+        "id": "ac363435-5cf3-4771-9faf-c2501e692614",
+        "name": "Read Keywords from Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          224,
+          0
+        ],
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        },
+        "parameters": {
+          "operation": "getObject",
+          "bucketName": "seo-drafts",
+          "fileKey": "tha-approved-keywords.json",
+          "additionalFields": {}
+        }
+      },
+      {
+        "id": "47d25a98-998c-45d7-837f-9041d34f80e0",
+        "name": "Pick Random Keyword",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "jsCode": "let keywords;\ntry { keywords = JSON.parse($json.Body || $json.body || '[]'); } catch(e) { keywords = []; }\nif (!Array.isArray(keywords) || keywords.length === 0) {\n  keywords = ['NHL playoff analytics','expected goals hockey explained','Corsi stat guide','hockey analytics 2026','advanced defensive metrics NHL'];\n}\nconst pick = keywords[Math.floor(Math.random() * keywords.length)];\nconst keyword = typeof pick === 'string' ? pick : pick.keyword;\nreturn [{ json: { keyword } }];"
+        }
+      },
+      {
+        "id": "2fc47ca3-4302-44c1-94f9-d4957913f2d5",
+        "name": "Create Content Prompt",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "options": {},
+          "assignments": {
+            "assignments": [
+              {
+                "id": "prompt",
+                "name": "prompt",
+                "type": "string",
+                "value": "={{ \"You are an expert hockey analytics content writer and SEO specialist.\\n\\nTASK: Write a comprehensive, SEO-optimized blog post about: \\\"\" + $json.keyword + \"\\\"\\n\\nREQUIREMENTS:\\n- Write 1200-1800 words\\n- Use clear, engaging language suitable for both beginners and analytics enthusiasts\\n- Include practical examples and real-world applications\\n- Structure with H2 and H3 headings\\n- Add actionable insights and key takeaways\\n- Write in Markdown format\\n- Use bullet points and numbered lists where appropriate\\n- Reference real NHL/SHL examples when relevant\\n- Make it informative, not promotional\\n- End with a natural CTA section inviting readers to try our AI hockey analytics assistant on the homepage\\n\\nFORMAT:\\nSEO_TITLE: [60 characters max - catchy title]\\nMETA_DESC: [150-160 characters - compelling description]\\n\\n# [Article H1 Title - can be longer and more descriptive]\\n\\n[Engaging introduction paragraph]\\n\\n## [First H2 Section]\\n\\n[Content with practical examples]\\n\\n## [Second H2 Section]\\n\\n[More content]\\n\\n## Key Takeaways\\n\\n- [Takeaway 1]\\n- [Takeaway 2]\\n- [Takeaway 3]\\n\\n## Try Our Hockey Analytics AI\\n\\nWant to explore hockey analytics further? Try our AI-powered analytics assistant on our homepage. Ask any question about hockey statistics, player performance, or advanced metrics and get instant, data-driven insights. [Visit our homepage](https://thehockeyanalytics.com) to get started.\" }}"
+              }
+            ]
+          }
+        },
+        "typeVersion": 3.3
+      },
+      {
+        "id": "bca6542a-54a5-4293-a29b-88e38b5eea72",
+        "name": "Generate Content with Groq",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          880,
+          0
+        ],
+        "parameters": {
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "method": "POST",
+          "options": {},
+          "jsonBody": "={{ {\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert hockey analytics writer with deep knowledge of NHL, SHL, advanced metrics, and data analysis.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": $json.prompt\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 4000,\n  \"top_p\": 1\n} }}",
+          "sendBody": true,
+          "sendHeaders": true,
+          "specifyBody": "json",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "HnNvhJFUVZo7k5Tp",
+            "name": "tha-groqseo"
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "1a0dd28a-4a9b-4210-9a27-0117ed829829",
+        "name": "Format & Extract Metadata",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          1104,
+          0
+        ],
+        "parameters": {
+          "jsCode": "// Extract the generated content from Groq response\nconst response = $input.item.json;\nconst rawContent = response.choices[0].message.content;\n\n// Extract SEO title and meta description from new format\nconst seoTitleMatch = rawContent.match(/SEO_TITLE:\\s*(.+?)\\n/);\nconst metaDescMatch = rawContent.match(/META_DESC:\\s*(.+?)\\n/);\n\n// Remove the SEO_TITLE and META_DESC lines from content\nlet content = rawContent\n  .replace(/SEO_TITLE:\\s*.+?\\n/, '')\n  .replace(/META_DESC:\\s*.+?\\n/, '')\n  .trim();\n\nconst seoTitle = seoTitleMatch ? seoTitleMatch[1].trim() : $('Pick Random Keyword').item.json.keyword;\nconst metaDescription = metaDescMatch ? metaDescMatch[1].trim() : '';\n\n// Extract H1 title from content\nconst h1Match = content.match(/^#\\s*(.+?)\\n/);\nconst title = h1Match ? h1Match[1].trim() : seoTitle;\n\n// Remove the H1 from content since PostHeader will render the title\ncontent = content.replace(/^#\\s*.+?\\n/, '').trim();\n\n// Create slug from keyword\nconst slug = $('Pick Random Keyword').item.json.keyword\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\n\n// Get current date and time for unique filename\nconst now = new Date();\nconst date = now.toISOString().split('T')[0];\nconst timestamp = now.getTime().toString().slice(-6);\n\nreturn {\n  content: content,\n  title: title,\n  seoTitle: seoTitle,\n  metaDescription: metaDescription,\n  slug: slug,\n  keyword: $('Pick Random Keyword').item.json.keyword,\n  filename: `${date}-${slug}-${timestamp}.md`\n};"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "ef9434bd-5076-464c-84c0-c338135e1556",
+        "name": "Add Astro Frontmatter",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          1328,
+          0
+        ],
+        "parameters": {
+          "options": {},
+          "assignments": {
+            "assignments": [
+              {
+                "id": "frontmatter",
+                "name": "finalContent",
+                "type": "string",
+                "value": "={{ \"---\\nlayout: '@/templates/BasePost.astro'\\ntitle: '\" + $json.title + \"'\\ndescription: '\" + $json.metaDescription + \"'\\npubDate: \" + new Date().toISOString() + \"\\n---\\n\\n\" + $json.content }}"
+              }
+            ]
+          }
+        },
+        "typeVersion": 3.3
+      },
+      {
+        "id": "3eedec73-9958-4e39-8290-ef25a8b07476",
+        "name": "Upload Draft to Minio",
+        "type": "n8n-nodes-base.s3",
+        "position": [
+          1552,
+          0
+        ],
+        "parameters": {
+          "fileName": "={{ $('Format & Extract Metadata').item.json.filename }}",
+          "operation": "upload",
+          "binaryData": false,
+          "bucketName": "seo-drafts",
+          "fileContent": "={{ $json.finalContent }}",
+          "additionalFields": {}
+        },
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "21b9eaf1-43f9-41e1-914c-91d71879ccbb",
+        "name": "Generate Approval URLs",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          1760,
+          0
+        ],
+        "parameters": {
+          "jsCode": "// Generate approval webhook URL and Minio preview URL\n// Get metadata from the Format node (before upload)\nconst slug = $('Format & Extract Metadata').item.json.slug;\nconst keyword = $('Format & Extract Metadata').item.json.keyword;\nconst title = $('Format & Extract Metadata').item.json.title;\nconst filename = $('Format & Extract Metadata').item.json.filename;\n\n// Your Minio configuration\nconst minioEndpoint = 'https://minio-api.thehockeyanalytics.com';\nconst minioBucket = 'seo-drafts';\nconst previewUrl = `${minioEndpoint}/${minioBucket}/${filename}`;\n\nconst webhookUrl = 'https://n8n.theunnamedroads.com/webhook/approve-seo-article';\n\n// Pass through all metadata for Slack notification\nreturn {\n  slug: slug,\n  keyword: keyword,\n  title: title,\n  filename: filename,\n  previewUrl: previewUrl,\n  approveUrl: `${webhookUrl}?action=approve&filename=${encodeURIComponent(filename)}&slug=${encodeURIComponent(slug)}&keyword=${encodeURIComponent(keyword)}`,\n  rejectUrl: `${webhookUrl}?action=reject&filename=${encodeURIComponent(filename)}`\n};"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "tha-quality-01",
+        "name": "Quality Score",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1712,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const content = $('Format & Extract Metadata').item.json.content || '';\nconst title = $('Format & Extract Metadata').item.json.title || '';\nconst meta = $('Format & Extract Metadata').item.json.metaDescription || '';\nconst slug = $('Format & Extract Metadata').item.json.slug || '';\n\nlet score = 0;\nconst checks = {};\n\n// Length: 700+ words = 2pts, 400+ = 1pt\nconst wordCount = content.split(/\\s+/).length;\nchecks.word_count = wordCount;\nscore += wordCount >= 700 ? 2 : wordCount >= 400 ? 1 : 0;\n\n// Has H2 headers\nconst h2Count = (content.match(/^## /gm) || []).length;\nchecks.h2_count = h2Count;\nscore += h2Count >= 3 ? 2 : h2Count >= 1 ? 1 : 0;\n\n// Has intro (first para > 100 chars)\nconst firstPara = content.split('\\n\\n')[0] || '';\nchecks.has_intro = firstPara.length > 100;\nscore += checks.has_intro ? 1 : 0;\n\n// Has conclusion/summary\nconst hasConclusion = /conclusion|summary|takeaway|key point/i.test(content);\nchecks.has_conclusion = hasConclusion;\nscore += hasConclusion ? 1 : 0;\n\n// Title has keyword\nconst kw = $('Pick Random Keyword').item.json.keyword || '';\nconst titleHasKw = title.toLowerCase().includes(kw.split('-')[0]);\nchecks.title_has_keyword = titleHasKw;\nscore += titleHasKw ? 1 : 0;\n\n// Meta description exists and is good length\nchecks.meta_length = meta.length;\nscore += meta.length >= 100 && meta.length <= 160 ? 1 : meta.length > 50 ? 0.5 : 0;\n\n// Slug is clean\nchecks.slug_clean = /^[a-z0-9-]+$/.test(slug);\nscore += checks.slug_clean ? 1 : 0;\n\n// No error markers\nconst hasError = /\\[error\\]|undefined|null/i.test(content);\nchecks.no_errors = !hasError;\nscore += !hasError ? 1 : 0;\n\nconst finalScore = Math.min(10, Math.round(score * 10 / 10));\nconst input = $input.item.json;\nreturn { ...input, quality_score: finalScore, quality_checks: checks };"
+        }
+      },
+      {
+        "id": "tha-auto-pub",
+        "name": "Auto-Publish to GitHub",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2032,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "={{ 'https://n8n.theunnamedroads.com/webhook/approve-seo-article?action=approve&filename=' + encodeURIComponent($('Generate Approval URLs').item.json.filename) + '&slug=' + encodeURIComponent($('Generate Approval URLs').item.json.slug) + '&keyword=' + encodeURIComponent($('Generate Approval URLs').item.json.keyword) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "tha-auto-tg-code",
+        "name": "Build Auto-Publish Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2192,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const meta = $('Format & Extract Metadata').item.json;\nconst q = $('Quality Score').item.json;\nconst text = '🤖 <b>Auto-publicerad – thehockeyanalytics.com</b>\\n\\n' +\n  '<b>Titel:</b> ' + meta.title + '\\n' +\n  '<b>Keyword:</b> ' + meta.keyword + '\\n' +\n  '<b>Kvalitet:</b> ' + q.quality_score + '/10\\n' +\n  '🔗 https://www.thehockeyanalytics.com/posts/' + meta.slug;\nreturn { json: { telegramText: text } };"
+        }
+      },
+      {
+        "id": "tha-auto-tg-http",
+        "name": "Notify Telegram – Auto",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2352,
+          0
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "id": "wh-9R1IVjLC",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -280,
+          0
+        ],
+        "webhookId": "run-tha-seo",
+        "parameters": {
+          "path": "run-tha-seo",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Read Keywords from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Random Keyword": {
+        "main": [
+          [
+            {
+              "node": "Create Content Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Astro Frontmatter": {
+        "main": [
+          [
+            {
+              "node": "Upload Draft to Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Content Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate Content with Groq",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Draft to Minio": {
+        "main": [
+          [
+            {
+              "node": "Generate Approval URLs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Approval URLs": {
+        "main": [
+          [
+            {
+              "node": "Quality Score",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format & Extract Metadata": {
+        "main": [
+          [
+            {
+              "node": "Add Astro Frontmatter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Content with Groq": {
+        "main": [
+          [
+            {
+              "node": "Format & Extract Metadata",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Quality Score": {
+        "main": [
+          [
+            {
+              "node": "Auto-Publish to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Auto-Publish to GitHub": {
+        "main": [
+          [
+            {
+              "node": "Build Auto-Publish Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Auto-Publish Message": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram – Auto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Keywords from Minio": {
+        "main": [
+          [
+            {
+              "node": "Pick Random Keyword",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Read Keywords from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-28T07:38:40.972Z",
+        "id": 416,
+        "workflowId": "9R1IVjLC2c2LN51n",
+        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:38:40.989Z",
+        "id": 417,
+        "workflowId": "9R1IVjLC2c2LN51n",
+        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:38:41.093Z",
+        "id": 418,
+        "workflowId": "9R1IVjLC2c2LN51n",
+        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:38:41.711Z",
+        "id": 419,
+        "workflowId": "9R1IVjLC2c2LN51n",
+        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

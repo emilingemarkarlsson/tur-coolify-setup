@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:57.675Z",
+  "createdAt": "2026-03-24T09:52:25.823Z",
   "id": "QTdyZOekzgAzvBO2",
   "name": "Monitor – Telegram on Error",
   "description": null,
@@ -18,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+        "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003919428238';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', message_thread_id: 6 })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "807993b4-68a6-464d-9928-167578f4aa1c",
       "name": "Telegram Error Notify",
@@ -44,13 +46,16 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
   "staticData": null,
   "meta": null,
   "pinData": null,
-  "activeVersionId": "691be77f-8b93-4fb4-b965-2593cd61152d",
-  "versionCounter": 15,
+  "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+  "activeVersionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+  "versionCounter": 24,
   "triggerCount": 0,
   "shared": [
     {
@@ -73,9 +78,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-24T09:52:25.823Z",
-    "createdAt": "2026-03-24T09:52:25.823Z",
-    "versionId": "691be77f-8b93-4fb4-b965-2593cd61152d",
+    "updatedAt": "2026-04-10T08:09:22.772Z",
+    "createdAt": "2026-04-10T08:09:22.772Z",
+    "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
     "workflowId": "QTdyZOekzgAzvBO2",
     "nodes": [
       {
@@ -91,7 +96,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
+          "jsCode": "const exec = $input.item.json.execution || {};\nconst wf = $input.item.json.workflow || {};\nconst err = exec.error || {};\n\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\nconst text = `\\u{1F6A8} <b>n8n Error</b>\\n\\n<b>Workflow:</b> ${wf.name || 'unknown'}\\n<b>Node:</b> ${exec.lastNodeExecuted || 'unknown'}\\n<b>Error:</b> ${err.message || JSON.stringify(err).substring(0, 200)}\\n<b>Time:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003919428238';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', message_thread_id: 6 })\n  });\n  return [{ json: { success: response.ok, status: response.status } }];\n} catch (e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
         },
         "id": "807993b4-68a6-464d-9928-167578f4aa1c",
         "name": "Telegram Error Notify",
@@ -116,10 +121,43 @@
         ]
       }
     },
-    "authors": "import",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
-    "workflowPublishHistory": []
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-10T08:09:22.803Z",
+        "id": 601,
+        "workflowId": "QTdyZOekzgAzvBO2",
+        "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:22.811Z",
+        "id": 602,
+        "workflowId": "QTdyZOekzgAzvBO2",
+        "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:57.700Z",
+        "id": 635,
+        "workflowId": "QTdyZOekzgAzvBO2",
+        "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:57.709Z",
+        "id": 636,
+        "workflowId": "QTdyZOekzgAzvBO2",
+        "versionId": "78bc57c3-bdf0-4f1f-b1a9-06865889af1e",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
   }
 }

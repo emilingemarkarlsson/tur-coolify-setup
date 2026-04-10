@@ -1,0 +1,634 @@
+{
+  "id": "ZG4Jv9RD7liDpcmM",
+  "name": "tur-article-generator",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "tur-article-generator-sched",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tur-article-generator-topics",
+      "name": "Topic Seeds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return [{json: {topics: [\"AI-native company building playbook\", \"12-week product experiment framework\", \"remote-first team culture 2026\", \"bootstrapping vs venture funding decision\", \"building in public strategy\", \"personal brand for founders\", \"async-first communication systems\", \"solo founder mental health practices\", \"product-led growth for small teams\", \"side project to profitable product\", \"AI tools for indie hackers\", \"digital nomad infrastructure setup\", \"building audience before product\", \"micro-SaaS niche validation\", \"founder-led sales tactics\"]}}];"
+      }
+    },
+    {
+      "id": "tur-article-generator-pick",
+      "name": "Pick Topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+      }
+    },
+    {
+      "id": "tur-article-generator-prompt",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "systemPrompt",
+              "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) — a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "userPrompt",
+              "value": "Write a comprehensive, well-structured article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Practical and honest, avoid hype\n- Include real examples and actionable insights\n- Use H2 and H3 headers for structure\n- End with key takeaways\n- NO frontmatter, just the article body starting with a compelling intro paragraph",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "slug",
+              "value": "={{ $json.slug }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "topic",
+              "value": "={{ $json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tur-article-generator-groq",
+      "name": "Generate with Groq",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        400,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REDACTED_GROQ_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.7,max_tokens:3000}) }}"
+      }
+    },
+    {
+      "id": "tur-article-generator-fmt",
+      "name": "Format Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\n// Build a real description from first paragraph of body\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+      }
+    },
+    {
+      "id": "tur-article-generator-pub",
+      "name": "Publish via OpenClaw",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        800,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.2.1:9191/store-and-publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theunnamedroads', content: $json.fullContent}) }}"
+      }
+    },
+    {
+      "id": "tur-article-generator-notify",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1000,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🛤️ <b>Ny artikel publicerad</b> \\u2013 theunnamedroads.com\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "id": "wh-ZG4Jv9RD",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        300
+      ],
+      "webhookId": "run-tur-gen",
+      "parameters": {
+        "path": "run-tur-gen",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Seeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topic Seeds": {
+      "main": [
+        [
+          {
+            "node": "Pick Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Topic": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate with Groq",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate with Groq": {
+      "main": [
+        [
+          {
+            "node": "Format Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Article": {
+      "main": [
+        [
+          {
+            "node": "Publish via OpenClaw",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish via OpenClaw": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Seeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+  "versionCounter": 28,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T15:13:28.454Z",
+      "createdAt": "2026-03-24T15:13:28.454Z",
+      "role": "workflow:owner",
+      "workflowId": "ZG4Jv9RD7liDpcmM",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-28T07:29:17.500Z",
+    "createdAt": "2026-03-28T07:29:17.500Z",
+    "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+    "workflowId": "ZG4Jv9RD7liDpcmM",
+    "nodes": [
+      {
+        "id": "tur-article-generator-sched",
+        "name": "Daily Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 11 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "tur-article-generator-topics",
+        "name": "Topic Seeds",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -200,
+          300
+        ],
+        "parameters": {
+          "jsCode": "return [{json: {topics: [\"AI-native company building playbook\", \"12-week product experiment framework\", \"remote-first team culture 2026\", \"bootstrapping vs venture funding decision\", \"building in public strategy\", \"personal brand for founders\", \"async-first communication systems\", \"solo founder mental health practices\", \"product-led growth for small teams\", \"side project to profitable product\", \"AI tools for indie hackers\", \"digital nomad infrastructure setup\", \"building audience before product\", \"micro-SaaS niche validation\", \"founder-led sales tactics\"]}}];"
+        }
+      },
+      {
+        "id": "tur-article-generator-pick",
+        "name": "Pick Topic",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const topics = $json.topics;\nconst topic = topics[Math.floor(Math.random() * topics.length)];\nconst date = new Date().toISOString().split('T')[0];\nconst slug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + date;\nreturn [{ json: { topic, slug, date } }];"
+        }
+      },
+      {
+        "id": "tur-article-generator-prompt",
+        "name": "Build Prompt",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1",
+                "name": "systemPrompt",
+                "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) — a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
+                "type": "string"
+              },
+              {
+                "id": "2",
+                "name": "userPrompt",
+                "value": "Write a comprehensive, well-structured article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Practical and honest, avoid hype\n- Include real examples and actionable insights\n- Use H2 and H3 headers for structure\n- End with key takeaways\n- NO frontmatter, just the article body starting with a compelling intro paragraph",
+                "type": "string"
+              },
+              {
+                "id": "3",
+                "name": "slug",
+                "value": "={{ $json.slug }}",
+                "type": "string"
+              },
+              {
+                "id": "4",
+                "name": "topic",
+                "value": "={{ $json.topic }}",
+                "type": "string"
+              },
+              {
+                "id": "5",
+                "name": "date",
+                "value": "={{ $json.date }}",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "tur-article-generator-groq",
+        "name": "Generate with Groq",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          400,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.groq.com/openai/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer REDACTED_GROQ_API_KEY"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt}],temperature:0.7,max_tokens:3000}) }}"
+        }
+      },
+      {
+        "id": "tur-article-generator-fmt",
+        "name": "Format Article",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\n// Build a real description from first paragraph of body\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+        }
+      },
+      {
+        "id": "tur-article-generator-pub",
+        "name": "Publish via OpenClaw",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          800,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "http://10.0.2.1:9191/store-and-publish",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theunnamedroads', content: $json.fullContent}) }}"
+        }
+      },
+      {
+        "id": "tur-article-generator-notify",
+        "name": "Notify Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1000,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🛤️ <b>Ny artikel publicerad</b> \\u2013 theunnamedroads.com\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "id": "wh-ZG4Jv9RD",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -680,
+          300
+        ],
+        "webhookId": "run-tur-gen",
+        "parameters": {
+          "path": "run-tur-gen",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Daily Trigger": {
+        "main": [
+          [
+            {
+              "node": "Topic Seeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Topic Seeds": {
+        "main": [
+          [
+            {
+              "node": "Pick Topic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Topic": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate with Groq",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate with Groq": {
+        "main": [
+          [
+            {
+              "node": "Format Article",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Article": {
+        "main": [
+          [
+            {
+              "node": "Publish via OpenClaw",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Publish via OpenClaw": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Topic Seeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-28T07:29:17.547Z",
+        "id": 384,
+        "workflowId": "ZG4Jv9RD7liDpcmM",
+        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:17.565Z",
+        "id": 385,
+        "workflowId": "ZG4Jv9RD7liDpcmM",
+        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:17.757Z",
+        "id": 386,
+        "workflowId": "ZG4Jv9RD7liDpcmM",
+        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-28T07:29:18.351Z",
+        "id": 387,
+        "workflowId": "ZG4Jv9RD7liDpcmM",
+        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

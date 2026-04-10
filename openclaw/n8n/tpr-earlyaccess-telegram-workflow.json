@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-04-09T15:16:33.966Z",
+  "createdAt": "2025-12-17T08:46:17.555Z",
+  "id": "mDGp19PK7pRrbsfE",
   "name": "tpr-earlyaccess-telegram",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -33,19 +39,6 @@
     },
     {
       "parameters": {
-        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst message = data.message || '';\\nconst source = data.source || 'The Print Route';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F3AF} <b>Ny kontaktf\u00f6rfr\u00e5gan \u2013 ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}` + (message ? `\\n<b>Meddelande:</b> ${message}` : '') + `\\n<b>K\u00e4lla:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = $env.TELEGRAM_BOT_TOKEN || '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok } }];\n} catch (e) {\n  return [{ json: { success: false } }];\n}"
-      },
-      "id": "d5f10f8d-b1fb-40e1-8531-101c9102e43c",
-      "name": "Send Telegram",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        400,
-        0
-      ]
-    },
-    {
-      "parameters": {
         "respondWith": "json",
         "responseBody": "={{ { \"success\": true, \"message\": \"Thank you for your interest! We'll be in touch soon.\" } }}",
         "options": {}
@@ -56,6 +49,19 @@
       "typeVersion": 1,
       "position": [
         800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawData = $input.item.json;\nconst data = rawData.body || rawData;\n\nconst name = data.name || 'N/A';\nconst email = data.email || 'N/A';\nconst message = data.message || '';\nconst source = data.source || 'The Print Route';\nconst ts = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });\n\nconst text = `\\u{1F3AF} <b>Ny kontaktförfrågan – ${source}</b>\\n\\n<b>Namn:</b> ${name}\\n<b>E-post:</b> ${email}` + (message ? `\\n<b>Meddelande:</b> ${message}` : '') + `\\n<b>Källa:</b> ${source}\\n<b>Tid:</b> ${ts}`;\n\nconst token = '8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc';\nconst chatId = '-1003767033253';\n\ntry {\n  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })\n  });\n  return [{ json: { success: response.ok } }];\n} catch (e) {\n  return [{ json: { success: false } }];\n}"
+      },
+      "id": "d5f10f8d-b1fb-40e1-8531-101c9102e43c",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
         0
       ]
     }
@@ -96,6 +102,44 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
-  }
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "global": {
+      "dedup": {
+        "dedup_early-access_testdeduptest": 1775747835109
+      }
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e9c87b45-296a-4746-b40d-ef85f7552fd1",
+  "activeVersionId": null,
+  "versionCounter": 36,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-17T08:46:17.555Z",
+      "createdAt": "2025-12-17T08:46:17.555Z",
+      "role": "workflow:owner",
+      "workflowId": "mDGp19PK7pRrbsfE",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
 }

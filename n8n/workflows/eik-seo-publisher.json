@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:56.001Z",
+  "createdAt": "2025-12-02T10:12:23.372Z",
   "id": "Np5AjkExWJNaW7Iq",
   "name": "eik-seo-publisher",
   "description": null,
@@ -197,7 +199,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
       }
     },
     {
@@ -266,7 +268,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
       }
     },
     {
@@ -475,8 +477,9 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "activeVersionId": "1827cda9-b92a-492a-b131-d52c665e002f",
-  "versionCounter": 70,
+  "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
+  "activeVersionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
+  "versionCounter": 83,
   "triggerCount": 1,
   "shared": [
     {
@@ -499,9 +502,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-24T14:32:10.210Z",
-    "createdAt": "2026-03-24T14:32:10.210Z",
-    "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+    "updatedAt": "2026-04-10T08:09:20.297Z",
+    "createdAt": "2026-04-10T08:09:20.297Z",
+    "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
     "workflowId": "Np5AjkExWJNaW7Iq",
     "nodes": [
       {
@@ -696,7 +699,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
         }
       },
       {
@@ -765,7 +768,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
         }
       },
       {
@@ -966,40 +969,40 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-24T14:32:10.256Z",
-        "id": 180,
+        "createdAt": "2026-04-10T08:09:20.349Z",
+        "id": 583,
         "workflowId": "Np5AjkExWJNaW7Iq",
-        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-24T14:32:10.274Z",
-        "id": 181,
+        "createdAt": "2026-04-10T08:09:20.365Z",
+        "id": 584,
         "workflowId": "Np5AjkExWJNaW7Iq",
-        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-24T14:32:10.326Z",
-        "id": 182,
+        "createdAt": "2026-04-10T08:09:56.045Z",
+        "id": 617,
         "workflowId": "Np5AjkExWJNaW7Iq",
-        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-24T14:32:10.351Z",
-        "id": 183,
+        "createdAt": "2026-04-10T08:09:56.058Z",
+        "id": 618,
         "workflowId": "Np5AjkExWJNaW7Iq",
-        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "versionId": "b14d9c82-b84c-4c2c-b6aa-3d11f005d9c1",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-03-28T07:38:39.313Z",
+  "createdAt": "2026-03-24T15:22:04.028Z",
   "id": "xDuxJANXD3CsKsRq",
   "name": "tpr-article-generator",
   "description": null,
@@ -267,8 +269,9 @@
   },
   "meta": null,
   "pinData": null,
+  "versionId": "475e8cd6-5f93-48cb-9091-1e7066e08fc7",
   "activeVersionId": "475e8cd6-5f93-48cb-9091-1e7066e08fc7",
-  "versionCounter": 60,
+  "versionCounter": 63,
   "triggerCount": 2,
   "shared": [
     {

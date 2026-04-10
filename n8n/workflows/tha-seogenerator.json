@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:55.579Z",
+  "createdAt": "2025-12-01T09:18:05.053Z",
   "id": "9R1IVjLC2c2LN51n",
   "name": "tha-seogenerator",
   "description": null,
@@ -248,7 +250,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
       }
     },
     {
@@ -431,8 +433,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "activeVersionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
-  "versionCounter": 226,
+  "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
+  "activeVersionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
+  "versionCounter": 239,
   "triggerCount": 2,
   "shared": [
     {
@@ -455,9 +458,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-28T07:38:40.900Z",
-    "createdAt": "2026-03-28T07:38:40.900Z",
-    "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+    "updatedAt": "2026-04-10T08:09:19.577Z",
+    "createdAt": "2026-04-10T08:09:19.577Z",
+    "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
     "workflowId": "9R1IVjLC2c2LN51n",
     "nodes": [
       {
@@ -703,7 +706,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 4}) }}"
         }
       },
       {
@@ -869,40 +872,40 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-28T07:38:40.972Z",
-        "id": 416,
+        "createdAt": "2026-04-10T08:09:19.648Z",
+        "id": 579,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:38:40.989Z",
-        "id": 417,
+        "createdAt": "2026-04-10T08:09:19.682Z",
+        "id": 580,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:38:41.093Z",
-        "id": 418,
+        "createdAt": "2026-04-10T08:09:55.612Z",
+        "id": 613,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:38:41.711Z",
-        "id": 419,
+        "createdAt": "2026-04-10T08:09:55.628Z",
+        "id": 614,
         "workflowId": "9R1IVjLC2c2LN51n",
-        "versionId": "7d91533a-9f43-4c5d-a2dd-a65db8335ac0",
+        "versionId": "3a61a1ee-bd9d-486c-92ac-7dfe1e53ba87",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

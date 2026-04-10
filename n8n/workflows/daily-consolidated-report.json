@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-04-10T08:09:56.428Z",
+  "createdAt": "2026-04-07T07:36:19.976Z",
+  "id": "9Tx4DtIhyUAcyRlu",
   "name": "daily-consolidated-report",
+  "description": null,
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "id": "sched-001",
@@ -419,7 +425,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "const date = $('Set Date Range').first().json.report_date;\n\nfunction getSiteStats(nodeName) {\n  try {\n    const d = $(nodeName).first().json;\n    return {\n      visitors: parseInt(d.visitors) || 0,\n      pageviews: parseInt(d.pageviews) || 0,\n      totaltime: parseInt(d.totaltime) || 0,\n      visits: parseInt(d.visits) || 1,\n      bounces: parseInt(d.bounces) || 0\n    };\n  } catch(e) {\n    return { visitors: 0, pageviews: 0, totaltime: 0, visits: 1, bounces: 0 };\n  }\n}\n\nconst sites = [\n  { icon: '\ud83c\udfd2', name: 'Hockey Analytics', node: 'Fetch THA Stats' },\n  { icon: '\ud83d\udc64', name: 'Emil Karlsson',     node: 'Fetch EIK Stats' },\n  { icon: '\ud83e\udde0', name: 'Hockey Brain',      node: 'Fetch THB Stats' },\n  { icon: '\ud83d\udee3\ufe0f', name: 'Unnamed Roads',    node: 'Fetch TUR Stats' },\n  { icon: '\ud83e\udd16', name: 'Agent Fabric',      node: 'Fetch TAF Stats' },\n  { icon: '\u269b\ufe0f', name: 'Atomic Network',   node: 'Fetch TAN Stats' },\n  { icon: '\ud83d\udda8\ufe0f', name: 'Print Route',      node: 'Fetch TPR Stats' },\n  { icon: '\ud83c\udfe1', name: 'Finnboda',          node: 'Fetch FIN Stats' }\n];\n\nlet totalVisitors = 0;\nlet totalPageviews = 0;\nconst lines = [];\n\nfor (const site of sites) {\n  const s = getSiteStats(site.node);\n  totalVisitors += s.visitors;\n  totalPageviews += s.pageviews;\n  const avgTime = s.visits > 0 ? Math.round(s.totaltime / s.visits) : 0;\n  let stats = '<b>' + s.visitors + '</b> bes \u00b7 <b>' + s.pageviews + '</b> sv';\n  if (avgTime > 0) stats += ' \u00b7 \u23f1' + avgTime + 's';\n  lines.push(site.icon + ' <b>' + site.name + '</b>  ' + stats);\n}\n\nconst aiRows = $input.all().map(r => r.json);\nconst thisWeekAI = aiRows.filter(r => r.period === 'this' && r.referrer_domain !== 'no-ai-traffic');\nconst prevWeekAI = aiRows.filter(r => r.period === 'prev' && r.referrer_domain !== 'no-ai-traffic');\nconst aiTotal = thisWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst prevAiTotal = prevWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst diff = aiTotal - prevAiTotal;\nconst aiTrend = prevAiTotal > 0 ? (diff >= 0 ? '\u25b2' : '\u25bc') + Math.abs(Math.round(diff/prevAiTotal*100)) + '% vs fg v' : 'f\u00f6rsta m\u00e4tningen';\n\nconst icons = {'perplexity.ai':'\ud83d\udd2e','chatgpt.com':'\ud83d\udcac','claude.ai':'\ud83e\udde0','bing.com':'\ud83d\udd35'};\nconst bySource = {};\nfor (const r of thisWeekAI) bySource[r.referrer_domain] = (bySource[r.referrer_domain]||0) + parseInt(r.sessions||0);\nconst aiSourceLines = Object.entries(bySource).sort((a,b)=>b[1]-a[1]).map(([s,n]) => (icons[s]||'\u2022') + ' ' + s + ': ' + n).join('\\n');\n\nlet text = '\ud83d\udcca <b>Daglig rapport \u2013 ' + date + '</b>\\n\\n';\ntext += lines.join('\\n');\ntext += '\\n\\n<b>Totalt:</b> ' + totalVisitors + ' bes\u00f6kare \u00b7 ' + totalPageviews + ' sidvisningar\\n';\ntext += '\\n\ud83e\udd16 <b>AI-trafik (7d):</b> ' + aiTotal + ' sessioner (' + aiTrend + ')';\nif (aiSourceLines) text += '\\n' + aiSourceLines;\n\nreturn [{ json: { text } }];"
+        "jsCode": "const date = $('Set Date Range').first().json.report_date;\n\nfunction getSiteStats(nodeName) {\n  try {\n    const d = $(nodeName).first().json;\n    return {\n      visitors: parseInt(d.visitors) || 0,\n      pageviews: parseInt(d.pageviews) || 0,\n      totaltime: parseInt(d.totaltime) || 0,\n      visits: parseInt(d.visits) || 1,\n      bounces: parseInt(d.bounces) || 0\n    };\n  } catch(e) {\n    return { visitors: 0, pageviews: 0, totaltime: 0, visits: 1, bounces: 0 };\n  }\n}\n\nconst sites = [\n  { icon: '🏒', name: 'Hockey Analytics', node: 'Fetch THA Stats' },\n  { icon: '👤', name: 'Emil Karlsson',     node: 'Fetch EIK Stats' },\n  { icon: '🧠', name: 'Hockey Brain',      node: 'Fetch THB Stats' },\n  { icon: '🛣️', name: 'Unnamed Roads',    node: 'Fetch TUR Stats' },\n  { icon: '🤖', name: 'Agent Fabric',      node: 'Fetch TAF Stats' },\n  { icon: '⚛️', name: 'Atomic Network',   node: 'Fetch TAN Stats' },\n  { icon: '🖨️', name: 'Print Route',      node: 'Fetch TPR Stats' },\n  { icon: '🏡', name: 'Finnboda',          node: 'Fetch FIN Stats' }\n];\n\nlet totalVisitors = 0;\nlet totalPageviews = 0;\nconst lines = [];\n\nfor (const site of sites) {\n  const s = getSiteStats(site.node);\n  totalVisitors += s.visitors;\n  totalPageviews += s.pageviews;\n  const avgTime = s.visits > 0 ? Math.round(s.totaltime / s.visits) : 0;\n  let stats = '<b>' + s.visitors + '</b> bes · <b>' + s.pageviews + '</b> sv';\n  if (avgTime > 0) stats += ' · ⏱' + avgTime + 's';\n  lines.push(site.icon + ' <b>' + site.name + '</b>  ' + stats);\n}\n\nconst aiRows = $input.all().map(r => r.json);\nconst thisWeekAI = aiRows.filter(r => r.period === 'this' && r.referrer_domain !== 'no-ai-traffic');\nconst prevWeekAI = aiRows.filter(r => r.period === 'prev' && r.referrer_domain !== 'no-ai-traffic');\nconst aiTotal = thisWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst prevAiTotal = prevWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst diff = aiTotal - prevAiTotal;\nconst aiTrend = prevAiTotal > 0 ? (diff >= 0 ? '▲' : '▼') + Math.abs(Math.round(diff/prevAiTotal*100)) + '% vs fg v' : 'första mätningen';\n\nconst icons = {'perplexity.ai':'🔮','chatgpt.com':'💬','claude.ai':'🧠','bing.com':'🔵'};\nconst bySource = {};\nfor (const r of thisWeekAI) bySource[r.referrer_domain] = (bySource[r.referrer_domain]||0) + parseInt(r.sessions||0);\nconst aiSourceLines = Object.entries(bySource).sort((a,b)=>b[1]-a[1]).map(([s,n]) => (icons[s]||'•') + ' ' + s + ': ' + n).join('\\n');\n\nlet text = '📊 <b>Daglig rapport – ' + date + '</b>\\n\\n';\ntext += lines.join('\\n');\ntext += '\\n\\n<b>Totalt:</b> ' + totalVisitors + ' besökare · ' + totalPageviews + ' sidvisningar\\n';\ntext += '\\n🤖 <b>AI-trafik (7d):</b> ' + aiTotal + ' sessioner (' + aiTrend + ')';\nif (aiSourceLines) text += '\\n' + aiSourceLines;\n\nreturn [{ json: { text } }];"
       }
     },
     {
@@ -437,7 +443,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003767033253', text: $json.text, parse_mode: 'HTML' }) }}",
+        "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', text: $json.text, parse_mode: 'HTML', message_thread_id: 5 }) }}",
         "options": {}
       }
     }
@@ -602,5 +608,678 @@
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+  "activeVersionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+  "versionCounter": 25,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-04-07T07:36:19.976Z",
+      "createdAt": "2026-04-07T07:36:19.976Z",
+      "role": "workflow:owner",
+      "workflowId": "9Tx4DtIhyUAcyRlu",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-10T08:09:20.891Z",
+    "createdAt": "2026-04-10T08:09:20.891Z",
+    "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+    "workflowId": "9Tx4DtIhyUAcyRlu",
+    "nodes": [
+      {
+        "id": "sched-001",
+        "name": "Schedule",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 8 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "hook-001",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          220
+        ],
+        "parameters": {
+          "path": "run-daily-report",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        },
+        "webhookId": "run-daily-report"
+      },
+      {
+        "id": "set-001",
+        "name": "Set Date Range",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.3,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d1",
+                "name": "yesterday_start",
+                "value": "={{ $now.minus({ days: 1 }).startOf('day').toMillis() }}",
+                "type": "number"
+              },
+              {
+                "id": "d2",
+                "name": "yesterday_end",
+                "value": "={{ $now.minus({ days: 1 }).endOf('day').toMillis() }}",
+                "type": "number"
+              },
+              {
+                "id": "d3",
+                "name": "report_date",
+                "value": "={{ $now.minus({ days: 1 }).toFormat('yyyy-MM-dd') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-login",
+        "name": "Login to Umami",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://umami.theunnamedroads.com/api/auth/login",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\"username\": \"admin\", \"password\": \"TurUmami2024!\"}) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "http-tha",
+        "name": "Fetch THA Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          720,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-eik",
+        "name": "Fetch EIK Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          960,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-thb",
+        "name": "Fetch THB Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1200,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-tur",
+        "name": "Fetch TUR Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1440,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/fc8f279b-0da8-4013-b8df-be07dc12a8f1/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-taf",
+        "name": "Fetch TAF Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1680,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/9438eb5d-4409-47fd-893f-105c80e1dd5e/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-tan",
+        "name": "Fetch TAN Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1920,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/61956d72-33b2-4663-849c-5874b312984d/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-tpr",
+        "name": "Fetch TPR Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2160,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "http-fin",
+        "name": "Fetch FIN Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2400,
+          0
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/472ea0eb-c7de-4176-85fe-96fc218c9bea/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "pg-ai",
+        "name": "AI Traffic Query",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          2640,
+          0
+        ],
+        "continueOnFail": true,
+        "credentials": {
+          "postgres": {
+            "id": "PLOVoVKhDi0Ae9Le",
+            "name": "Umami Postgres"
+          }
+        },
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH this_week AS (SELECT 'this' as period, w.domain, e.referrer_domain, COUNT(*) as sessions FROM website_event e JOIN website w ON w.website_id=e.website_id WHERE e.created_at > NOW() - INTERVAL '7 days' AND e.referrer_domain IN ('perplexity.ai','chatgpt.com','claude.ai','copilot.microsoft.com','gemini.google.com','you.com','phind.com','chat.openai.com','bing.com') GROUP BY w.domain, e.referrer_domain), prev_week AS (SELECT 'prev' as period, w.domain, e.referrer_domain, COUNT(*) as sessions FROM website_event e JOIN website w ON w.website_id=e.website_id WHERE e.created_at BETWEEN NOW()-INTERVAL '14 days' AND NOW()-INTERVAL '7 days' AND e.referrer_domain IN ('perplexity.ai','chatgpt.com','claude.ai','copilot.microsoft.com','gemini.google.com','you.com','phind.com','chat.openai.com','bing.com') GROUP BY w.domain, e.referrer_domain) SELECT * FROM this_week UNION ALL SELECT * FROM prev_week UNION ALL SELECT 'this','none','no-ai-traffic',0 WHERE NOT EXISTS (SELECT 1 FROM this_week) ORDER BY period, sessions DESC",
+          "options": {}
+        }
+      },
+      {
+        "id": "code-fmt",
+        "name": "Format Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2880,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const date = $('Set Date Range').first().json.report_date;\n\nfunction getSiteStats(nodeName) {\n  try {\n    const d = $(nodeName).first().json;\n    return {\n      visitors: parseInt(d.visitors) || 0,\n      pageviews: parseInt(d.pageviews) || 0,\n      totaltime: parseInt(d.totaltime) || 0,\n      visits: parseInt(d.visits) || 1,\n      bounces: parseInt(d.bounces) || 0\n    };\n  } catch(e) {\n    return { visitors: 0, pageviews: 0, totaltime: 0, visits: 1, bounces: 0 };\n  }\n}\n\nconst sites = [\n  { icon: '🏒', name: 'Hockey Analytics', node: 'Fetch THA Stats' },\n  { icon: '👤', name: 'Emil Karlsson',     node: 'Fetch EIK Stats' },\n  { icon: '🧠', name: 'Hockey Brain',      node: 'Fetch THB Stats' },\n  { icon: '🛣️', name: 'Unnamed Roads',    node: 'Fetch TUR Stats' },\n  { icon: '🤖', name: 'Agent Fabric',      node: 'Fetch TAF Stats' },\n  { icon: '⚛️', name: 'Atomic Network',   node: 'Fetch TAN Stats' },\n  { icon: '🖨️', name: 'Print Route',      node: 'Fetch TPR Stats' },\n  { icon: '🏡', name: 'Finnboda',          node: 'Fetch FIN Stats' }\n];\n\nlet totalVisitors = 0;\nlet totalPageviews = 0;\nconst lines = [];\n\nfor (const site of sites) {\n  const s = getSiteStats(site.node);\n  totalVisitors += s.visitors;\n  totalPageviews += s.pageviews;\n  const avgTime = s.visits > 0 ? Math.round(s.totaltime / s.visits) : 0;\n  let stats = '<b>' + s.visitors + '</b> bes · <b>' + s.pageviews + '</b> sv';\n  if (avgTime > 0) stats += ' · ⏱' + avgTime + 's';\n  lines.push(site.icon + ' <b>' + site.name + '</b>  ' + stats);\n}\n\nconst aiRows = $input.all().map(r => r.json);\nconst thisWeekAI = aiRows.filter(r => r.period === 'this' && r.referrer_domain !== 'no-ai-traffic');\nconst prevWeekAI = aiRows.filter(r => r.period === 'prev' && r.referrer_domain !== 'no-ai-traffic');\nconst aiTotal = thisWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst prevAiTotal = prevWeekAI.reduce((s,r) => s + parseInt(r.sessions||0), 0);\nconst diff = aiTotal - prevAiTotal;\nconst aiTrend = prevAiTotal > 0 ? (diff >= 0 ? '▲' : '▼') + Math.abs(Math.round(diff/prevAiTotal*100)) + '% vs fg v' : 'första mätningen';\n\nconst icons = {'perplexity.ai':'🔮','chatgpt.com':'💬','claude.ai':'🧠','bing.com':'🔵'};\nconst bySource = {};\nfor (const r of thisWeekAI) bySource[r.referrer_domain] = (bySource[r.referrer_domain]||0) + parseInt(r.sessions||0);\nconst aiSourceLines = Object.entries(bySource).sort((a,b)=>b[1]-a[1]).map(([s,n]) => (icons[s]||'•') + ' ' + s + ': ' + n).join('\\n');\n\nlet text = '📊 <b>Daglig rapport – ' + date + '</b>\\n\\n';\ntext += lines.join('\\n');\ntext += '\\n\\n<b>Totalt:</b> ' + totalVisitors + ' besökare · ' + totalPageviews + ' sidvisningar\\n';\ntext += '\\n🤖 <b>AI-trafik (7d):</b> ' + aiTotal + ' sessioner (' + aiTrend + ')';\nif (aiSourceLines) text += '\\n' + aiSourceLines;\n\nreturn [{ json: { text } }];"
+        }
+      },
+      {
+        "id": "http-tg",
+        "name": "Send Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3120,
+          0
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ chat_id: '-1003919428238', text: $json.text, parse_mode: 'HTML', message_thread_id: 5 }) }}",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Schedule": {
+        "main": [
+          [
+            {
+              "node": "Set Date Range",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Set Date Range",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Date Range": {
+        "main": [
+          [
+            {
+              "node": "Login to Umami",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Login to Umami": {
+        "main": [
+          [
+            {
+              "node": "Fetch THA Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch THA Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch EIK Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch EIK Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch THB Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch THB Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch TUR Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch TUR Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch TAF Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch TAF Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch TAN Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch TAN Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch TPR Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch TPR Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch FIN Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch FIN Stats": {
+        "main": [
+          [
+            {
+              "node": "AI Traffic Query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Traffic Query": {
+        "main": [
+          [
+            {
+              "node": "Format Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Report": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Admin null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-10T08:09:56.471Z",
+        "id": 621,
+        "workflowId": "9Tx4DtIhyUAcyRlu",
+        "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:56.505Z",
+        "id": 622,
+        "workflowId": "9Tx4DtIhyUAcyRlu",
+        "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:20.940Z",
+        "id": 587,
+        "workflowId": "9Tx4DtIhyUAcyRlu",
+        "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:20.957Z",
+        "id": 588,
+        "workflowId": "9Tx4DtIhyUAcyRlu",
+        "versionId": "9be80f84-cd3d-45b6-93b9-9ac078410da9",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
   }
 }

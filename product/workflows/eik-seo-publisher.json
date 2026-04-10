@@ -1,0 +1,1008 @@
+{
+  "id": "Np5AjkExWJNaW7Iq",
+  "name": "eik-seo-publisher",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "seo-approve",
+        "options": {}
+      },
+      "id": "1a1d4696-909c-458a-8e5d-0d24e61b999b",
+      "name": "Webhook Approval Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -448,
+        80
+      ],
+      "webhookId": "seo-approve"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query.action }}",
+              "value2": "approve"
+            }
+          ]
+        }
+      },
+      "id": "bb77c21e-7a5b-48a9-9e75-a88716d2bc56",
+      "name": "Check If Approved",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract slug and keyword from URL query params\nconst query = $input.item.json.query || {};\nconst slug = query.slug || '';\nconst keyword = query.keyword || '';\nconst action = query.action || '';\n\nif (!slug) {\n  throw new Error('No slug provided in URL parameters');\n}\n\nreturn {\n  slug: slug,\n  keyword: keyword,\n  action: action\n};"
+      },
+      "id": "7173165f-b913-4b8a-8084-3549a657fda8",
+      "name": "Extract Slug from Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "eik-dl-minio-01",
+      "name": "Download from Minio",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -200
+      ],
+      "parameters": {
+        "bucketName": "eik-seo-drafts",
+        "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}"
+      },
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read text content from S3 download\nconst binary = $input.item.binary?.data;\nconst keyword  = $('Extract Slug from Command').item.json.keyword;\nconst slug     = $('Extract Slug from Command').item.json.slug;\nconst filename = $('Extract Slug from Command').item.json.filename;\n\nif (!binary) throw new Error('No binary data from Minio download');\n// S3 node returns base64 in binary.data.data\nconst base64Content = binary.data;\nreturn { contentBase64: base64Content, keyword, slug, filename };"
+      },
+      "id": "0b64185f-ed64-49e8-9457-213b3633dd9f",
+      "name": "Encode Content to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ 'https://api.github.com/repos/emilingemarkarlsson/emilingemarkarlsson-astro-theme/contents/src/content/blog/' + $json.filename }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"message\": \"feat: publish SEO article - \" + $('Extract Slug from Command').item.json.keyword,\n  \"content\": $json.contentBase64,\n  \"branch\": \"main\"\n} }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "000d6b27-0097-4aef-b0c4-0aac2da5532a",
+      "name": "Publish to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        0
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "OH8u2jiS44dDOYi4",
+          "name": "GitHub Content Publishing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.netlify.com/build_hooks/692ec95da126cd1e25f33730",
+        "options": {}
+      },
+      "id": "59702c29-f303-4fd1-a5b4-7924aeb0c63e",
+      "name": "Trigger Netlify Deploy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        0
+      ]
+    },
+    {
+      "id": "eik-del-minio-ok",
+      "name": "Delete Published Draft",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        -200
+      ],
+      "parameters": {
+        "operation": "delete",
+        "bucketName": "eik-seo-drafts",
+        "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}",
+        "options": {}
+      },
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "id": "eik-pub-tg-ok",
+      "name": "Build Success Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        -200
+      ],
+      "parameters": {
+        "jsCode": "const kw   = $('Extract Slug from Command').item.json.keyword;\nconst slug = $('Extract Slug from Command').item.json.slug;\nconst url  = `https://www.emilingemarkarlsson.com/blog/${slug}`;\nconst text = '✅ <b>Artikel publicerad – emilingemarkarlsson.com</b>\\n\\n' +\n  '<b>Keyword:</b> ' + kw + '\\n' +\n  '<b>Slug:</b> /blog/' + slug + '\\n' +\n  '🔗 <a href=\"' + url + '\">' + url + '</a>';\nreturn { json: { telegramText: text } };"
+      }
+    },
+    {
+      "id": "eik-pub-tg-ok-http",
+      "name": "Notify Telegram – Published",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1640,
+        -200
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Approved</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#2ea44f;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>✅ Article Approved!</h1><p>Publishing to production...</p><p style=\"margin-top:20px\">Slug: ' + $('Get Draft Content').item.json.slug + '</p><p style=\"margin-top:20px;font-size:14px\">Check Slack for status updates. You can close this window.</p></div></body></html>' }}",
+        "options": {}
+      },
+      "id": "c967a3e3-e8e3-4d93-8400-7e86374a3d30",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        0
+      ]
+    },
+    {
+      "id": "eik-del-minio-rej",
+      "name": "Delete Rejected Draft",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        900,
+        100
+      ],
+      "parameters": {
+        "operation": "delete",
+        "bucketName": "eik-seo-drafts",
+        "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}",
+        "options": {}
+      },
+      "credentials": {
+        "s3": {
+          "id": "HdCw5lSb6jwOHLHd",
+          "name": "THA Minio"
+        }
+      }
+    },
+    {
+      "id": "eik-rej-tg",
+      "name": "Build Reject Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const slug = $('Extract Slug from Command').item.json.slug;\nconst text = '❌ <b>Artikel avvisad – emilingemarkarlsson.com</b>\\n\\nSlug: ' + slug + '\\nUtkastet har tagits bort från Minio.';\nreturn { json: { telegramText: text } };"
+      }
+    },
+    {
+      "id": "eik-rej-tg-http",
+      "name": "Notify Telegram – Rejected",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1220,
+        100
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Rejected</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#d73a49;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>❌ Article Rejected</h1><p>Draft will not be published.</p><p style=\"margin-top:20px\">Slug: ' + $('Prepare Rejection').item.json.slug + '</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+        "options": {}
+      },
+      "id": "bdde5b94-cf66-45ca-b0b5-909adf6034a6",
+      "name": "Respond Rejection",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        448,
+        160
+      ]
+    },
+    {
+      "id": "eik-indexnow-01",
+      "name": "IndexNow Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1480,
+        -200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.indexnow.org/indexnow",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={ JSON.stringify({\n  host: 'emilingemarkarlsson.com',\n  key: 'b5c3d7e9f1a6b8c4d2e8f3a7b9c5d1e3',\n  keyLocation: 'https://www.emilingemarkarlsson.com/b5c3d7e9f1a6b8c4d2e8f3a7b9c5d1e3.txt',\n  urlList: ['https://www.emilingemarkarlsson.com/blog/' + $('Extract Slug from Command').item.json.slug]\n}) }"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Approval Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check If Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Approved": {
+      "main": [
+        [
+          {
+            "node": "Extract Slug from Command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Rejected Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Slug from Command": {
+      "main": [
+        [
+          {
+            "node": "Download from Minio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download from Minio": {
+      "main": [
+        [
+          {
+            "node": "Encode Content to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode Content to Base64": {
+      "main": [
+        [
+          {
+            "node": "Publish to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to GitHub": {
+      "main": [
+        [
+          {
+            "node": "Trigger Netlify Deploy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Netlify Deploy": {
+      "main": [
+        [
+          {
+            "node": "Delete Published Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Published Draft": {
+      "main": [
+        [
+          {
+            "node": "IndexNow Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Success Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram – Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Telegram – Published": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Rejected Draft": {
+      "main": [
+        [
+          {
+            "node": "Build Reject Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reject Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram – Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Telegram – Rejected": {
+      "main": [
+        [
+          {
+            "node": "Respond Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IndexNow Ping": {
+      "main": [
+        [
+          {
+            "node": "Build Success Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+  "versionCounter": 70,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-02T10:12:23.372Z",
+      "createdAt": "2025-12-02T10:12:23.372Z",
+      "role": "workflow:owner",
+      "workflowId": "Np5AjkExWJNaW7Iq",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T14:32:10.210Z",
+    "createdAt": "2026-03-24T14:32:10.210Z",
+    "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+    "workflowId": "Np5AjkExWJNaW7Iq",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "seo-approve",
+          "options": {}
+        },
+        "id": "1a1d4696-909c-458a-8e5d-0d24e61b999b",
+        "name": "Webhook Approval Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [
+          -448,
+          80
+        ],
+        "webhookId": "seo-approve"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.query.action }}",
+                "value2": "approve"
+              }
+            ]
+          }
+        },
+        "id": "bb77c21e-7a5b-48a9-9e75-a88716d2bc56",
+        "name": "Check If Approved",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -224,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract slug and keyword from URL query params\nconst query = $input.item.json.query || {};\nconst slug = query.slug || '';\nconst keyword = query.keyword || '';\nconst action = query.action || '';\n\nif (!slug) {\n  throw new Error('No slug provided in URL parameters');\n}\n\nreturn {\n  slug: slug,\n  keyword: keyword,\n  action: action\n};"
+        },
+        "id": "7173165f-b913-4b8a-8084-3549a657fda8",
+        "name": "Extract Slug from Command",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "eik-dl-minio-01",
+        "name": "Download from Minio",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          900,
+          -200
+        ],
+        "parameters": {
+          "bucketName": "eik-seo-drafts",
+          "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}"
+        },
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Read text content from S3 download\nconst binary = $input.item.binary?.data;\nconst keyword  = $('Extract Slug from Command').item.json.keyword;\nconst slug     = $('Extract Slug from Command').item.json.slug;\nconst filename = $('Extract Slug from Command').item.json.filename;\n\nif (!binary) throw new Error('No binary data from Minio download');\n// S3 node returns base64 in binary.data.data\nconst base64Content = binary.data;\nreturn { contentBase64: base64Content, keyword, slug, filename };"
+        },
+        "id": "0b64185f-ed64-49e8-9457-213b3633dd9f",
+        "name": "Encode Content to Base64",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          784,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "={{ 'https://api.github.com/repos/emilingemarkarlsson/emilingemarkarlsson-astro-theme/contents/src/content/blog/' + $json.filename }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"message\": \"feat: publish SEO article - \" + $('Extract Slug from Command').item.json.keyword,\n  \"content\": $json.contentBase64,\n  \"branch\": \"main\"\n} }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true
+              }
+            }
+          }
+        },
+        "id": "000d6b27-0097-4aef-b0c4-0aac2da5532a",
+        "name": "Publish to GitHub",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          0
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "OH8u2jiS44dDOYi4",
+            "name": "GitHub Content Publishing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.netlify.com/build_hooks/692ec95da126cd1e25f33730",
+          "options": {}
+        },
+        "id": "59702c29-f303-4fd1-a5b4-7924aeb0c63e",
+        "name": "Trigger Netlify Deploy",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1456,
+          0
+        ]
+      },
+      {
+        "id": "eik-del-minio-ok",
+        "name": "Delete Published Draft",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          1320,
+          -200
+        ],
+        "parameters": {
+          "operation": "delete",
+          "bucketName": "eik-seo-drafts",
+          "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}",
+          "options": {}
+        },
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "id": "eik-pub-tg-ok",
+        "name": "Build Success Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1480,
+          -200
+        ],
+        "parameters": {
+          "jsCode": "const kw   = $('Extract Slug from Command').item.json.keyword;\nconst slug = $('Extract Slug from Command').item.json.slug;\nconst url  = `https://www.emilingemarkarlsson.com/blog/${slug}`;\nconst text = '✅ <b>Artikel publicerad – emilingemarkarlsson.com</b>\\n\\n' +\n  '<b>Keyword:</b> ' + kw + '\\n' +\n  '<b>Slug:</b> /blog/' + slug + '\\n' +\n  '🔗 <a href=\"' + url + '\">' + url + '</a>';\nreturn { json: { telegramText: text } };"
+        }
+      },
+      {
+        "id": "eik-pub-tg-ok-http",
+        "name": "Notify Telegram – Published",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1640,
+          -200
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Approved</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#2ea44f;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>✅ Article Approved!</h1><p>Publishing to production...</p><p style=\"margin-top:20px\">Slug: ' + $('Get Draft Content').item.json.slug + '</p><p style=\"margin-top:20px;font-size:14px\">Check Slack for status updates. You can close this window.</p></div></body></html>' }}",
+          "options": {}
+        },
+        "id": "c967a3e3-e8e3-4d93-8400-7e86374a3d30",
+        "name": "Respond to Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          1904,
+          0
+        ]
+      },
+      {
+        "id": "eik-del-minio-rej",
+        "name": "Delete Rejected Draft",
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          900,
+          100
+        ],
+        "parameters": {
+          "operation": "delete",
+          "bucketName": "eik-seo-drafts",
+          "fileKey": "={{ $('Extract Slug from Command').item.json.filename }}",
+          "options": {}
+        },
+        "credentials": {
+          "s3": {
+            "id": "HdCw5lSb6jwOHLHd",
+            "name": "THA Minio"
+          }
+        }
+      },
+      {
+        "id": "eik-rej-tg",
+        "name": "Build Reject Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1060,
+          100
+        ],
+        "parameters": {
+          "jsCode": "const slug = $('Extract Slug from Command').item.json.slug;\nconst text = '❌ <b>Artikel avvisad – emilingemarkarlsson.com</b>\\n\\nSlug: ' + slug + '\\nUtkastet har tagits bort från Minio.';\nreturn { json: { telegramText: text } };"
+        }
+      },
+      {
+        "id": "eik-rej-tg-http",
+        "name": "Notify Telegram – Rejected",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1220,
+          100
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ '<!DOCTYPE html><html><head><title>Article Rejected</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0}div{text-align:center;background:white;padding:40px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}h1{color:#d73a49;margin:0 0 10px}p{color:#666;margin:0}</style></head><body><div><h1>❌ Article Rejected</h1><p>Draft will not be published.</p><p style=\"margin-top:20px\">Slug: ' + $('Prepare Rejection').item.json.slug + '</p><p style=\"margin-top:20px;font-size:14px\">You can close this window.</p></div></body></html>' }}",
+          "options": {}
+        },
+        "id": "bdde5b94-cf66-45ca-b0b5-909adf6034a6",
+        "name": "Respond Rejection",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          448,
+          160
+        ]
+      },
+      {
+        "id": "eik-indexnow-01",
+        "name": "IndexNow Ping",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1480,
+          -200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.indexnow.org/indexnow",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={ JSON.stringify({\n  host: 'emilingemarkarlsson.com',\n  key: 'b5c3d7e9f1a6b8c4d2e8f3a7b9c5d1e3',\n  keyLocation: 'https://www.emilingemarkarlsson.com/b5c3d7e9f1a6b8c4d2e8f3a7b9c5d1e3.txt',\n  urlList: ['https://www.emilingemarkarlsson.com/blog/' + $('Extract Slug from Command').item.json.slug]\n}) }"
+        }
+      }
+    ],
+    "connections": {
+      "Webhook Approval Trigger": {
+        "main": [
+          [
+            {
+              "node": "Check If Approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check If Approved": {
+        "main": [
+          [
+            {
+              "node": "Extract Slug from Command",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Delete Rejected Draft",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Slug from Command": {
+        "main": [
+          [
+            {
+              "node": "Download from Minio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download from Minio": {
+        "main": [
+          [
+            {
+              "node": "Encode Content to Base64",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Encode Content to Base64": {
+        "main": [
+          [
+            {
+              "node": "Publish to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Publish to GitHub": {
+        "main": [
+          [
+            {
+              "node": "Trigger Netlify Deploy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trigger Netlify Deploy": {
+        "main": [
+          [
+            {
+              "node": "Delete Published Draft",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Published Draft": {
+        "main": [
+          [
+            {
+              "node": "IndexNow Ping",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Success Message": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram – Published",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Telegram – Published": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Rejected Draft": {
+        "main": [
+          [
+            {
+              "node": "Build Reject Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Reject Message": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram – Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Telegram – Rejected": {
+        "main": [
+          [
+            {
+              "node": "Respond Rejection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IndexNow Ping": {
+        "main": [
+          [
+            {
+              "node": "Build Success Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-24T14:32:10.256Z",
+        "id": 180,
+        "workflowId": "Np5AjkExWJNaW7Iq",
+        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.274Z",
+        "id": 181,
+        "workflowId": "Np5AjkExWJNaW7Iq",
+        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.326Z",
+        "id": 182,
+        "workflowId": "Np5AjkExWJNaW7Iq",
+        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-03-24T14:32:10.351Z",
+        "id": 183,
+        "workflowId": "Np5AjkExWJNaW7Iq",
+        "versionId": "1827cda9-b92a-492a-b131-d52c665e002f",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

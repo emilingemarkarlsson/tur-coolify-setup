@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T07:25:49.048Z",
+  "updatedAt": "2026-04-10T08:09:55.731Z",
   "createdAt": "2025-12-01T10:17:48.484Z",
   "id": "QRgvi4BoB5CYJc2o",
   "name": "tha-seopublisher",
@@ -201,7 +201,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML'\n}) }}"
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML', message_thread_id: 4\n}) }}"
       },
       "id": "3ce2c2ca-c701-429c-b734-0118cebd18b2",
       "name": "Notify Success",
@@ -257,7 +257,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML', message_thread_id: 4}) }}"
       },
       "id": "588e4c14-31b5-44b8-9f06-d093fd9568d4",
       "name": "Notify Rejection",
@@ -452,9 +452,9 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "817a7a1f-6184-4d43-ac61-5b96b146bfe7",
-  "activeVersionId": "817a7a1f-6184-4d43-ac61-5b96b146bfe7",
-  "versionCounter": 83,
+  "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
+  "activeVersionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
+  "versionCounter": 89,
   "triggerCount": 1,
   "shared": [
     {
@@ -477,9 +477,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T07:25:49.050Z",
-    "createdAt": "2026-04-10T07:25:49.050Z",
-    "versionId": "817a7a1f-6184-4d43-ac61-5b96b146bfe7",
+    "updatedAt": "2026-04-10T08:09:19.888Z",
+    "createdAt": "2026-04-10T08:09:19.888Z",
+    "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
     "workflowId": "QRgvi4BoB5CYJc2o",
     "nodes": [
       {
@@ -676,7 +676,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML'\n}) }}"
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: '✅ <b>SEO-artikel publicerad – thehockeyanalytics.com</b>\\n\\n<b>Keyword:</b> ' + $('Webhook Trigger').item.json.query.keyword + '\\n<b>Slug:</b> /posts/' + $('Webhook Trigger').item.json.query.slug + '\\n🔗 https://www.thehockeyanalytics.com/posts/' + $('Webhook Trigger').item.json.query.slug,\n  parse_mode: 'HTML', message_thread_id: 4\n}) }}"
         },
         "id": "3ce2c2ca-c701-429c-b734-0118cebd18b2",
         "name": "Notify Success",
@@ -732,7 +732,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: '❌ <b>SEO-artikel avvisad – THA</b>\\n\\nFilename: ' + $('Webhook Trigger').item.json.query.filename, parse_mode: 'HTML', message_thread_id: 4}) }}"
         },
         "id": "588e4c14-31b5-44b8-9f06-d093fd9568d4",
         "name": "Notify Rejection",
@@ -925,18 +925,34 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T07:25:49.130Z",
-        "id": 565,
+        "createdAt": "2026-04-10T08:09:19.952Z",
+        "id": 581,
         "workflowId": "QRgvi4BoB5CYJc2o",
-        "versionId": "817a7a1f-6184-4d43-ac61-5b96b146bfe7",
+        "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T07:25:49.159Z",
-        "id": 566,
+        "createdAt": "2026-04-10T08:09:20.001Z",
+        "id": 582,
         "workflowId": "QRgvi4BoB5CYJc2o",
-        "versionId": "817a7a1f-6184-4d43-ac61-5b96b146bfe7",
+        "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.803Z",
+        "id": 615,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.830Z",
+        "id": 616,
+        "workflowId": "QRgvi4BoB5CYJc2o",
+        "versionId": "b139d5dc-3a63-4a47-9f29-6a4944c79731",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

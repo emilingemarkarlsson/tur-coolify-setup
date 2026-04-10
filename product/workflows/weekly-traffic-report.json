@@ -1,0 +1,1331 @@
+{
+  "id": "zOEBV8UKnYhLj59r",
+  "name": "Weekly Traffic Report",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "wkly-sched",
+      "name": "Schedule (Monday 09:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "wkly-login",
+      "name": "Login to Umami",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://umami.theunnamedroads.com/api/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "jsonBody": "={ \"username\": $credentials.username, \"password\": $credentials.password }",
+        "options": {}
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-tha-cur",
+      "name": "THA Stats This Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        -200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-tha-prev",
+      "name": "THA Stats Last Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        -200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-tha-pgs",
+      "name": "THA Top Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        -200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/metrics",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.startOf('week').toMillis() }}"
+            },
+            {
+              "name": "type",
+              "value": "url"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-tha-agg",
+      "name": "THA Aggregate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -200
+      ],
+      "parameters": {
+        "jsCode": "const cur  = $('THA Stats This Week').item.json;\nconst prev = $('THA Stats Last Week').item.json;\nconst pages = $('THA Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'thehockeyanalytics.com', emoji: '🏒',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+      }
+    },
+    {
+      "id": "wkly-eik-cur",
+      "name": "EIK Stats This Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        0
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-eik-prev",
+      "name": "EIK Stats Last Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        0
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-eik-pgs",
+      "name": "EIK Top Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        0
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/metrics",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.startOf('week').toMillis() }}"
+            },
+            {
+              "name": "type",
+              "value": "url"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-eik-agg",
+      "name": "EIK Aggregate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const cur  = $('EIK Stats This Week').item.json;\nconst prev = $('EIK Stats Last Week').item.json;\nconst pages = $('EIK Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'emilingemarkarlsson.com', emoji: '👨‍💻',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+      }
+    },
+    {
+      "id": "wkly-thb-cur",
+      "name": "THB Stats This Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-thb-prev",
+      "name": "THB Stats Last Week",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-thb-pgs",
+      "name": "THB Top Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        200
+      ],
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/metrics",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $now.startOf('week').toMillis() }}"
+            },
+            {
+              "name": "type",
+              "value": "url"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "httpBasicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "id": "wkly-thb-agg",
+      "name": "THB Aggregate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const cur  = $('THB Stats This Week').item.json;\nconst prev = $('THB Stats Last Week').item.json;\nconst pages = $('THB Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'thehockeybrain.com', emoji: '🧠',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+      }
+    },
+    {
+      "id": "wkly-combine",
+      "name": "Build Weekly Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\nconst tha = $('THA Aggregate').item.json;\nconst eik = $('EIK Aggregate').item.json;\nconst thb = $('THB Aggregate').item.json;\nconst sites = [tha, eik, thb];\n\nconst now = new Date();\nconst weekNum = Math.ceil((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));\nconst fmt = (n) => Number(n).toLocaleString('sv-SE');\nconst pct = (d) => (d >= 0 ? '+' : '') + d + '%';\nconst bar = (d) => d >= 10 ? '🟢' : d >= 0 ? '🟡' : '🔴';\n\nlet msg = `📈 <b>Veckans trafikrapport – v.${weekNum}</b>\\n`;\nmsg += '━'.repeat(28) + '\\n\\n';\n\nfor (const s of sites) {\n  msg += `${s.emoji} <b>${s.site}</b>\\n`;\n  msg += `👥 Besökare: <b>${fmt(s.visitors)}</b> ${bar(s.vDelta)} ${pct(s.vDelta)}\\n`;\n  msg += `📄 Sidvisningar: <b>${fmt(s.pageviews)}</b> ${bar(s.pvDelta)} ${pct(s.pvDelta)}\\n`;\n  msg += `\\n🔥 Top sidor:\\n${s.topPages}\\n`;\n  msg += '\\n';\n}\n\nmsg += '━'.repeat(28) + '\\n';\nmsg += '📊 <i>Jämfört med föregående vecka</i>';\n\nreturn { json: { telegramText: msg } };"
+      }
+    },
+    {
+      "id": "wkly-tg",
+      "name": "Send Weekly Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule (Monday 09:00)": {
+      "main": [
+        [
+          {
+            "node": "Login to Umami",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to Umami": {
+      "main": [
+        [
+          {
+            "node": "THA Stats This Week",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "EIK Stats This Week",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "THB Stats This Week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THA Stats This Week": {
+      "main": [
+        [
+          {
+            "node": "THA Stats Last Week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THA Stats Last Week": {
+      "main": [
+        [
+          {
+            "node": "THA Top Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THA Top Pages": {
+      "main": [
+        [
+          {
+            "node": "THA Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THA Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Build Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIK Stats This Week": {
+      "main": [
+        [
+          {
+            "node": "EIK Stats Last Week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIK Stats Last Week": {
+      "main": [
+        [
+          {
+            "node": "EIK Top Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIK Top Pages": {
+      "main": [
+        [
+          {
+            "node": "EIK Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EIK Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Build Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THB Stats This Week": {
+      "main": [
+        [
+          {
+            "node": "THB Stats Last Week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THB Stats Last Week": {
+      "main": [
+        [
+          {
+            "node": "THB Top Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THB Top Pages": {
+      "main": [
+        [
+          {
+            "node": "THB Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "THB Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Build Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Weekly Report": {
+      "main": [
+        [
+          {
+            "node": "Send Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule (Monday 09:00)": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
+  "versionCounter": 4,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T14:32:11.050Z",
+      "createdAt": "2026-03-24T14:32:11.050Z",
+      "role": "workflow:owner",
+      "workflowId": "zOEBV8UKnYhLj59r",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-24T14:32:11.056Z",
+    "createdAt": "2026-03-24T14:32:11.056Z",
+    "versionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
+    "workflowId": "zOEBV8UKnYhLj59r",
+    "nodes": [
+      {
+        "id": "wkly-sched",
+        "name": "Schedule (Monday 09:00)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * 1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "wkly-login",
+        "name": "Login to Umami",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -240,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://umami.theunnamedroads.com/api/auth/login",
+          "sendBody": true,
+          "specifyBody": "json",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBasicAuth",
+          "jsonBody": "={ \"username\": $credentials.username, \"password\": $credentials.password }",
+          "options": {}
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-tha-cur",
+        "name": "THA Stats This Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -60,
+          -200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-tha-prev",
+        "name": "THA Stats Last Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          120,
+          -200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-tha-pgs",
+        "name": "THA Top Pages",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          300,
+          -200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/dc9840ac-15ff-4c35-b210-7ab9c46a6867/metrics",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.startOf('week').toMillis() }}"
+              },
+              {
+                "name": "type",
+                "value": "url"
+              },
+              {
+                "name": "limit",
+                "value": "5"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-tha-agg",
+        "name": "THA Aggregate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          460,
+          -200
+        ],
+        "parameters": {
+          "jsCode": "const cur  = $('THA Stats This Week').item.json;\nconst prev = $('THA Stats Last Week').item.json;\nconst pages = $('THA Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'thehockeyanalytics.com', emoji: '🏒',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+        }
+      },
+      {
+        "id": "wkly-eik-cur",
+        "name": "EIK Stats This Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -60,
+          0
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-eik-prev",
+        "name": "EIK Stats Last Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          120,
+          0
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-eik-pgs",
+        "name": "EIK Top Pages",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          300,
+          0
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/b860bcc1-2a7a-4436-97f3-a2cb41b273c6/metrics",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.startOf('week').toMillis() }}"
+              },
+              {
+                "name": "type",
+                "value": "url"
+              },
+              {
+                "name": "limit",
+                "value": "5"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-eik-agg",
+        "name": "EIK Aggregate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          460,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const cur  = $('EIK Stats This Week').item.json;\nconst prev = $('EIK Stats Last Week').item.json;\nconst pages = $('EIK Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'emilingemarkarlsson.com', emoji: '👨‍💻',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+        }
+      },
+      {
+        "id": "wkly-thb-cur",
+        "name": "THB Stats This Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -60,
+          200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 0}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-thb-prev",
+        "name": "THB Stats Last Week",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          120,
+          200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks: 2}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.minus({weeks: 1}).startOf('week').toMillis() }}"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-thb-pgs",
+        "name": "THB Top Pages",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          300,
+          200
+        ],
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/cda4abee-7b6b-490e-bc60-a42307d764cb/metrics",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $now.minus({weeks:1}).startOf('week').toMillis() }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $now.startOf('week').toMillis() }}"
+              },
+              {
+                "name": "type",
+                "value": "url"
+              },
+              {
+                "name": "limit",
+                "value": "5"
+              }
+            ]
+          },
+          "options": {},
+          "authentication": "predefinedCredentialType",
+          "genericAuthType": "httpBasicAuth"
+        },
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "id": "wkly-thb-agg",
+        "name": "THB Aggregate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          460,
+          200
+        ],
+        "parameters": {
+          "jsCode": "const cur  = $('THB Stats This Week').item.json;\nconst prev = $('THB Stats Last Week').item.json;\nconst pages = $('THB Top Pages').item.json;\nconst v_cur = cur.visitors?.value || 0;\nconst v_prev = prev.visitors?.value || 1;\nconst pv_cur = cur.pageviews?.value || 0;\nconst pv_prev = prev.pageviews?.value || 1;\nconst vDelta  = v_prev > 0 ? Math.round((v_cur - v_prev) / v_prev * 100) : 0;\nconst pvDelta = pv_prev > 0 ? Math.round((pv_cur - pv_prev) / pv_prev * 100) : 0;\nconst topPages = (Array.isArray(pages) ? pages : []).slice(0,3).map(p => `  • ${p.x}: ${p.y}`).join('\\n') || '  Ingen data';\nconst arrow = d => d >= 0 ? '▲' : '▼';\nreturn { json: { site: 'thehockeybrain.com', emoji: '🧠',\n  visitors: v_cur, vDelta, pageviews: pv_cur, pvDelta, topPages, arrow } };"
+        }
+      },
+      {
+        "id": "wkly-combine",
+        "name": "Build Weekly Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          640,
+          0
+        ],
+        "parameters": {
+          "jsCode": "\nconst tha = $('THA Aggregate').item.json;\nconst eik = $('EIK Aggregate').item.json;\nconst thb = $('THB Aggregate').item.json;\nconst sites = [tha, eik, thb];\n\nconst now = new Date();\nconst weekNum = Math.ceil((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));\nconst fmt = (n) => Number(n).toLocaleString('sv-SE');\nconst pct = (d) => (d >= 0 ? '+' : '') + d + '%';\nconst bar = (d) => d >= 10 ? '🟢' : d >= 0 ? '🟡' : '🔴';\n\nlet msg = `📈 <b>Veckans trafikrapport – v.${weekNum}</b>\\n`;\nmsg += '━'.repeat(28) + '\\n\\n';\n\nfor (const s of sites) {\n  msg += `${s.emoji} <b>${s.site}</b>\\n`;\n  msg += `👥 Besökare: <b>${fmt(s.visitors)}</b> ${bar(s.vDelta)} ${pct(s.vDelta)}\\n`;\n  msg += `📄 Sidvisningar: <b>${fmt(s.pageviews)}</b> ${bar(s.pvDelta)} ${pct(s.pvDelta)}\\n`;\n  msg += `\\n🔥 Top sidor:\\n${s.topPages}\\n`;\n  msg += '\\n';\n}\n\nmsg += '━'.repeat(28) + '\\n';\nmsg += '📊 <i>Jämfört med föregående vecka</i>';\n\nreturn { json: { telegramText: msg } };"
+        }
+      },
+      {
+        "id": "wkly-tg",
+        "name": "Send Weekly Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          800,
+          0
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        }
+      }
+    ],
+    "connections": {
+      "Schedule (Monday 09:00)": {
+        "main": [
+          [
+            {
+              "node": "Login to Umami",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Login to Umami": {
+        "main": [
+          [
+            {
+              "node": "THA Stats This Week",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "EIK Stats This Week",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "THB Stats This Week",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THA Stats This Week": {
+        "main": [
+          [
+            {
+              "node": "THA Stats Last Week",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THA Stats Last Week": {
+        "main": [
+          [
+            {
+              "node": "THA Top Pages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THA Top Pages": {
+        "main": [
+          [
+            {
+              "node": "THA Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THA Aggregate": {
+        "main": [
+          [
+            {
+              "node": "Build Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EIK Stats This Week": {
+        "main": [
+          [
+            {
+              "node": "EIK Stats Last Week",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EIK Stats Last Week": {
+        "main": [
+          [
+            {
+              "node": "EIK Top Pages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EIK Top Pages": {
+        "main": [
+          [
+            {
+              "node": "EIK Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EIK Aggregate": {
+        "main": [
+          [
+            {
+              "node": "Build Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THB Stats This Week": {
+        "main": [
+          [
+            {
+              "node": "THB Stats Last Week",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THB Stats Last Week": {
+        "main": [
+          [
+            {
+              "node": "THB Top Pages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THB Top Pages": {
+        "main": [
+          [
+            {
+              "node": "THB Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "THB Aggregate": {
+        "main": [
+          [
+            {
+              "node": "Build Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Weekly Report": {
+        "main": [
+          [
+            {
+              "node": "Send Weekly Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-24T14:32:11.150Z",
+        "id": 196,
+        "workflowId": "zOEBV8UKnYhLj59r",
+        "versionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

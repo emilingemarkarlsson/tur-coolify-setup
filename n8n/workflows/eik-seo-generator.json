@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T07:25:49.960Z",
+  "updatedAt": "2026-04-10T08:09:55.285Z",
   "createdAt": "2025-12-02T10:09:55.820Z",
   "id": "YwlTkR687mZ1HMEY",
   "name": "eik-seo-generator",
@@ -325,7 +325,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003833003860',\n  text: $json.telegramText,\n  parse_mode: 'HTML',\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: $json.telegramText,\n  parse_mode: 'HTML', message_thread_id: 3,\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
       }
     }
   ],
@@ -522,9 +522,9 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "be6520d1-17a5-40a4-88fd-9cd1ac163280",
-  "activeVersionId": "be6520d1-17a5-40a4-88fd-9cd1ac163280",
-  "versionCounter": 117,
+  "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
+  "activeVersionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
+  "versionCounter": 123,
   "triggerCount": 1,
   "shared": [
     {
@@ -547,9 +547,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T07:25:49.964Z",
-    "createdAt": "2026-04-10T07:25:49.964Z",
-    "versionId": "be6520d1-17a5-40a4-88fd-9cd1ac163280",
+    "updatedAt": "2026-04-10T08:09:19.064Z",
+    "createdAt": "2026-04-10T08:09:19.064Z",
+    "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
     "workflowId": "YwlTkR687mZ1HMEY",
     "nodes": [
       {
@@ -870,7 +870,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003833003860',\n  text: $json.telegramText,\n  parse_mode: 'HTML',\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: $json.telegramText,\n  parse_mode: 'HTML', message_thread_id: 3,\n  reply_markup: {\n    inline_keyboard: [[\n      { text: '✅ Publicera', url: $json.approveUrl },\n      { text: '❌ Avvisa', url: $json.rejectUrl }\n    ]]\n  }\n}) }}"
         }
       }
     ],
@@ -1058,18 +1058,34 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T07:25:50.010Z",
-        "id": 569,
+        "createdAt": "2026-04-10T08:09:19.100Z",
+        "id": 575,
         "workflowId": "YwlTkR687mZ1HMEY",
-        "versionId": "be6520d1-17a5-40a4-88fd-9cd1ac163280",
+        "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T07:25:50.029Z",
-        "id": 570,
+        "createdAt": "2026-04-10T08:09:19.116Z",
+        "id": 576,
         "workflowId": "YwlTkR687mZ1HMEY",
-        "versionId": "be6520d1-17a5-40a4-88fd-9cd1ac163280",
+        "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.317Z",
+        "id": 609,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.331Z",
+        "id": 610,
+        "workflowId": "YwlTkR687mZ1HMEY",
+        "versionId": "46bfe05f-0f94-4f1c-a976-1342d0788167",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

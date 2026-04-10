@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:55.110Z",
+  "createdAt": "2026-03-22T07:55:34.022Z",
   "id": "Vfbb93XU1UmBgwQ8",
   "name": "Newsletter Signup Handler",
   "description": null,
@@ -148,7 +150,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML'\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML', message_thread_id: 2\n}) }}",
         "options": {}
       }
     },
@@ -237,8 +239,9 @@
   "staticData": null,
   "meta": null,
   "pinData": null,
-  "activeVersionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
-  "versionCounter": 84,
+  "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
+  "activeVersionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
+  "versionCounter": 93,
   "triggerCount": 1,
   "shared": [
     {
@@ -261,9 +264,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-29T06:32:30.486Z",
-    "createdAt": "2026-03-29T06:32:30.486Z",
-    "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+    "updatedAt": "2026-04-10T08:09:18.820Z",
+    "createdAt": "2026-04-10T08:09:18.820Z",
+    "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
     "workflowId": "Vfbb93XU1UmBgwQ8",
     "nodes": [
       {
@@ -409,7 +412,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML'\n}) }}",
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003919428238',\n  text: '✉️ <b>Ny prenumerant!</b>\\n\\n<b>Projekt:</b> ' + $('Prepare Data').item.json.projectName + '\\n<b>Email:</b> ' + $('Prepare Data').item.json.email,\n  parse_mode: 'HTML', message_thread_id: 2\n}) }}",
           "options": {}
         }
       },
@@ -490,24 +493,40 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-29T06:32:30.536Z",
-        "id": 424,
+        "createdAt": "2026-04-10T08:09:18.858Z",
+        "id": 573,
         "workflowId": "Vfbb93XU1UmBgwQ8",
-        "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+        "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-29T06:32:30.551Z",
-        "id": 425,
+        "createdAt": "2026-04-10T08:09:18.871Z",
+        "id": 574,
         "workflowId": "Vfbb93XU1UmBgwQ8",
-        "versionId": "c20d39da-fd18-4e54-a8e9-47f8f295516b",
+        "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.146Z",
+        "id": 607,
+        "workflowId": "Vfbb93XU1UmBgwQ8",
+        "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:55.166Z",
+        "id": 608,
+        "workflowId": "Vfbb93XU1UmBgwQ8",
+        "versionId": "0d64e0f9-c10b-469d-8ae5-611dff142b40",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

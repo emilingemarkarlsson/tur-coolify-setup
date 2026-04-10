@@ -1,0 +1,16 @@
+{
+  "yoursite": {
+    "contentPath": "src/content/posts",
+    "githubRepo": "yourusername/your-site-repo",
+    "domain": "https://yoursite.com",
+    "umamiName": "yoursite.com",
+    "listUuid": "your-listmonk-list-uuid"
+  },
+  "secondsite": {
+    "contentPath": "src/pages/blog",
+    "githubRepo": "yourusername/second-site-repo",
+    "domain": "https://secondsite.com",
+    "umamiName": "secondsite.com",
+    "listUuid": "your-listmonk-list-uuid"
+  }
+}

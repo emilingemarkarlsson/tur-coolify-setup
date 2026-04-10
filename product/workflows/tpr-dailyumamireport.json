@@ -1,0 +1,837 @@
+{
+  "id": "JPNiyjl0C0whckWq",
+  "name": "tpr-dailyumamireport",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "thb-um-sched",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 8 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "thb-um-date",
+      "name": "Set Date Range",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "yesterday_start",
+              "value": "={{ $now.minus({ days: 1 }).startOf('day').toMillis() }}",
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "yesterday_end",
+              "value": "={{ $now.minus({ days: 1 }).endOf('day').toMillis() }}",
+              "type": "number"
+            },
+            {
+              "id": "3",
+              "name": "report_date",
+              "value": "={{ $now.minus({ days: 1 }).toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "website_id",
+              "value": "cda4abee-7b6b-490e-bc60-a42307d764cb",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://umami.theunnamedroads.com/api/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\"username\": \"admin\", \"password\": \"TurUmami2024!\"}) }}",
+        "options": {}
+      },
+      "id": "thb-2c92bdd6-503c-4a5a-a11f-318f975440b6",
+      "name": "Login to Umami",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1124,
+        -80
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "s6T1zGbo9X3WFqM4",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/stats",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "thb-00766ada-2655-45d3-b5f8-0741446784c9",
+      "name": "Fetch Umami Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1348,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/metrics",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+            },
+            {
+              "name": "type",
+              "value": "browser"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "thb-6f078b9f-066a-49e0-90d2-9a700d15a9ba",
+      "name": "Fetch Top Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1348,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/events",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+            },
+            {
+              "name": "endAt",
+              "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            },
+            {
+              "name": "pageSize",
+              "value": "5"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "thb-604a877b-949c-4a44-bd1a-2388e0646c9e",
+      "name": "Fetch Custom Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1348,
+        288
+      ]
+    },
+    {
+      "id": "thb-um-fmt",
+      "name": "Format Report Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "v1",
+              "name": "total_visits",
+              "value": "={{ $('Fetch Umami Stats').item.json.pageviews || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "v2",
+              "name": "unique_visitors",
+              "value": "={{ $('Fetch Umami Stats').item.json.visitors || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "v3",
+              "name": "bounce_rate",
+              "value": "={{ $('Fetch Umami Stats').item.json.bounces || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "v4",
+              "name": "avg_time",
+              "value": "={{ Math.round(($('Fetch Umami Stats').item.json.totaltime || 0) / Math.max($('Fetch Umami Stats').item.json.visits || 1, 1)) }}",
+              "type": "number"
+            },
+            {
+              "id": "v5",
+              "name": "report_date",
+              "value": "={{ $('Set Date Range').item.json.yesterday_start ? new Date($('Set Date Range').item.json.yesterday_start).toISOString().slice(0,10) : 'idag' }}",
+              "type": "string"
+            },
+            {
+              "id": "v6",
+              "name": "site_name",
+              "value": "The Hockey Brain",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "thb-um-tg",
+      "name": "Send Telegram Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '📊 <b>Daglig trafik – ' + $json.site_name + '</b>\\n📅 ' + $json.report_date +\n    '\\n\\n👥 Besökare: <b>' + $json.unique_visitors + '</b>\\n📄 Sidvisningar: <b>' + $json.total_visits + '</b>' +\n    '\\n⏱ Snittid: <b>' + $json.avg_time + 's</b>\\n📉 Bounce: <b>' + $json.bounce_rate + '</b>',\n  parse_mode: 'HTML'\n}) }}"
+      }
+    },
+    {
+      "id": "wh-enjRlik0",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        0
+      ],
+      "webhookId": "run-thb-umami",
+      "parameters": {
+        "path": "run-tpr-umami",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Schedule (Every Day 08:10)": {
+      "main": [
+        [
+          {
+            "node": "Set Date Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Date Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Date Range": {
+      "main": [
+        [
+          {
+            "node": "Login to Umami",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to Umami": {
+      "main": [
+        [
+          {
+            "node": "Fetch Umami Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Umami Stats": {
+      "main": [
+        [
+          {
+            "node": "Fetch Top Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Top Pages": {
+      "main": [
+        [
+          {
+            "node": "Fetch Custom Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Custom Events": {
+      "main": [
+        [
+          {
+            "node": "Format Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report Data": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "c7f5b179-9b14-43a1-ab5c-6c82c5a2f01f",
+  "versionCounter": 4,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-03-29T06:53:13.726Z",
+      "createdAt": "2026-03-29T06:53:13.726Z",
+      "role": "workflow:owner",
+      "workflowId": "JPNiyjl0C0whckWq",
+      "projectId": "RHmvhzmrGVxfYtJl",
+      "project": {
+        "updatedAt": "2026-03-24T07:55:26.263Z",
+        "createdAt": "2025-09-13T05:33:40.796Z",
+        "id": "RHmvhzmrGVxfYtJl",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-29T06:53:13.735Z",
+    "createdAt": "2026-03-29T06:53:13.735Z",
+    "versionId": "c7f5b179-9b14-43a1-ab5c-6c82c5a2f01f",
+    "workflowId": "JPNiyjl0C0whckWq",
+    "nodes": [
+      {
+        "id": "thb-um-sched",
+        "name": "Schedule",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -240,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 8 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "thb-um-date",
+        "name": "Set Date Range",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -80,
+          0
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1",
+                "name": "yesterday_start",
+                "value": "={{ $now.minus({ days: 1 }).startOf('day').toMillis() }}",
+                "type": "number"
+              },
+              {
+                "id": "2",
+                "name": "yesterday_end",
+                "value": "={{ $now.minus({ days: 1 }).endOf('day').toMillis() }}",
+                "type": "number"
+              },
+              {
+                "id": "3",
+                "name": "report_date",
+                "value": "={{ $now.minus({ days: 1 }).toFormat('yyyy-MM-dd') }}",
+                "type": "string"
+              },
+              {
+                "id": "4",
+                "name": "website_id",
+                "value": "cda4abee-7b6b-490e-bc60-a42307d764cb",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://umami.theunnamedroads.com/api/auth/login",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\"username\": \"admin\", \"password\": \"TurUmami2024!\"}) }}",
+          "options": {}
+        },
+        "id": "thb-2c92bdd6-503c-4a5a-a11f-318f975440b6",
+        "name": "Login to Umami",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1124,
+          -80
+        ],
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "s6T1zGbo9X3WFqM4",
+            "name": "Unnamed credential"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/stats",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "thb-00766ada-2655-45d3-b5f8-0741446784c9",
+        "name": "Fetch Umami Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1348,
+          -80
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/metrics",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              },
+              {
+                "name": "type",
+                "value": "browser"
+              },
+              {
+                "name": "limit",
+                "value": "5"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "thb-6f078b9f-066a-49e0-90d2-9a700d15a9ba",
+        "name": "Fetch Top Pages",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1348,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://umami.theunnamedroads.com/api/websites/4b9cfa68-52aa-417a-906b-a87b041486ba/events",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "startAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start }}"
+              },
+              {
+                "name": "endAt",
+                "value": "={{ $('Set Date Range').item.json.yesterday_end }}"
+              },
+              {
+                "name": "page",
+                "value": "1"
+              },
+              {
+                "name": "pageSize",
+                "value": "5"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $('Login to Umami').item.json.token }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "thb-604a877b-949c-4a44-bd1a-2388e0646c9e",
+        "name": "Fetch Custom Events",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1348,
+          288
+        ]
+      },
+      {
+        "id": "thb-um-fmt",
+        "name": "Format Report Data",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          560,
+          0
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "v1",
+                "name": "total_visits",
+                "value": "={{ $('Fetch Umami Stats').item.json.pageviews || 0 }}",
+                "type": "number"
+              },
+              {
+                "id": "v2",
+                "name": "unique_visitors",
+                "value": "={{ $('Fetch Umami Stats').item.json.visitors || 0 }}",
+                "type": "number"
+              },
+              {
+                "id": "v3",
+                "name": "bounce_rate",
+                "value": "={{ $('Fetch Umami Stats').item.json.bounces || 0 }}",
+                "type": "number"
+              },
+              {
+                "id": "v4",
+                "name": "avg_time",
+                "value": "={{ Math.round(($('Fetch Umami Stats').item.json.totaltime || 0) / Math.max($('Fetch Umami Stats').item.json.visits || 1, 1)) }}",
+                "type": "number"
+              },
+              {
+                "id": "v5",
+                "name": "report_date",
+                "value": "={{ $('Set Date Range').item.json.yesterday_start ? new Date($('Set Date Range').item.json.yesterday_start).toISOString().slice(0,10) : 'idag' }}",
+                "type": "string"
+              },
+              {
+                "id": "v6",
+                "name": "site_name",
+                "value": "The Hockey Brain",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "thb-um-tg",
+        "name": "Send Telegram Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          720,
+          0
+        ],
+        "parameters": {
+          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
+          "method": "POST",
+          "options": {},
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\n  chat_id: '-1003767033253',\n  text: '📊 <b>Daglig trafik – ' + $json.site_name + '</b>\\n📅 ' + $json.report_date +\n    '\\n\\n👥 Besökare: <b>' + $json.unique_visitors + '</b>\\n📄 Sidvisningar: <b>' + $json.total_visits + '</b>' +\n    '\\n⏱ Snittid: <b>' + $json.avg_time + 's</b>\\n📉 Bounce: <b>' + $json.bounce_rate + '</b>',\n  parse_mode: 'HTML'\n}) }}"
+        }
+      },
+      {
+        "id": "wh-enjRlik0",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -520,
+          0
+        ],
+        "webhookId": "run-thb-umami",
+        "parameters": {
+          "path": "run-tpr-umami",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Schedule (Every Day 08:10)": {
+        "main": [
+          [
+            {
+              "node": "Set Date Range",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Set Date Range",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Date Range": {
+        "main": [
+          [
+            {
+              "node": "Login to Umami",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Login to Umami": {
+        "main": [
+          [
+            {
+              "node": "Fetch Umami Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Umami Stats": {
+        "main": [
+          [
+            {
+              "node": "Fetch Top Pages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Top Pages": {
+        "main": [
+          [
+            {
+              "node": "Fetch Custom Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Custom Events": {
+        "main": [
+          [
+            {
+              "node": "Format Report Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Report Data": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-29T06:53:13.803Z",
+        "id": 435,
+        "workflowId": "JPNiyjl0C0whckWq",
+        "versionId": "c7f5b179-9b14-43a1-ab5c-6c82c5a2f01f",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      }
+    ]
+  }
+}

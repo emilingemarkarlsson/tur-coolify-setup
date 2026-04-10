@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T08:09:56.610Z",
+  "createdAt": "2026-03-24T14:32:11.050Z",
   "id": "zOEBV8UKnYhLj59r",
   "name": "Weekly Traffic Report",
   "description": null,
@@ -458,7 +460,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 5}) }}"
       }
     }
   ],
@@ -650,8 +652,9 @@
   },
   "meta": null,
   "pinData": null,
-  "activeVersionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
-  "versionCounter": 4,
+  "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
+  "activeVersionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
+  "versionCounter": 13,
   "triggerCount": 1,
   "shared": [
     {
@@ -674,9 +677,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-24T14:32:11.056Z",
-    "createdAt": "2026-03-24T14:32:11.056Z",
-    "versionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
+    "updatedAt": "2026-04-10T08:09:21.128Z",
+    "createdAt": "2026-04-10T08:09:21.128Z",
+    "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
     "workflowId": "zOEBV8UKnYhLj59r",
     "nodes": [
       {
@@ -1132,7 +1135,7 @@
           "sendBody": true,
           "contentType": "json",
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: $json.telegramText, parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003919428238', text: $json.telegramText, parse_mode: 'HTML', message_thread_id: 5}) }}"
         }
       }
     ],
@@ -1313,16 +1316,40 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-24T14:32:11.150Z",
-        "id": 196,
+        "createdAt": "2026-04-10T08:09:56.642Z",
+        "id": 623,
         "workflowId": "zOEBV8UKnYhLj59r",
-        "versionId": "d6220ca2-e77f-41ea-8f14-811ac14afc1d",
+        "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:56.657Z",
+        "id": 624,
+        "workflowId": "zOEBV8UKnYhLj59r",
+        "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
+        "event": "activated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:21.181Z",
+        "id": 589,
+        "workflowId": "zOEBV8UKnYhLj59r",
+        "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
+        "event": "deactivated",
+        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
+      },
+      {
+        "createdAt": "2026-04-10T08:09:21.199Z",
+        "id": 590,
+        "workflowId": "zOEBV8UKnYhLj59r",
+        "versionId": "0c785560-3ecd-4f91-9849-87c104f6976c",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

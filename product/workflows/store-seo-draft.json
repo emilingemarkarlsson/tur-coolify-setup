@@ -1,0 +1,69 @@
+{
+  "name": "Store SEO draft (for Approve link)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "seo-store-draft",
+        "options": {},
+        "responseMode": "responseNode",
+        "responseData": "allEntries"
+      },
+      "id": "webhook-store",
+      "name": "Webhook Store Draft",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "seo-store-draft"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expect POST body: { slug, keyword, content }\nconst body = $input.item.json.body || $input.item.json;\nconst slug = body.slug || '';\nconst keyword = body.keyword || '';\nconst content = body.content || body.draft_content || '';\nif (!slug || !content) {\n  throw new Error('Missing slug or content in body');\n}\nreturn { slug, keyword, draft_content: content };"
+      },
+      "id": "parse-body",
+      "name": "Parse body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "value": "REPLACE_WITH_YOUR_SHEET_ID", "mode": "id" },
+        "sheetName": { "value": "Sheet1", "mode": "list" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "slug": "={{ $json.slug }}",
+            "keyword": "={{ $json.keyword }}",
+            "draft_content": "={{ $json.draft_content }}"
+          }
+        }
+      },
+      "id": "sheets-append",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, slug: $('Parse body').item.json.slug } }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "respond-ok",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Webhook Store Draft": { "main": [[{ "node": "Parse body", "type": "main", "index": 0 }]] },
+    "Parse body": { "main": [[{ "node": "Append to Sheet", "type": "main", "index": 0 }]] },
+    "Append to Sheet": { "main": [[{ "node": "Respond 200", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false }
+}
