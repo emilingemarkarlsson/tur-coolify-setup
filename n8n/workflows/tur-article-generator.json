@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T09:42:32.075Z",
+  "updatedAt": "2026-04-10T09:50:52.225Z",
   "createdAt": "2026-03-24T15:13:28.454Z",
   "id": "ZG4Jv9RD7liDpcmM",
   "name": "tur-article-generator",
@@ -65,47 +65,14 @@
     {
       "id": "tur-article-generator-prompt",
       "name": "Build Prompt",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        200,
+        800,
         300
       ],
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "1",
-              "name": "systemPrompt",
-              "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) \u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
-              "type": "string"
-            },
-            {
-              "id": "2",
-              "name": "userPrompt",
-              "value": "Write a comprehensive, well-structured article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Practical and honest, avoid hype\n- Include real examples and actionable insights\n- Use H2 and H3 headers for structure\n- End with key takeaways\n- NO frontmatter, just the article body starting with a compelling intro paragraph",
-              "type": "string"
-            },
-            {
-              "id": "3",
-              "name": "slug",
-              "value": "={{ $json.slug }}",
-              "type": "string"
-            },
-            {
-              "id": "4",
-              "name": "topic",
-              "value": "={{ $json.topic }}",
-              "type": "string"
-            },
-            {
-              "id": "5",
-              "name": "date",
-              "value": "={{ $json.date }}",
-              "type": "string"
-            }
-          ]
-        }
+        "jsCode": "const topic = $json.topic;\nconst slug = $json.slug;\nconst date = $json.date;\nconst rssContext = $json.rssContext || '';\n\nconst systemPrompt = \"You are a writer for The Unnamed Roads (theunnamedroads.com) \\u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.\";\n\nconst rssBlock = rssContext ? rssContext + '\\n\\nUse the above context to make your article timely and grounded in current industry developments. Reference or expand on relevant trends where appropriate.\\n\\n' : '';\n\nconst userPrompt = \"Write a comprehensive, well-structured article about: __TOPIC__\\n\\n\".replace('__TOPIC__', topic)\n  + rssBlock\n  + \"Requirements:\\n- 1200-1800 words\\n- Practical and honest, avoid hype\\n- Include real examples and actionable insights\\n- Use H2 and H3 headers for structure\\n- End with key takeaways\\n- NO frontmatter, just the article body starting with a compelling intro paragraph\";\n\nreturn {\n  systemPrompt,\n  userPrompt,\n  slug,\n  topic,\n  date\n};"
       }
     },
     {
@@ -114,7 +81,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        400,
+        1000,
         300
       ],
       "parameters": {
@@ -140,7 +107,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        600,
+        1200,
         300
       ],
       "parameters": {
@@ -153,7 +120,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        800,
+        1400,
         300
       ],
       "parameters": {
@@ -187,7 +154,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1020,
+        1620,
         300
       ],
       "continueOnFail": true,
@@ -207,11 +174,56 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1260,
+        1860,
         300
       ],
       "parameters": {
         "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+      }
+    },
+    {
+      "id": "tur-rss-fetch-1",
+      "name": "Fetch RSS 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://hnrss.org/frontpage",
+        "options": {}
+      }
+    },
+    {
+      "id": "tur-rss-fetch-2",
+      "name": "Fetch RSS 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.indiehackers.com/feed.rss",
+        "options": {}
+      }
+    },
+    {
+      "id": "tur-rss-parse",
+      "name": "Parse RSS Headlines",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Parse RSS XML from both feeds and extract top headlines\nfunction parseRSS(xml, maxItems) {\n  if (!xml || typeof xml !== 'string') return [];\n  const items = [];\n  const matches = xml.match(/<item[\\s>][\\s\\S]*?<\\/item>/gi) || \n                  xml.match(/<entry[\\s>][\\s\\S]*?<\\/entry>/gi) || [];\n  for (const item of matches.slice(0, maxItems)) {\n    const titleMatch = item.match(/<title[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/i);\n    const descMatch = item.match(/<description[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/description>/i) ||\n                      item.match(/<summary[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/summary>/i);\n    const title = (titleMatch?.[1] || '').replace(/<[^>]+>/g, '').trim();\n    const desc = (descMatch?.[1] || '').replace(/<[^>]+>/g, '').replace(/\\s+/g,' ').trim().substring(0, 150);\n    if (title.length > 10) items.push(title + (desc ? ': ' + desc : ''));\n  }\n  return items;\n}\n\n// Get XML from both previous nodes\nlet xml1 = '', xml2 = '';\ntry { xml1 = String($('Fetch RSS 1').item.json.data || $('Fetch RSS 1').item.json.body || ''); } catch(e) {}\ntry { xml2 = String($('Fetch RSS 2').item.json.data || $('Fetch RSS 2').item.json.body || ''); } catch(e) {}\n\nconst headlines1 = parseRSS(xml1, 4);\nconst headlines2 = parseRSS(xml2, 3);\nconst allHeadlines = [...headlines1, ...headlines2].slice(0, 6);\n\nconst contextText = allHeadlines.length > 0\n  ? 'CURRENT INDUSTRY CONTEXT (recent headlines):\\n' + allHeadlines.map(h => '\\u2022 ' + h).join('\\n')\n  : '';\n\n// Pass through topic + add rssContext\nreturn {\n  topic: $('Pick Topic').item.json.topic,\n  slug: $('Pick Topic').item.json.slug,\n  date: $('Pick Topic').item.json.date,\n  rssContext: contextText,\n  rssCount: allHeadlines.length\n};"
       }
     }
   ],
@@ -242,7 +254,7 @@
       "main": [
         [
           {
-            "node": "Build Prompt",
+            "node": "Fetch RSS 1",
             "type": "main",
             "index": 0
           }
@@ -314,6 +326,39 @@
           }
         ]
       ]
+    },
+    "Fetch RSS 1": {
+      "main": [
+        [
+          {
+            "node": "Fetch RSS 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch RSS 2": {
+      "main": [
+        [
+          {
+            "node": "Parse RSS Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse RSS Headlines": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -328,9 +373,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "0dc1e371-993f-434d-bbff-f95ebc05348a",
-  "activeVersionId": "0dc1e371-993f-434d-bbff-f95ebc05348a",
-  "versionCounter": 40,
+  "versionId": "74e9b49f-72cd-4c85-a48e-85f1c985c620",
+  "activeVersionId": "74e9b49f-72cd-4c85-a48e-85f1c985c620",
+  "versionCounter": 43,
   "triggerCount": 2,
   "shared": [
     {
@@ -353,9 +398,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T09:42:32.076Z",
-    "createdAt": "2026-04-10T09:42:32.076Z",
-    "versionId": "0dc1e371-993f-434d-bbff-f95ebc05348a",
+    "updatedAt": "2026-04-10T09:50:52.226Z",
+    "createdAt": "2026-04-10T09:50:52.226Z",
+    "versionId": "74e9b49f-72cd-4c85-a48e-85f1c985c620",
     "workflowId": "ZG4Jv9RD7liDpcmM",
     "nodes": [
       {
@@ -416,47 +461,14 @@
       {
         "id": "tur-article-generator-prompt",
         "name": "Build Prompt",
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
         "position": [
-          200,
+          800,
           300
         ],
         "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "1",
-                "name": "systemPrompt",
-                "value": "You are a writer for The Unnamed Roads (theunnamedroads.com) \u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.",
-                "type": "string"
-              },
-              {
-                "id": "2",
-                "name": "userPrompt",
-                "value": "Write a comprehensive, well-structured article about: {{ $json.topic }}\n\nRequirements:\n- 1200-1800 words\n- Practical and honest, avoid hype\n- Include real examples and actionable insights\n- Use H2 and H3 headers for structure\n- End with key takeaways\n- NO frontmatter, just the article body starting with a compelling intro paragraph",
-                "type": "string"
-              },
-              {
-                "id": "3",
-                "name": "slug",
-                "value": "={{ $json.slug }}",
-                "type": "string"
-              },
-              {
-                "id": "4",
-                "name": "topic",
-                "value": "={{ $json.topic }}",
-                "type": "string"
-              },
-              {
-                "id": "5",
-                "name": "date",
-                "value": "={{ $json.date }}",
-                "type": "string"
-              }
-            ]
-          }
+          "jsCode": "const topic = $json.topic;\nconst slug = $json.slug;\nconst date = $json.date;\nconst rssContext = $json.rssContext || '';\n\nconst systemPrompt = \"You are a writer for The Unnamed Roads (theunnamedroads.com) \\u2014 a publication about the unconventional path: building companies, experiments, and adventures without a map. Write in a thoughtful, direct, slightly poetic tone. The audience is indie hackers, founders, and curious builders.\";\n\nconst rssBlock = rssContext ? rssContext + '\\n\\nUse the above context to make your article timely and grounded in current industry developments. Reference or expand on relevant trends where appropriate.\\n\\n' : '';\n\nconst userPrompt = \"Write a comprehensive, well-structured article about: __TOPIC__\\n\\n\".replace('__TOPIC__', topic)\n  + rssBlock\n  + \"Requirements:\\n- 1200-1800 words\\n- Practical and honest, avoid hype\\n- Include real examples and actionable insights\\n- Use H2 and H3 headers for structure\\n- End with key takeaways\\n- NO frontmatter, just the article body starting with a compelling intro paragraph\";\n\nreturn {\n  systemPrompt,\n  userPrompt,\n  slug,\n  topic,\n  date\n};"
         }
       },
       {
@@ -465,7 +477,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4,
         "position": [
-          400,
+          1000,
           300
         ],
         "parameters": {
@@ -491,7 +503,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          600,
+          1200,
           300
         ],
         "parameters": {
@@ -504,7 +516,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4,
         "position": [
-          800,
+          1400,
           300
         ],
         "parameters": {
@@ -538,7 +550,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1020,
+          1620,
           300
         ],
         "continueOnFail": true,
@@ -558,11 +570,56 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1260,
+          1860,
           300
         ],
         "parameters": {
           "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+        }
+      },
+      {
+        "id": "tur-rss-fetch-1",
+        "name": "Fetch RSS 1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          200,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://hnrss.org/frontpage",
+          "options": {}
+        }
+      },
+      {
+        "id": "tur-rss-fetch-2",
+        "name": "Fetch RSS 2",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          400,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://www.indiehackers.com/feed.rss",
+          "options": {}
+        }
+      },
+      {
+        "id": "tur-rss-parse",
+        "name": "Parse RSS Headlines",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Parse RSS XML from both feeds and extract top headlines\nfunction parseRSS(xml, maxItems) {\n  if (!xml || typeof xml !== 'string') return [];\n  const items = [];\n  const matches = xml.match(/<item[\\s>][\\s\\S]*?<\\/item>/gi) || \n                  xml.match(/<entry[\\s>][\\s\\S]*?<\\/entry>/gi) || [];\n  for (const item of matches.slice(0, maxItems)) {\n    const titleMatch = item.match(/<title[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/i);\n    const descMatch = item.match(/<description[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/description>/i) ||\n                      item.match(/<summary[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/summary>/i);\n    const title = (titleMatch?.[1] || '').replace(/<[^>]+>/g, '').trim();\n    const desc = (descMatch?.[1] || '').replace(/<[^>]+>/g, '').replace(/\\s+/g,' ').trim().substring(0, 150);\n    if (title.length > 10) items.push(title + (desc ? ': ' + desc : ''));\n  }\n  return items;\n}\n\n// Get XML from both previous nodes\nlet xml1 = '', xml2 = '';\ntry { xml1 = String($('Fetch RSS 1').item.json.data || $('Fetch RSS 1').item.json.body || ''); } catch(e) {}\ntry { xml2 = String($('Fetch RSS 2').item.json.data || $('Fetch RSS 2').item.json.body || ''); } catch(e) {}\n\nconst headlines1 = parseRSS(xml1, 4);\nconst headlines2 = parseRSS(xml2, 3);\nconst allHeadlines = [...headlines1, ...headlines2].slice(0, 6);\n\nconst contextText = allHeadlines.length > 0\n  ? 'CURRENT INDUSTRY CONTEXT (recent headlines):\\n' + allHeadlines.map(h => '\\u2022 ' + h).join('\\n')\n  : '';\n\n// Pass through topic + add rssContext\nreturn {\n  topic: $('Pick Topic').item.json.topic,\n  slug: $('Pick Topic').item.json.slug,\n  date: $('Pick Topic').item.json.date,\n  rssContext: contextText,\n  rssCount: allHeadlines.length\n};"
         }
       }
     ],
@@ -593,7 +650,7 @@
         "main": [
           [
             {
-              "node": "Build Prompt",
+              "node": "Fetch RSS 1",
               "type": "main",
               "index": 0
             }
@@ -665,6 +722,39 @@
             }
           ]
         ]
+      },
+      "Fetch RSS 1": {
+        "main": [
+          [
+            {
+              "node": "Fetch RSS 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch RSS 2": {
+        "main": [
+          [
+            {
+              "node": "Parse RSS Headlines",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse RSS Headlines": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -673,18 +763,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T09:42:32.127Z",
-        "id": 651,
+        "createdAt": "2026-04-10T09:50:52.277Z",
+        "id": 661,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "0dc1e371-993f-434d-bbff-f95ebc05348a",
+        "versionId": "74e9b49f-72cd-4c85-a48e-85f1c985c620",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T09:42:32.148Z",
-        "id": 652,
+        "createdAt": "2026-04-10T09:50:52.295Z",
+        "id": 662,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "0dc1e371-993f-434d-bbff-f95ebc05348a",
+        "versionId": "74e9b49f-72cd-4c85-a48e-85f1c985c620",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

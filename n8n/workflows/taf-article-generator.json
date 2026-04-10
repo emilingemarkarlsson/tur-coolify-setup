@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T09:42:32.402Z",
+  "updatedAt": "2026-04-10T09:50:52.763Z",
   "createdAt": "2026-03-24T15:22:03.821Z",
   "id": "ExMw8CCe97Y0ADOl",
   "name": "taf-article-generator",
@@ -65,47 +65,14 @@
     {
       "id": "taf-article-generator-set",
       "name": "Build Prompt",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        200,
+        800,
         300
       ],
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "1",
-              "name": "systemPrompt",
-              "value": "You are a technical writer for The Agent Fabric (theagentfabric.com) \u2014 a company building distributed, sovereign AI agent infrastructure for enterprises. Write in a precise, authoritative tone for CTOs, ML engineers, and enterprise architects. Focus on practical depth: architecture patterns, trade-offs, real decisions.",
-              "type": "string"
-            },
-            {
-              "id": "2",
-              "name": "userPrompt",
-              "value": "Write a comprehensive technical article (1200-1800 words). Include: key concepts, architecture considerations, practical implementation guidance, trade-offs. Use H2 and H3 headers. End with clear takeaways. NO frontmatter. Start directly with an intro paragraph.",
-              "type": "string"
-            },
-            {
-              "id": "3",
-              "name": "slug",
-              "value": "={{ $json.slug }}",
-              "type": "string"
-            },
-            {
-              "id": "4",
-              "name": "topic",
-              "value": "={{ $json.topic }}",
-              "type": "string"
-            },
-            {
-              "id": "5",
-              "name": "date",
-              "value": "={{ $json.date }}",
-              "type": "string"
-            }
-          ]
-        }
+        "jsCode": "const topic = $json.topic;\nconst slug = $json.slug;\nconst date = $json.date;\nconst rssContext = $json.rssContext || '';\n\nconst systemPrompt = \"You are a technical writer for The Agent Fabric (theagentfabric.com) \\u2014 a company building distributed, sovereign AI agent infrastructure for enterprises. Write in a precise, authoritative tone for CTOs, ML engineers, and enterprise architects. Focus on practical depth: architecture patterns, trade-offs, real decisions.\";\n\nconst rssBlock = rssContext ? rssContext + '\\n\\nUse the above context to make your article timely and grounded in current industry developments. Reference or expand on relevant trends where appropriate.\\n\\n' : '';\n\nconst userPrompt = \"Write a comprehensive technical article (1200-1800 words) about: __TOPIC__\\n\\n\".replace('__TOPIC__', topic)\n  + rssBlock\n  + \"Include: key concepts, architecture considerations, practical implementation guidance, trade-offs. Use H2 and H3 headers. End with clear takeaways. NO frontmatter. Start directly with an intro paragraph.\";\n\nreturn {\n  systemPrompt,\n  userPrompt,\n  slug,\n  topic,\n  date\n};"
       }
     },
     {
@@ -114,7 +81,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        400,
+        1000,
         300
       ],
       "parameters": {
@@ -140,7 +107,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        600,
+        1200,
         300
       ],
       "parameters": {
@@ -153,7 +120,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        800,
+        1400,
         300
       ],
       "parameters": {
@@ -187,7 +154,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1020,
+        1620,
         300
       ],
       "continueOnFail": true,
@@ -207,11 +174,56 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1260,
+        1860,
         300
       ],
       "parameters": {
         "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+      }
+    },
+    {
+      "id": "taf-rss-fetch-1",
+      "name": "Fetch RSS 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "options": {}
+      }
+    },
+    {
+      "id": "taf-rss-fetch-2",
+      "name": "Fetch RSS 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        300
+      ],
+      "continueOnFail": true,
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.deeplearning.ai/the-batch/feed/",
+        "options": {}
+      }
+    },
+    {
+      "id": "taf-rss-parse",
+      "name": "Parse RSS Headlines",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Parse RSS XML from both feeds and extract top headlines\nfunction parseRSS(xml, maxItems) {\n  if (!xml || typeof xml !== 'string') return [];\n  const items = [];\n  const matches = xml.match(/<item[\\s>][\\s\\S]*?<\\/item>/gi) || \n                  xml.match(/<entry[\\s>][\\s\\S]*?<\\/entry>/gi) || [];\n  for (const item of matches.slice(0, maxItems)) {\n    const titleMatch = item.match(/<title[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/i);\n    const descMatch = item.match(/<description[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/description>/i) ||\n                      item.match(/<summary[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/summary>/i);\n    const title = (titleMatch?.[1] || '').replace(/<[^>]+>/g, '').trim();\n    const desc = (descMatch?.[1] || '').replace(/<[^>]+>/g, '').replace(/\\s+/g,' ').trim().substring(0, 150);\n    if (title.length > 10) items.push(title + (desc ? ': ' + desc : ''));\n  }\n  return items;\n}\n\n// Get XML from both previous nodes\nlet xml1 = '', xml2 = '';\ntry { xml1 = String($('Fetch RSS 1').item.json.data || $('Fetch RSS 1').item.json.body || ''); } catch(e) {}\ntry { xml2 = String($('Fetch RSS 2').item.json.data || $('Fetch RSS 2').item.json.body || ''); } catch(e) {}\n\nconst headlines1 = parseRSS(xml1, 4);\nconst headlines2 = parseRSS(xml2, 3);\nconst allHeadlines = [...headlines1, ...headlines2].slice(0, 6);\n\nconst contextText = allHeadlines.length > 0\n  ? 'CURRENT INDUSTRY CONTEXT (recent headlines):\\n' + allHeadlines.map(h => '\\u2022 ' + h).join('\\n')\n  : '';\n\n// Pass through topic + add rssContext\nreturn {\n  topic: $('Pick Topic').item.json.topic,\n  slug: $('Pick Topic').item.json.slug,\n  date: $('Pick Topic').item.json.date,\n  rssContext: contextText,\n  rssCount: allHeadlines.length\n};"
       }
     }
   ],
@@ -242,7 +254,7 @@
       "main": [
         [
           {
-            "node": "Build Prompt",
+            "node": "Fetch RSS 1",
             "type": "main",
             "index": 0
           }
@@ -314,6 +326,39 @@
           }
         ]
       ]
+    },
+    "Fetch RSS 1": {
+      "main": [
+        [
+          {
+            "node": "Fetch RSS 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch RSS 2": {
+      "main": [
+        [
+          {
+            "node": "Parse RSS Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse RSS Headlines": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -328,9 +373,9 @@
   },
   "meta": null,
   "pinData": null,
-  "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
-  "activeVersionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
-  "versionCounter": 38,
+  "versionId": "0c87620e-d8c5-4477-aafd-d2b639d178ae",
+  "activeVersionId": "0c87620e-d8c5-4477-aafd-d2b639d178ae",
+  "versionCounter": 41,
   "triggerCount": 2,
   "shared": [
     {
@@ -353,9 +398,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T09:42:32.403Z",
-    "createdAt": "2026-04-10T09:42:32.403Z",
-    "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
+    "updatedAt": "2026-04-10T09:50:52.765Z",
+    "createdAt": "2026-04-10T09:50:52.765Z",
+    "versionId": "0c87620e-d8c5-4477-aafd-d2b639d178ae",
     "workflowId": "ExMw8CCe97Y0ADOl",
     "nodes": [
       {
@@ -416,47 +461,14 @@
       {
         "id": "taf-article-generator-set",
         "name": "Build Prompt",
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
         "position": [
-          200,
+          800,
           300
         ],
         "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "1",
-                "name": "systemPrompt",
-                "value": "You are a technical writer for The Agent Fabric (theagentfabric.com) \u2014 a company building distributed, sovereign AI agent infrastructure for enterprises. Write in a precise, authoritative tone for CTOs, ML engineers, and enterprise architects. Focus on practical depth: architecture patterns, trade-offs, real decisions.",
-                "type": "string"
-              },
-              {
-                "id": "2",
-                "name": "userPrompt",
-                "value": "Write a comprehensive technical article (1200-1800 words). Include: key concepts, architecture considerations, practical implementation guidance, trade-offs. Use H2 and H3 headers. End with clear takeaways. NO frontmatter. Start directly with an intro paragraph.",
-                "type": "string"
-              },
-              {
-                "id": "3",
-                "name": "slug",
-                "value": "={{ $json.slug }}",
-                "type": "string"
-              },
-              {
-                "id": "4",
-                "name": "topic",
-                "value": "={{ $json.topic }}",
-                "type": "string"
-              },
-              {
-                "id": "5",
-                "name": "date",
-                "value": "={{ $json.date }}",
-                "type": "string"
-              }
-            ]
-          }
+          "jsCode": "const topic = $json.topic;\nconst slug = $json.slug;\nconst date = $json.date;\nconst rssContext = $json.rssContext || '';\n\nconst systemPrompt = \"You are a technical writer for The Agent Fabric (theagentfabric.com) \\u2014 a company building distributed, sovereign AI agent infrastructure for enterprises. Write in a precise, authoritative tone for CTOs, ML engineers, and enterprise architects. Focus on practical depth: architecture patterns, trade-offs, real decisions.\";\n\nconst rssBlock = rssContext ? rssContext + '\\n\\nUse the above context to make your article timely and grounded in current industry developments. Reference or expand on relevant trends where appropriate.\\n\\n' : '';\n\nconst userPrompt = \"Write a comprehensive technical article (1200-1800 words) about: __TOPIC__\\n\\n\".replace('__TOPIC__', topic)\n  + rssBlock\n  + \"Include: key concepts, architecture considerations, practical implementation guidance, trade-offs. Use H2 and H3 headers. End with clear takeaways. NO frontmatter. Start directly with an intro paragraph.\";\n\nreturn {\n  systemPrompt,\n  userPrompt,\n  slug,\n  topic,\n  date\n};"
         }
       },
       {
@@ -465,7 +477,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4,
         "position": [
-          400,
+          1000,
           300
         ],
         "parameters": {
@@ -491,7 +503,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          600,
+          1200,
           300
         ],
         "parameters": {
@@ -504,7 +516,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4,
         "position": [
-          800,
+          1400,
           300
         ],
         "parameters": {
@@ -538,7 +550,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1020,
+          1620,
           300
         ],
         "continueOnFail": true,
@@ -558,11 +570,56 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1260,
+          1860,
           300
         ],
         "parameters": {
           "jsCode": "// Append published slug to used-slugs list in workflow static data\nconst slug = $('Format Article').item.json.slug || $json.slug || '';\nif (slug) {\n  const data = $getWorkflowStaticData('global');\n  if (!data.usedSlugs) data.usedSlugs = [];\n  if (!data.usedSlugs.includes(slug)) {\n    data.usedSlugs.push(slug);\n  }\n  // Keep max 500 slugs\n  if (data.usedSlugs.length > 500) {\n    data.usedSlugs = data.usedSlugs.slice(-500);\n  }\n}\nreturn $input.all();"
+        }
+      },
+      {
+        "id": "taf-rss-fetch-1",
+        "name": "Fetch RSS 1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          200,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://venturebeat.com/category/ai/feed/",
+          "options": {}
+        }
+      },
+      {
+        "id": "taf-rss-fetch-2",
+        "name": "Fetch RSS 2",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          400,
+          300
+        ],
+        "continueOnFail": true,
+        "parameters": {
+          "method": "GET",
+          "url": "https://www.deeplearning.ai/the-batch/feed/",
+          "options": {}
+        }
+      },
+      {
+        "id": "taf-rss-parse",
+        "name": "Parse RSS Headlines",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Parse RSS XML from both feeds and extract top headlines\nfunction parseRSS(xml, maxItems) {\n  if (!xml || typeof xml !== 'string') return [];\n  const items = [];\n  const matches = xml.match(/<item[\\s>][\\s\\S]*?<\\/item>/gi) || \n                  xml.match(/<entry[\\s>][\\s\\S]*?<\\/entry>/gi) || [];\n  for (const item of matches.slice(0, maxItems)) {\n    const titleMatch = item.match(/<title[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/i);\n    const descMatch = item.match(/<description[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/description>/i) ||\n                      item.match(/<summary[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/summary>/i);\n    const title = (titleMatch?.[1] || '').replace(/<[^>]+>/g, '').trim();\n    const desc = (descMatch?.[1] || '').replace(/<[^>]+>/g, '').replace(/\\s+/g,' ').trim().substring(0, 150);\n    if (title.length > 10) items.push(title + (desc ? ': ' + desc : ''));\n  }\n  return items;\n}\n\n// Get XML from both previous nodes\nlet xml1 = '', xml2 = '';\ntry { xml1 = String($('Fetch RSS 1').item.json.data || $('Fetch RSS 1').item.json.body || ''); } catch(e) {}\ntry { xml2 = String($('Fetch RSS 2').item.json.data || $('Fetch RSS 2').item.json.body || ''); } catch(e) {}\n\nconst headlines1 = parseRSS(xml1, 4);\nconst headlines2 = parseRSS(xml2, 3);\nconst allHeadlines = [...headlines1, ...headlines2].slice(0, 6);\n\nconst contextText = allHeadlines.length > 0\n  ? 'CURRENT INDUSTRY CONTEXT (recent headlines):\\n' + allHeadlines.map(h => '\\u2022 ' + h).join('\\n')\n  : '';\n\n// Pass through topic + add rssContext\nreturn {\n  topic: $('Pick Topic').item.json.topic,\n  slug: $('Pick Topic').item.json.slug,\n  date: $('Pick Topic').item.json.date,\n  rssContext: contextText,\n  rssCount: allHeadlines.length\n};"
         }
       }
     ],
@@ -593,7 +650,7 @@
         "main": [
           [
             {
-              "node": "Build Prompt",
+              "node": "Fetch RSS 1",
               "type": "main",
               "index": 0
             }
@@ -665,6 +722,39 @@
             }
           ]
         ]
+      },
+      "Fetch RSS 1": {
+        "main": [
+          [
+            {
+              "node": "Fetch RSS 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch RSS 2": {
+        "main": [
+          [
+            {
+              "node": "Parse RSS Headlines",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse RSS Headlines": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Admin null",
@@ -673,18 +763,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T09:42:32.432Z",
-        "id": 655,
+        "createdAt": "2026-04-10T09:50:52.802Z",
+        "id": 665,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
+        "versionId": "0c87620e-d8c5-4477-aafd-d2b639d178ae",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-04-10T09:42:32.449Z",
-        "id": 656,
+        "createdAt": "2026-04-10T09:50:52.816Z",
+        "id": 666,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "a1b83ce1-f701-4185-8b38-2be259bf2a12",
+        "versionId": "0c87620e-d8c5-4477-aafd-d2b639d178ae",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }
