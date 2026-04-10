@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T07:23:51.316Z",
+  "createdAt": "2026-03-24T15:13:28.636Z",
   "id": "XdnfbkbCL8NDjBdo",
   "name": "tan-article-generator",
   "description": null,
@@ -133,7 +135,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\n// Capitalize title properly\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+        "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
       }
     },
     {
@@ -151,23 +153,6 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theatomicnetwork', content: $json.fullContent}) }}"
-      }
-    },
-    {
-      "id": "tan-article-generator-notify",
-      "name": "Notify Telegram",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1000,
-        300
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '⚛️ <b>Ny artikel publicerad</b> \\u2013 tan-website.netlify.app\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
       }
     },
     {
@@ -255,17 +240,6 @@
         ]
       ]
     },
-    "Publish via OpenClaw": {
-      "main": [
-        [
-          {
-            "node": "Notify Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook Trigger": {
       "main": [
         [
@@ -290,8 +264,9 @@
   },
   "meta": null,
   "pinData": null,
-  "activeVersionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
-  "versionCounter": 23,
+  "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
+  "activeVersionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
+  "versionCounter": 29,
   "triggerCount": 2,
   "shared": [
     {
@@ -314,9 +289,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-28T07:29:19.037Z",
-    "createdAt": "2026-03-28T07:29:19.037Z",
-    "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+    "updatedAt": "2026-04-10T07:23:51.317Z",
+    "createdAt": "2026-04-10T07:23:51.317Z",
+    "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
     "workflowId": "XdnfbkbCL8NDjBdo",
     "nodes": [
       {
@@ -447,7 +422,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\n// Capitalize title properly\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
+          "jsCode": "\nconst body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\n\nconst articleText = body.choices?.[0]?.message?.content || '';\n\nlet title = topic.charAt(0).toUpperCase() + topic.slice(1);\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) {\n  title = firstLine.slice(2).trim();\n  bodyText = articleText.split('\\n').slice(1).join('\\n').trim();\n}\n\ntitle = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\n\nconst description = bodyText.replace(/^#+.*$/gm, '').replace(/\\n+/g, ' ').trim().slice(0, 160);\n\nconst tags = topic.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 6)\n  .map(w => w.replace(/[^a-z0-9]/g, ''));\n\nconst heroSlug = slug.replace(/\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-$/, '');\n\nconst frontmatter = `---\ntitle: \"${title.replace(/\"/g, \"'\")}\"\ndescription: \"${description.replace(/\"/g, \"'\")}\"\npublishDate: \"${date}\"\ntags: [${tags.map(t => `\"${t}\"`).join(', ')}]\nheroImage: \"/images/${heroSlug}.jpg\"\n---`;\n\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\n\nreturn [{ json: { fullContent, title, slug } }];\n"
         }
       },
       {
@@ -465,23 +440,6 @@
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theatomicnetwork', content: $json.fullContent}) }}"
-        }
-      },
-      {
-        "id": "tan-article-generator-notify",
-        "name": "Notify Telegram",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4,
-        "position": [
-          1000,
-          300
-        ],
-        "parameters": {
-          "method": "POST",
-          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '⚛️ <b>Ny artikel publicerad</b> \\u2013 tan-website.netlify.app\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
         }
       },
       {
@@ -569,17 +527,6 @@
           ]
         ]
       },
-      "Publish via OpenClaw": {
-        "main": [
-          [
-            {
-              "node": "Notify Telegram",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Webhook Trigger": {
         "main": [
           [
@@ -592,40 +539,24 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-28T07:29:19.065Z",
-        "id": 388,
+        "createdAt": "2026-04-10T07:23:51.361Z",
+        "id": 561,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:29:19.086Z",
-        "id": 389,
+        "createdAt": "2026-04-10T07:23:51.380Z",
+        "id": 562,
         "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:29:19.281Z",
-        "id": 390,
-        "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:29:19.893Z",
-        "id": 391,
-        "workflowId": "XdnfbkbCL8NDjBdo",
-        "versionId": "e6168b2e-0d27-4cb4-87fa-f6718fe89b18",
+        "versionId": "e54ed035-ba62-4a7f-83d6-69b53a0331ca",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

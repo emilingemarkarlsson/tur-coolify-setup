@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T07:23:51.611Z",
+  "createdAt": "2026-03-24T15:22:03.821Z",
   "id": "ExMw8CCe97Y0ADOl",
   "name": "taf-article-generator",
   "description": null,
@@ -133,7 +135,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst description = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,5);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g,)}\"\\ndescription: \"${description.replace(/\"/g,)}\"\\npublishDate: \"${date}\"\\ntags: [${tags.map(t=>`\"${t}\"`).join(', ')}]\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst description = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,5);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g,\\\"'\\\")}\"\\ndescription: \"${description.replace(/\"/g,\\\"'\\\")}\"\\npublishDate: \"${date}\"\\ntags: [${tags.map(t=>`\"${t}\"`).join(', ')}]\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
       }
     },
     {
@@ -151,23 +153,6 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theagentfabric', content: $json.fullContent}) }}"
-      }
-    },
-    {
-      "id": "taf-article-generator-tg",
-      "name": "Notify Telegram",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1000,
-        300
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🤖 <b>Ny artikel – tur-theagentfabric.vercel.app</b>\\n📌 ' + $('Format Article').item.json.title + '\\n🔗 https://tur-theagentfabric.vercel.app/blog/' + $('Pick Topic').item.json.slug, parse_mode: 'HTML'}) }}"
       }
     },
     {
@@ -255,17 +240,6 @@
         ]
       ]
     },
-    "Publish via OpenClaw": {
-      "main": [
-        [
-          {
-            "node": "Notify Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook Trigger": {
       "main": [
         [
@@ -290,8 +264,9 @@
   },
   "meta": null,
   "pinData": null,
-  "activeVersionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
-  "versionCounter": 26,
+  "versionId": "17ef6d47-dae1-44a7-b27a-c2c3fcb7bdcd",
+  "activeVersionId": "17ef6d47-dae1-44a7-b27a-c2c3fcb7bdcd",
+  "versionCounter": 32,
   "triggerCount": 2,
   "shared": [
     {
@@ -314,9 +289,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-28T07:31:18.441Z",
-    "createdAt": "2026-03-28T07:31:18.441Z",
-    "versionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
+    "updatedAt": "2026-04-10T07:23:51.613Z",
+    "createdAt": "2026-04-10T07:23:51.613Z",
+    "versionId": "17ef6d47-dae1-44a7-b27a-c2c3fcb7bdcd",
     "workflowId": "ExMw8CCe97Y0ADOl",
     "nodes": [
       {
@@ -447,7 +422,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst description = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,5);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g,)}\"\\ndescription: \"${description.replace(/\"/g,)}\"\\npublishDate: \"${date}\"\\ntags: [${tags.map(t=>`\"${t}\"`).join(', ')}]\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst description = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,5);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g,\\\"'\\\")}\"\\ndescription: \"${description.replace(/\"/g,\\\"'\\\")}\"\\npublishDate: \"${date}\"\\ntags: [${tags.map(t=>`\"${t}\"`).join(', ')}]\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
         }
       },
       {
@@ -465,23 +440,6 @@
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theagentfabric', content: $json.fullContent}) }}"
-        }
-      },
-      {
-        "id": "taf-article-generator-tg",
-        "name": "Notify Telegram",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4,
-        "position": [
-          1000,
-          300
-        ],
-        "parameters": {
-          "method": "POST",
-          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🤖 <b>Ny artikel – tur-theagentfabric.vercel.app</b>\\n📌 ' + $('Format Article').item.json.title + '\\n🔗 https://tur-theagentfabric.vercel.app/blog/' + $('Pick Topic').item.json.slug, parse_mode: 'HTML'}) }}"
         }
       },
       {
@@ -569,17 +527,6 @@
           ]
         ]
       },
-      "Publish via OpenClaw": {
-        "main": [
-          [
-            {
-              "node": "Notify Telegram",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Webhook Trigger": {
         "main": [
           [
@@ -592,40 +539,24 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-28T07:31:18.620Z",
-        "id": 398,
+        "createdAt": "2026-04-10T07:23:51.660Z",
+        "id": 563,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
+        "versionId": "17ef6d47-dae1-44a7-b27a-c2c3fcb7bdcd",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:31:19.251Z",
-        "id": 399,
+        "createdAt": "2026-04-10T07:23:51.676Z",
+        "id": 564,
         "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:31:18.490Z",
-        "id": 396,
-        "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:31:18.507Z",
-        "id": 397,
-        "workflowId": "ExMw8CCe97Y0ADOl",
-        "versionId": "9e4ade5a-fad9-47db-b069-c153de489e92",
+        "versionId": "17ef6d47-dae1-44a7-b27a-c2c3fcb7bdcd",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

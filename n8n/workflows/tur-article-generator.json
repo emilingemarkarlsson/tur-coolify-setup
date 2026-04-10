@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T07:23:50.858Z",
+  "createdAt": "2026-03-24T15:13:28.454Z",
   "id": "ZG4Jv9RD7liDpcmM",
   "name": "tur-article-generator",
   "description": null,
@@ -133,7 +135,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\n// Build a real description from first paragraph of body\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+        "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
       }
     },
     {
@@ -151,23 +153,6 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theunnamedroads', content: $json.fullContent}) }}"
-      }
-    },
-    {
-      "id": "tur-article-generator-notify",
-      "name": "Notify Telegram",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1000,
-        300
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🛤️ <b>Ny artikel publicerad</b> \\u2013 theunnamedroads.com\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
       }
     },
     {
@@ -255,17 +240,6 @@
         ]
       ]
     },
-    "Publish via OpenClaw": {
-      "main": [
-        [
-          {
-            "node": "Notify Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook Trigger": {
       "main": [
         [
@@ -290,8 +264,9 @@
   },
   "meta": null,
   "pinData": null,
-  "activeVersionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
-  "versionCounter": 28,
+  "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
+  "activeVersionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
+  "versionCounter": 34,
   "triggerCount": 2,
   "shared": [
     {
@@ -314,9 +289,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-28T07:29:17.500Z",
-    "createdAt": "2026-03-28T07:29:17.500Z",
-    "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+    "updatedAt": "2026-04-10T07:23:50.862Z",
+    "createdAt": "2026-04-10T07:23:50.862Z",
+    "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
     "workflowId": "ZG4Jv9RD7liDpcmM",
     "nodes": [
       {
@@ -447,7 +422,7 @@
           300
         ],
         "parameters": {
-          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\n// Build a real description from first paragraph of body\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
+          "jsCode": "const body = $input.item.json;\nconst slug = $('Pick Topic').item.json.slug;\nconst topic = $('Pick Topic').item.json.topic;\nconst date = $('Pick Topic').item.json.date;\nconst articleText = body.choices?.[0]?.message?.content || '';\nlet title = topic.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');\nlet bodyText = articleText;\nconst firstLine = articleText.split('\\n')[0];\nif (firstLine.startsWith('# ')) { title = firstLine.slice(2).trim(); bodyText = articleText.split('\\n').slice(1).join('\\n').trim(); }\nconst firstPara = bodyText.replace(/^#+.*$/gm,'').replace(/\\n+/g,' ').trim().slice(0,200).split('.').slice(0,2).join('.')+'.'; \nconst description = firstPara.slice(0,160);\nconst tags = topic.toLowerCase().split(' ').filter(w=>w.length>3).slice(0,4);\nconst frontmatter = `---\\ntitle: \"${title.replace(/\"/g, \"'\")}\"\\ndescription: \"${description.replace(/\"/g, \"'\")}\"\\npublishedDate: ${date}\\ndateModified: ${date}\\nauthor: The Unnamed Road\\ntags: [${tags.map(t=>`'${t}'`).join(', ')}]\\ndraft: false\\n---`;\nconst fullContent = frontmatter + '\\n\\n' + bodyText;\nreturn [{ json: { fullContent, title, slug } }];"
         }
       },
       {
@@ -465,23 +440,6 @@
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={{ JSON.stringify({slug: $('Pick Topic').item.json.slug, umamiName: 'theunnamedroads', content: $json.fullContent}) }}"
-        }
-      },
-      {
-        "id": "tur-article-generator-notify",
-        "name": "Notify Telegram",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4,
-        "position": [
-          1000,
-          300
-        ],
-        "parameters": {
-          "method": "POST",
-          "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '🛤️ <b>Ny artikel publicerad</b> \\u2013 theunnamedroads.com\\n\\uD83D\\uDCCC ' + $('Format Article').item.json.title + '\\n\\uD83D\\uDD17 ' + ($('Publish via OpenClaw').item.json.url || 'Publicerad!'), parse_mode: 'HTML'}) }}"
         }
       },
       {
@@ -569,17 +527,6 @@
           ]
         ]
       },
-      "Publish via OpenClaw": {
-        "main": [
-          [
-            {
-              "node": "Notify Telegram",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Webhook Trigger": {
         "main": [
           [
@@ -592,40 +539,24 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-28T07:29:17.547Z",
-        "id": 384,
+        "createdAt": "2026-04-10T07:23:50.952Z",
+        "id": 559,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-28T07:29:17.565Z",
-        "id": 385,
+        "createdAt": "2026-04-10T07:23:50.987Z",
+        "id": 560,
         "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
-        "event": "activated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:29:17.757Z",
-        "id": 386,
-        "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
-        "event": "deactivated",
-        "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
-      },
-      {
-        "createdAt": "2026-03-28T07:29:18.351Z",
-        "id": 387,
-        "workflowId": "ZG4Jv9RD7liDpcmM",
-        "versionId": "f75003ff-9f4c-455a-b133-dd76f38a3f6a",
+        "versionId": "f6c5ca10-8720-487b-a711-9318bc0c5f19",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }

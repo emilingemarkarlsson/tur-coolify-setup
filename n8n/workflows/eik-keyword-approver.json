@@ -1,4 +1,6 @@
 {
+  "updatedAt": "2026-04-10T07:25:49.463Z",
+  "createdAt": "2025-12-13T11:03:08.209Z",
   "id": "9gn1VOZgC3usXUMw",
   "name": "eik-keyword-approver",
   "description": null,
@@ -99,7 +101,7 @@
         "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godknt: ' + (.item.json.keyword || 'oknt'), parse_mode: 'HTML'}) }}"
+        "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML'}) }}"
       }
     },
     {
@@ -172,8 +174,9 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "activeVersionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
-  "versionCounter": 46,
+  "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
+  "activeVersionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
+  "versionCounter": 52,
   "triggerCount": 1,
   "shared": [
     {
@@ -196,9 +199,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-24T14:58:42.557Z",
-    "createdAt": "2026-03-24T14:58:42.557Z",
-    "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+    "updatedAt": "2026-04-10T07:25:49.465Z",
+    "createdAt": "2026-04-10T07:25:49.465Z",
+    "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
     "workflowId": "9gn1VOZgC3usXUMw",
     "nodes": [
       {
@@ -295,7 +298,7 @@
           "url": "https://api.telegram.org/bot8683132686:AAF5yJ206OcLKsSBx0n4Nm4uBAxcQlRbwyc/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godknt: ' + (.item.json.keyword || 'oknt'), parse_mode: 'HTML'}) }}"
+          "jsonBody": "={{ JSON.stringify({chat_id: '-1003767033253', text: '✅ Nyckelord godkänt: ' + ($json.keyword || 'okänt'), parse_mode: 'HTML'}) }}"
         }
       },
       {
@@ -360,24 +363,24 @@
         ]
       }
     },
-    "authors": "null null",
+    "authors": "Admin null",
     "name": null,
     "description": null,
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-24T14:58:42.619Z",
-        "id": 218,
+        "createdAt": "2026-04-10T07:25:49.504Z",
+        "id": 567,
         "workflowId": "9gn1VOZgC3usXUMw",
-        "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+        "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
         "event": "deactivated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       },
       {
-        "createdAt": "2026-03-24T14:58:42.643Z",
-        "id": 219,
+        "createdAt": "2026-04-10T07:25:49.521Z",
+        "id": 568,
         "workflowId": "9gn1VOZgC3usXUMw",
-        "versionId": "e1bb1882-05c5-42a4-9c56-d192437b5d85",
+        "versionId": "ac609e55-64c4-43c2-a6f8-826f8a90d3a8",
         "event": "activated",
         "userId": "8d8941e8-6bf2-42a2-99ae-5c08da3c2d1a"
       }
