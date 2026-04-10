@@ -86,19 +86,19 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "url": "http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/chat/completions",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer REDACTED_GROQ_API_KEY"
+              "value": "Bearer 7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt+' Topic: '+$json.topic}],temperature:0.7,max_tokens:3000}) }}"
+        "jsonBody": "={{ JSON.stringify({model:'gemini-25-flash',messages:[{role:'system',content:$json.systemPrompt},{role:'user',content:$json.userPrompt+' Topic: '+$json.topic}],temperature:0.7,max_tokens:3000}) }}"
       }
     },
     {
