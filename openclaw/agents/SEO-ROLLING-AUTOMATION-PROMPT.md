@@ -73,7 +73,7 @@ Använd `web_search` för trenddata.
 ## 3. Gratis-LLM via LiteLLM
 
 OpenClaw är konfigurerad mot LiteLLM-proxyn:
-`https://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/v1`
+`https://litellm.theunnamedroads.com/v1`
 
 **Tillgängliga gratismodeller (kräver API-nyckel men gratis/billig tier):**
 

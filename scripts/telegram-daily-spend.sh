@@ -22,7 +22,7 @@ if [[ -z "$TOKEN" ]]; then
   echo "TELEGRAM_BOT_TOKEN not set." >&2; exit 1
 fi
 
-BASE="${LITELLM_BASE_URL:-http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io}"
+BASE="${LITELLM_BASE_URL:-https://litellm.theunnamedroads.com}"
 MASTER_KEY="${LITELLM_MASTER_KEY:-7cFubmhrruWpKV7tvYqKnp6o4HqrDj7L}"
 USAGE_LINK="${LITELLM_UI_URL:-${BASE%/}/ui/?page=new_usage}"
 

@@ -13,14 +13,14 @@ Scriptet behöver:
 | Variabel | Beskrivning |
 |----------|-------------|
 | `SLACK_WEBHOOK_URL` | Slack Incoming Webhook-URL (t.ex. från `~/.slack-seo-reminder-url`) |
-| `LITELLM_UI_URL` | Valfritt: exakt länk till Usage-sidan (t.ex. `https://litellm-xxx.sslip.io/ui/?page=new_usage`). Om du inte sätter den byggs länken från `LITELLM_BASE_URL` + `/ui/?page=new_usage`. |
+| `LITELLM_UI_URL` | Valfritt: exakt länk till Usage-sidan (t.ex. `https://litellm.theunnamedroads.com/ui/?page=new_usage`). Om du inte sätter den byggs länken från `LITELLM_BASE_URL` + `/ui/?page=new_usage`. |
 | `LITELLM_BASE_URL` | Valfritt om du sätter `LITELLM_UI_URL`. Proxy root utan `/v1`. |
 
 Filen `~/.litellm-daily-spend-urls` kan innehålla t.ex.:
 
 ```bash
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
-LITELLM_UI_URL=https://litellm-xxx.sslip.io/ui/?page=new_usage
+LITELLM_UI_URL=https://litellm.theunnamedroads.com/ui/?page=new_usage
 ```
 
 Om du bara sätter `SLACK_WEBHOOK_URL` och `LITELLM_BASE_URL` byggs Usage-länken automatiskt.

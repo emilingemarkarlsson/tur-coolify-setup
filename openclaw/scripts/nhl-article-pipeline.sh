@@ -143,7 +143,7 @@ ${FRONTMATTER_FORMAT}
 Do not include any commentary, explanations, or text outside the markdown article."
 
 # ── 4. Call LLM (LiteLLM with Anthropic fallback) ────────────────────────────
-LITELLM_URL="${OPENAI_API_BASE:-${LITELLM_URL:-http://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/v1}}"
+LITELLM_URL="${OPENAI_API_BASE:-${LITELLM_URL:-https://litellm.theunnamedroads.com/v1}}"
 LITELLM_KEY="${OPENAI_API_KEY:-sk-placeholder}"
 
 PROMPT_JSON=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "$PROMPT")
