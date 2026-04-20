@@ -5,7 +5,7 @@
 - Klicka **➕ Add Connection** eller redigera **OpenAI API**.
 - Fyll i:
   - **URL:** `https://<din-litellm-domän>/v1`  
-    T.ex. `https://litellm-kkswc8gokk84c0o8oo84w44w.46.62.206.47.sslip.io/v1`
+    Produktion: `https://litellm.theunnamedroads.com/v1` (kräver att DNS för `litellm` pekar mot servern).
   - **API Key:** LiteLLM **master key** (samma som `LITELLM_MASTER_KEY` i LiteLLM).
   - **Provider Type:** **OpenAI** (inte Azure OpenAI).
   - **Modell-ID:n:** Lämna tomt först (auto-upptäckt). Om inga modeller dyker upp, lägg till manuellt (se nedan).
