@@ -1,6 +1,7 @@
 services:
   n8n:
-    image: 'n8nio/n8n:latest'
+    # Pinna semver — uppdatera medvetet (se docs/audit/2026-04-AUTONOMY-AUDIT.md)
+    image: 'n8nio/n8n:2.16.1'
     container_name: tha_n8n
     environment:
       - N8N_HOST=automation.thehockeyanalytics.com

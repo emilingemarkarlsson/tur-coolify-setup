@@ -4,6 +4,7 @@
 # Se docs/guides/CPU-LOAD-INVESTIGATION.md och LiteLLM-diskussionen.
 services:
   litellm:
+    # När du verifierat tag: byt till t.ex. v1.83.7-stable (matcha BerriAI/litellm release)
     image: 'ghcr.io/berriai/litellm-database:main-stable'
     depends_on:
       postgres:

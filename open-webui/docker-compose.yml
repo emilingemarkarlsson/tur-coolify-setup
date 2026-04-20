@@ -1,6 +1,7 @@
 services:
   open-webui:
-    image: 'ghcr.io/open-webui/open-webui:main'
+    # Pinna semver — uppdatera medvetet (se docs/audit/2026-04-AUTONOMY-AUDIT.md)
+    image: 'ghcr.io/open-webui/open-webui:v0.8.12'
     volumes:
       - 'open-webui:/app/backend/data'
     environment:

@@ -45,6 +45,8 @@ DISTRIBUTION LAYER
 Fetched at the start of every LiteLLM call producing EIK content.
 Never hardcoded in workflow nodes — single source of truth.
 
+For **all TUR niche sites** (not only EIK), also load [`product/templates/brand-voice-tur-hyperlist.json`](../../product/templates/brand-voice-tur-hyperlist.json) into the same system context — HyperList-inspired structure + [`HYPERLIST-VOICE.md`](./HYPERLIST-VOICE.md).
+
 ```json
 {
   "persona": "Emil Ingemar Karlsson — solo technical founder, Stockholm. Runs 8 sites on €35/month. Writes like he thinks: direct, specific, no buzzwords. Always grounded in something he built or measured.",

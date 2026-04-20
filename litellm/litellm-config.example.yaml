@@ -1,0 +1,28 @@
+# LiteLLM proxy — exempelkonfiguration
+# Kopiera till litellm-config.yaml i samma mapp som docker-compose (Coolify service root).
+# Anpassa model_list till dina riktiga alias; API-nycklar kommer från Coolify env eller os.environ/* nedan.
+# Docs: https://docs.litellm.ai/docs/proxy/configs
+#
+# Stil / brand: lägg INTE långa system prompts här. Använd docs/brand/CONTENT-STYLE-BUNDLE.md
+# + product/templates/brand-voice-tur-hyperlist.json i n8n/OpenClaw/Open WebUI.
+
+model_list:
+  # Exempel — byt ut modellsträngar mot det du faktiskt har i dashboard
+  - model_name: default
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: anthropic-default
+    litellm_params:
+      model: claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+litellm_settings:
+  json_logs: true
+  request_timeout: 600
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 1
+  allowed_fails: 2

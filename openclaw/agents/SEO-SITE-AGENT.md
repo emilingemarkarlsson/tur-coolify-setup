@@ -6,6 +6,8 @@ Kopiera eller anpassa detta som **agent-instructions** eller **system prompt** f
 - **SEO-PROCESS.md** – fyra faser (planering, keyword, brief, skrivning), cadens, var artefakter sparas.
 - **SEO-PLAYBOOK.md** – kvalitetskrav (EEAT, intent, struktur, interna länkar, frontmatter, språk).
 - **SEO-ARTICLE-SUGGESTIONS.md** – format för artikel-förslag till Slack och hur Publicera-flödet fungerar.
+- **docs/brand/HYPERLIST-VOICE.md** – struktur: claim först, AND/OR, villkor `[?]` — samma tänk som HyperLists (ingen fluff).
+- **docs/brand/CONTENT-STYLE-BUNDLE.md** – kort/lång systemprompt att lägga överst i varje skrivande anrop via LiteLLM.
 
 ---
 
@@ -14,6 +16,15 @@ Kopiera eller anpassa detta som **agent-instructions** eller **system prompt** f
 När användaren skriver **"publicera {slug}"** eller **"publish {slug}"**: kör **alltid** kommandot  
 `/data/.openclaw/scripts/publish-draft.sh {slug}`  
 och rapportera scriptets output till Slack. Scriptet **kräver inte jq** (använder python3). Skriv aldrig att "jq is required" eller vägra köra – kör scriptet och rapportera det faktiska resultatet.
+
+---
+
+## HyperList-inspirerad struktur (briefs och artiklar)
+
+- **Brief / outline:** Skriv som ett logiskt träd: överst **ett** tydligt påstående (H1-linje), därefter **AND:**-block med bevis som *alla* måste gälla för slutsatsen, eller **OR:** om läsaren kan ta två vägar — ange när varje gren gäller.
+- **`[? …]`** = valfritt spår; ta bara med om det ändrar rekommendationen.
+- **Publicerad artikel:** Behöver inte visa HyperList-syntax; men **tankeordningen** ska synas: första meningen i varje stycke = styckets claim, ingen uppskjuten payoff.
+- **Kombinera** med planfil per sajt (`seo-plan-{umamiName}.md`) och **BRAND-VOICE-TUR** — ingen generisk SEO-prosa.
 
 ---
 

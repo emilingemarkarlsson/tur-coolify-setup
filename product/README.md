@@ -21,7 +21,8 @@ the-35-euro-ai-stack/
 │   ├── README.md                ← all 33 workflows explained
 │   └── *.json                   ← import directly into n8n
 └── templates/
-    └── site-repos.json          ← OpenClaw multi-site config
+    ├── site-repos.json          ← OpenClaw multi-site config
+    └── brand-voice-tur-hyperlist.json  ← MinIO / n8n system context (stil)
 ```
 
 ---

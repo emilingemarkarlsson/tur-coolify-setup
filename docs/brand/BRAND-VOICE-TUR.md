@@ -4,6 +4,8 @@ Used in: `theunnamedroads.com`, `theagentfabric.com`, `theatomicnetwork.com`,
          `theprintroute.com`, `finnbodahamnplan.se`, `tan-website`
 Injected as: system prompt context in all LiteLLM article generator calls.
 
+**Struktur-lager (HyperList-inspirerat):** Samma röst blir skarpare när outline och resonemang följer **claim → AND-bevis → [? undantag] → implikation** — se [`HYPERLIST-VOICE.md`](./HYPERLIST-VOICE.md) och [`CONTENT-STYLE-BUNDLE.md`](./CONTENT-STYLE-BUNDLE.md). JSON för MinIO/workflows: [`product/templates/brand-voice-tur-hyperlist.json`](../../product/templates/brand-voice-tur-hyperlist.json).
+
 ---
 
 ## Persona per Site

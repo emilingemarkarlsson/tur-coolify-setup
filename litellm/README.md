@@ -24,6 +24,12 @@ I compose-filen är det redan satt till `1`. Om du redigerar i Coolify, ändra b
 
 Efter ändring: **Redeploy** LiteLLM i Coolify.
 
+## `litellm-config.yaml`
+
+Compose bind-mountar `./litellm-config.yaml` → `/app/config.yaml`. I repot finns **`litellm-config.example.yaml`** som mall: kopiera till `litellm-config.yaml` (lokalt eller på servern), fyll i `model_list` så den matchar dina modeller i LiteLLM UI och provider-nycklar i Coolify.
+
+**Stil / brand** ska inte gömmas i YAML — använd `docs/brand/CONTENT-STYLE-BUNDLE.md` + `product/templates/brand-voice-tur-hyperlist.json` i n8n/Open WebUI/OpenClaw som system prompt.
+
 ## Coolify
 
 Compose-filen här är en referenskopia. Den faktiska deploymenten görs från Coolify; env-variabler (nycklar, lösenord) hanteras där. Om du vill synka tillbaka från Coolify till repot kan du använda `./scripts/sync-coolify-resources.sh`.
